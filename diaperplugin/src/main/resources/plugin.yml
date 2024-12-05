@@ -1,0 +1,16 @@
+name: diaperplugin
+main: com.storynook.Plugin
+version: 0.0.1
+api-version: 1.20.6
+author: ["StoryNook"]
+description: "Bladder, bowels, diapers and more tracking, and usage"
+commands:
+  settings:
+    description: "Open player settings for SNDP"
+  stats:
+    description: "Shows the player's stats."
+  check:
+    description: "Shows Players Diaper Status"
+  # caregiver:
+  #   description: "Manage your caregivers."
+    # usage: "/caregiver <add/remove/list> [player]"
