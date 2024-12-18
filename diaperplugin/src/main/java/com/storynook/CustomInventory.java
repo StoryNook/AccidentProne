@@ -47,7 +47,12 @@ public class CustomInventory implements Listener {
         ItemStack ScoreBoard = new ItemStack(Material.PAINTING); // Custom button
         ItemMeta ScoreobardMeta = ScoreBoard.getItemMeta();
         if (ScoreobardMeta != null) {
-            List<String> lore = Arrays.asList("Show Scoreboard/Stats: " + stats.getScoreBoard());
+            String UISetting;
+            if (stats.getUI() == 0) {UISetting = "Hidden";}
+            if (stats.getUI() == 1) {UISetting = "Scoreboard";}
+            if(stats.getUI() == 2){UISetting = "HotBar";}
+            else{UISetting = "Error";}
+            List<String> lore = Arrays.asList("Current UI Selected " + UISetting);
             ScoreobardMeta.setLore(lore);
             ScoreobardMeta.setDisplayName("Stats Visable");
             ScoreBoard.setItemMeta(ScoreobardMeta);   
@@ -99,8 +104,6 @@ public class CustomInventory implements Listener {
                 if (stats.getUI() == 1){updateScoreboard(player, stats); player.sendMessage("Scoreboard Style Selected");}
                 if (stats.getUI() == 0){updateScoreboard(player, stats); player.sendMessage("Stats Hidden");}
                 if (stats.getUI() == 2){updateScoreboard(player, stats); player.sendMessage("Hotbar Style Selected");}
-                // stats.setScoreBoard(!stats.getScoreBoard());
-                // player.sendMessage(stats.getScoreBoard() ? "You have turned on the scoreboard." : "You have turned off the scoreboard.");
                 plugin.savePlayerStats(player); // Save the updated stats
             }
         }

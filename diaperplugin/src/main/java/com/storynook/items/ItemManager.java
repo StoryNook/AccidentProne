@@ -144,7 +144,7 @@ public class ItemManager {
     }
     public void createDiaperRecipe() {
         // Define the custom item
-        ItemStack item = new ItemStack(Material.SLIME_BALL, 9);
+        ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Diaper");
         meta.setCustomModelData(626009);
@@ -154,9 +154,10 @@ public class ItemManager {
         // Create the recipe
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "Diaper"), diaper);
         recipe.shape("TST", " S ", "PSP"); 
-        recipe.setIngredient('S', new RecipeChoice.MaterialChoice(DiaperStuffer.getType()));
+        recipe.setIngredient('S', new RecipeChoice.ExactChoice(ItemManager.DiaperStuffer));
+        // recipe.setIngredient('S', new RecipeChoice.MaterialChoice(DiaperStuffer.getType()));
         recipe.setIngredient('P', Material.PAPER);
-        recipe.setIngredient('T', new RecipeChoice.MaterialChoice(Tape.getType()));
+        recipe.setIngredient('T', new RecipeChoice.MaterialChoice(ItemManager.Tape.getType()));
 
         // Register the recipe
         Bukkit.addRecipe(recipe);
@@ -249,4 +250,5 @@ public class ItemManager {
         // Register the recipe
         Bukkit.addRecipe(recipe);
     }
+    
 }

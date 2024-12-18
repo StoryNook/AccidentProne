@@ -11,6 +11,14 @@ commands:
     description: "Shows the player's stats."
   check:
     description: "Shows Players Diaper Status"
-  # caregiver:
-  #   description: "Manage your caregivers."
-    # usage: "/caregiver <add/remove/list> [player]"
+  setunderwearlevels:
+    description: "Used for debugging"
+  caregiver:
+    description: "Manage your caregivers."
+    usage: "/caregiver <add/remove/list> [player]"
+  lockincon:
+    description: "Used to lock a player's incontinance level"
+    usage: "/lockincon <bladder|bowel|both> <Number> [player]"
+  unlockincon:
+    description: "Used to unlock a player's incontinance level"
+    usage: "/unlockincon <bladder|bowel|both> [player]"

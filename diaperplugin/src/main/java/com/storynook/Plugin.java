@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.ScoreboardManager;
 import com.storynook.items.ItemManager;
 
@@ -77,7 +80,10 @@ public class Plugin extends JavaPlugin
     getCommand("settings").setExecutor(commandHandler);
     getCommand("stats").setExecutor(commandHandler);
     getCommand("check").setExecutor(commandHandler);
-    // getCommand("caregiver").setExecutor(commandHandler);
+    getCommand("setunderwearlevels").setExecutor(commandHandler);
+    getCommand("caregiver").setExecutor(commandHandler);
+    getCommand("lockincon").setExecutor(commandHandler);
+    getCommand("unlockincon").setExecutor(commandHandler);
 
     //Score board setup
     manager = Bukkit.getScoreboardManager();
@@ -106,22 +112,25 @@ public class Plugin extends JavaPlugin
       stats.setDiaperFullness((double) config.getDouble("diaperFullness", 0));
       stats.setBladderIncontinence((double) config.getDouble("bladderIncontinence", 1));
       stats.setBowelIncontinence((double) config.getDouble("bowelIncontinence", 1));
-      stats.setBladderFillRate((double) config.getDouble("bladderFillRate", 0.268));
-      stats.setBowelFillRate((double) config.getDouble("bowelFillRate", 0.1));
-      stats.setHydration((int) config.getInt("hydration", 100));
+      stats.setBladderFillRate((double) config.getDouble("bladderFillRate", 0.2));
+      stats.setBowelFillRate((double) config.getDouble("bowelFillRate", 0.07));
+      stats.setHydration((double) config.getInt("hydration", 100));
       stats.setUrgeToGo((int) config.getInt("urgeToGo", 1));
       stats.setUnderwearType((int) config.getInt("UnderwearType", 0));
       stats.setLayers(config.getInt("layers", 0));
       stats.setOptin(config.getBoolean("Optin"));
       stats.setMessing(config.getBoolean("Messing"));
-      stats.setScoreBoard(config.getBoolean("Scoreboard"));
       stats.setUI((int) config.getInt("UI", 1));
-      // stats.setHardcore(config.getBoolean("Hardcore"));
-      // if (config.contains("Caregivers")) {
-      //   for (String uuid : config.getStringList("Caregivers")){
-      //     stats.addCaregiver(UUID.fromString(uuid));
-      //   }
-      // }
+      stats.setEffectDuration((int) config.getInt("EffectDuration", 0));
+      stats.setTimeWorn((int) config.getInt("TimeWorn", 0));
+      stats.setHardcore(config.getBoolean("Hardcore"));
+      stats.setBladderLockIncon(config.getBoolean("BladderLockIncon"));
+      stats.setBowelLockIncon(config.getBoolean("BowelLockIncon"));
+      if (config.contains("Caregivers")) {
+        for (String uuid : config.getStringList("Caregivers")){
+          stats.addCaregiver(UUID.fromString(uuid));
+        }
+      }
       playerStatsMap.put(playerUUID, stats);
       if (stats.getOptin() && stats.getUI() > 0) {
         ScoreBoard.createSidebar(player);
@@ -138,16 +147,19 @@ public class Plugin extends JavaPlugin
       stats.setDiaperFullness(0);
       stats.setBladderIncontinence(1);
       stats.setBowelIncontinence(1);
-      stats.setBladderFillRate(0.268); 
-      stats.setBowelFillRate(0.1);   
+      stats.setBladderFillRate(0.2); 
+      stats.setBowelFillRate(0.07);   
       stats.setHydration(100);
       stats.setUrgeToGo(1);
       stats.setUnderwearType(0);
       stats.setLayers(0);
       stats.setOptin(false);
       stats.setMessing(false);
-      // stats.setHardcore(false);
-      stats.setScoreBoard(false);
+      stats.setEffectDuration(0);
+      stats.setTimeWorn(0);
+      stats.setHardcore(false);
+      stats.setBladderLockIncon(false);
+      stats.setBowelLockIncon(false);
       stats.setUI(1);
       
       // Store the default stats in the playerStatsMap
@@ -182,12 +194,15 @@ public class Plugin extends JavaPlugin
             config.set("Optin", stats.getOptin());
             config.set("Messing", stats.getMessing());
             config.set("UI", stats.getUI());
-            // config.set("Hardcoare", stats.getHardcore());
-            config.set("Scoreboard", stats.getScoreBoard());
-            // List<String> uuidStrings = stats.getCaregivers().stream()
-            // .map(UUID::toString) // Convert UUID to string
-            // .collect(Collectors.toList());
-            // config.set("Caregivers", uuidStrings);
+            config.set("EffectDuration", stats.getEffectDuration());
+            config.set("TimeWorn", stats.getTimeWorn());
+            config.set("Hardcoare", stats.getHardcore());
+            config.set("BladderLockIncon", stats.getBladderLockIncon());
+            config.set("BowelLockIncon", stats.getBowelLockIncon());
+            List<String> uuidStrings = stats.getCaregivers().stream()
+            .map(UUID::toString) // Convert UUID to string
+            .collect(Collectors.toList());
+            config.set("Caregivers", uuidStrings);
             
             try {
               config.save(playerFile);
@@ -218,13 +233,30 @@ public class Plugin extends JavaPlugin
             PlayerStats stats = getPlayerStats(player.getUniqueId());
 
             if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) {
-              stats.decreaseHydration(1);
+              stats.decreaseHydration(0.25);
+              if (stats.getEffectDuration() == 0) {
+                stats.setBladderFillRate(0.2);
+                stats.setBowelFillRate(0.07);
+              }
               stats.increaseBladder(stats.getBladderFillRate());
               if (player.getFoodLevel() > 2 && stats.getMessing()) {
                   stats.increaseBowels(stats.getBowelFillRate());
               }
-              calculateUrgeToGo(stats);
-              handleWarnings(player, stats);
+              stats.decreaseEffectDuration(1);
+              if (stats.getDiaperFullness() >= 100 || stats.getDiaperWetness() >= 100) {
+                stats.increaseTimeWorn(1);
+              }
+              if (stats.getTimeWorn() >= 600 && player.getHealth() > 1) {
+                  double newHealth = player.getHealth() - 0.5;
+                  player.setHealth(Math.max(newHealth, 0));
+              }
+              if (stats.getHydration() <= 10) {
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2 * 20, 2), true);
+              }
+              else if (stats.getHydration() >= 11) {
+                player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+              }
+              triggerWarnings(player, stats);
           }
         }
     }, 0L, 20L * 2);  // Run every 2 second (40 ticks)
@@ -233,75 +265,43 @@ public class Plugin extends JavaPlugin
     double bladderUrge = stats.getBladder() * stats.getBladderIncontinence();
     double bowelUrge = stats.getBowels() * stats.getBowelIncontinence();
     double urgeToGo = Math.max(bladderUrge, bowelUrge);
-    stats.setUrgeToGo((int)urgeToGo);
-    
+    if(stats.getUrgeToGo() < urgeToGo){stats.setUrgeToGo((int)urgeToGo);}
   }
   //Warning system, and accident triggers.
-  private static final int MAX_VALUE = 100;
   private int warningCounter = 0;
-  private void handleWarnings(Player player, PlayerStats stats) {
+  private void triggerWarnings(Player player, PlayerStats stats) {
       if (stats != null) {
-          Multiplier = (stats.getUrgeToGo() >= 10) ? 8 : 75 - ((75 - 8) * stats.getUrgeToGo()) / 10;
+        calculateUrgeToGo(stats);
+        Multiplier = Math.max(8, 75 - (67 * Math.min(stats.getUrgeToGo(), 100)) / 100);
         warningCounter++;
         if (warningCounter >= Multiplier) {
           warningCounter = 0;
           getLogger().info("Handling warnings for player: " + player.getName());
-          if (stats.getBladder() * stats.getBladderIncontinence() > stats.getBowels() * stats.getBowelIncontinence()) {
-            handleBladderWarning(player, stats);
-          }
-          else{handleBowelWarning(player, stats);}
+          boolean isBladder = stats.getBladderIncontinence() > stats.getBowels() * stats.getBowelIncontinence() ? true : false;
+          handleWarning(player, stats, isBladder);
         }
-        getLogger().info("Multiplier: " + Multiplier);
       }
   }
 
-  private void handleBladderWarning(Player player, PlayerStats stats) {
-    double bladder = stats.getBladder();
-    double incontinenceLevel = stats.getBladderIncontinence();
-    double randomChance = Math.random();
-
-    // Calculate accident probability based on incontinence and fullness
-    double accidentProbability = calculateAccidentProbability(incontinenceLevel, bladder);
+  private void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
+    double fullness = isBladder ? stats.getBladder() : stats.getBowels();
+    double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
+    double randomChance = (Math.random() * (10 - 1 + 1)) + 1;
+    double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
     if (randomChance < accidentProbability) {
         player.sendMessage("Oh no! You had an accident...");
-        stats.handleAccident(true, player, true);
-    } else if (bladder >= 0.6 * MAX_VALUE) {
+        stats.handleAccident(isBladder, player, true);
+    } else if ((fullness/10) >= (Math.random() * (8 - 1 + 1) + 1)) {
         player.sendMessage("You need to pee!");
-        sneakCheck(player, randomChance, stats, bladder, true);
+        sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
     }
 }
 
-private void handleBowelWarning(Player player, PlayerStats stats) {
-    double bowels = stats.getBowels();
-    double incontinenceLevel = stats.getBowelIncontinence();
-    double randomChance = Math.random();
-
-    double accidentProbability = calculateAccidentProbability(incontinenceLevel, bowels);
-
-    if (randomChance < accidentProbability) {
-        player.sendMessage("Oh no! You had an accident...");
-        stats.handleAccident(false, player, true);
-    } else if (bowels >= 0.6 * MAX_VALUE) {
-        player.sendMessage("You need to poop!");
-        sneakCheck(player, randomChance, stats, bowels, false);
-    }
-}
-
-private double calculateAccidentProbability(double incontinenceLevel, double fullness) {
-    // Base probability due to fullness, scaled by proximity to MAX_VALUE
-    double fullnessFactor = Math.max(0, fullness - 80) / 20.0;
-
-    // Base probability due to incontinence level
-    double incontinenceFactor = incontinenceLevel / 10.0;
-
-    // Combine these into an overall probability
-    return Math.min(1.0, incontinenceFactor + fullnessFactor);
-}
-
-private void sneakCheck(Player player, double randomChance, PlayerStats stats, double need, boolean isBladder) {
+private void sneakCheck(Player player, PlayerStats stats, double need, double incontinenceLevel, boolean isBladder) {
     Bukkit.getScheduler().runTaskLater(this, () -> {
-        boolean sneakFails = randomChance < calculateSneakFailureProbability(stats, need, isBladder);
+        double randomChance = (Math.random() * (10 - 1 + 1)) + 1;
+        boolean sneakFails = randomChance <= incontinenceLevel;
 
         if (!player.isSneaking() || sneakFails) {
             player.sendMessage("Oh no! You had an accident...");
@@ -311,56 +311,6 @@ private void sneakCheck(Player player, double randomChance, PlayerStats stats, d
         }
     }, 60L);
 }
-
-private double calculateSneakFailureProbability(PlayerStats stats, double need, boolean isBladder) {
-    double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-    return Math.min(1.0, need / (MAX_VALUE * 0.95) + incontinenceLevel / 20.0);
-}
-
-
-
-  // private void handleBladderWarning(Player player, PlayerStats stats) {
-  //   int bladder = stats.getBladder();
-  //   double warningThreshold = 0.6 * (1 - stats.getBladderIncontinence() / 100.0);
-  //   double accidentThreshold = 0.95 * (1 - stats.getBladderIncontinence() / 99.0);
-  //   double random = Math.random();
-
-  //   if (random < stats.getBladderIncontinence() / 100.0) {
-  //       // Random accident chance based on incontinence level
-  //       player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Oh no! You had an accident..."));
-  //       stats.handleAccident(true);
-  //   } else if (bladder >= warningThreshold * MAX_VALUE) {
-  //       player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("You need to pee!"));
-  //       sneakCheck(player, accidentThreshold, random, stats, bladder, true);
-  //   }
-  // }
-
-  // private void handleBowelWarning(Player player, PlayerStats stats) {
-  //   int bowels = stats.getBowels();
-  //   double warningThreshold = 0.6 * (1 - stats.getBowelIncontinence() / 100.0);
-  //   double accidentThreshold = 0.95 * (1 - stats.getBowelIncontinence() / 99.0);
-  //   double random = Math.random();
-
-  //   if (random < stats.getBowelIncontinence() / 100.0) {
-  //       // Random accident chance based on incontinence level
-  //       player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Oh no! You had an accident..."));
-  //       stats.handleAccident(true);
-  //   } else if (bowels >= warningThreshold * MAX_VALUE) {
-  //       player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("You need to poop!"));
-  //       sneakCheck(player, accidentThreshold, random, stats, bowels, false);
-  //   }
-  // }
-  // private void sneakCheck(Player player, double accidentThreshold, double random, PlayerStats stats, int need, Boolean isBladder) {
-  //   Bukkit.getScheduler().runTaskLater(this, () -> {
-  //       if (!player.isSneaking()) {
-  //           if (need >= accidentThreshold * MAX_VALUE || random < need / 150.0) {
-  //               player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("Oh no! You had an accident..."));
-  //               stats.handleAccident(isBladder); // bowel accident
-  //           }
-  //       }
-  //       else {stats.increaseUrgeToGo(1);}
-  //   },  60L); // Check after 3 seconds (60 ticks)
-  // }
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();
@@ -392,30 +342,34 @@ private double calculateSneakFailureProbability(PlayerStats stats, double need, 
     char bladderEmpty = '\uE045';
     char bowelsFull = '\uE048';
     char bowelsEmpty = '\uE049';
+
     Bukkit.getScheduler().runTaskTimer(this, () -> {
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerStats stats = getPlayerStats(player.getUniqueId());
             if (stats != null && stats.getOptin() && stats.getUI() == 1) {
                 ScoreBoard.updateSidebar(player, stats);
                 if(player.getRemainingAir() == player.getMaximumAir()){
-                  String hydrationBar = buildStatusBar(stats.getHydration(), hydrationFull, hydrationEmpty, true);
-                  String statusMessage = hydrationBar;
-                  player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("\uF82B\uF82A\uF825"+statusMessage));
+                  String hydrationBar = buildStatusBar((int)stats.getHydration(), hydrationFull, hydrationEmpty, true);
+                  player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("\uF82B\uF82A\uF825"+hydrationBar));
                 }
             }
             else if(stats != null && stats.getOptin() && stats.getUI() == 2){
               if(player.getRemainingAir() == player.getMaximumAir()){
-                String hydrationBar = buildStatusBar(stats.getHydration(), hydrationFull, hydrationEmpty, true);
+                String hydrationBar = buildStatusBar((int)stats.getHydration(), hydrationFull, hydrationEmpty, true);
                 String bladderBar = buildStatusBar((int)stats.getBladder(), bladderFull, bladderEmpty, false);
-                String bowelBar = buildStatusBar((int)stats.getBowels(), bowelsFull, bowelsEmpty, false);
-                String underwearImage = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), true);
-                String statusMessage = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + "\uF80B\uF809" + bowelBar + underwearImage;
-                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(statusMessage));
+                String underwearImage = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 0);
+                if (stats.getMessing()){
+                  String bowelBar = buildStatusBar((int)stats.getBowels(), bowelsFull, bowelsEmpty, false);
+                  String withBowels = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + "\uF80B\uF809" + bowelBar + underwearImage;
+                  player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(withBowels));
+                }
+                else{
+                  String basicBar = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + underwearImage;
+                  player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(basicBar));
+                }
               }
             }
-            else {
-              player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard()); // Clear the scoreboard if not opted in or not displaying
-          }
+            else {player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());}
         }
     }, 0L, 20L);  // Update every second (20 ticks)
   }

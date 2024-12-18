@@ -15,18 +15,21 @@ public class PlayerStats {
     private double diaperFullness = 0;
     private double bladderIncontinence = 1; // 1-10
     private double bowelIncontinence = 1; // 1-10
-    private double bladderFillRate = 0.0185; // Default fill rate
-    private double bowelFillRate = 2; // Default fill rate
-    private int hydration = 100; // Starts fully hydrated
+    private double bladderFillRate = 0.2; // Default fill rate
+    private double bowelFillRate = 0.07; // Default fill rate
+    private double hydration = 100; // Starts fully hydrated
     private int urgeToGo = 1;
     private int UnderwearType = 0;
     private int layers = 0;
     private boolean optin;
     private boolean messing;
     private int UI;
-    // private boolean hardcore;
-    private boolean scoreboard;
-    // private List<UUID> caregivers = new ArrayList<>();
+    private int EffectDuration = 0;
+    private boolean hardcore;
+    private boolean BladderLockIncon;
+    private boolean BowelLockIncon;
+    private int timeworn = 0;
+    private List<UUID> caregivers = new ArrayList<>();
 
     private static final int MAX_VALUE = 100;
 
@@ -35,12 +38,21 @@ public class PlayerStats {
     }
 
     // Getters and setters for all fields
-    // public List<UUID> getCaregivers() {return caregivers;}
-    // public void addCaregiver(UUID caregiverUUID) { if(!caregivers.contains(caregiverUUID)){caregivers.add(caregiverUUID);}}
-    // public void removeCaregiver(UUID caregiverUUID) { caregivers.remove(caregiverUUID);}
+    public List<UUID> getCaregivers() {return caregivers;}
+    public void addCaregiver(UUID caregiverUUID) { if(!caregivers.contains(caregiverUUID)){caregivers.add(caregiverUUID);}}
+    public void removeCaregiver(UUID caregiverUUID) { caregivers.remove(caregiverUUID);}
+    public boolean isCaregiver(UUID uuid) {
+        return caregivers.contains(uuid);
+    }
 
     public boolean getOptin() {return optin;}
     public void setOptin(boolean bool) {optin = bool;}
+
+    public boolean getBladderLockIncon() {return BladderLockIncon;}
+    public void setBladderLockIncon(boolean bool) {BladderLockIncon = bool;}
+
+    public boolean getBowelLockIncon() {return BowelLockIncon;}
+    public void setBowelLockIncon(boolean bool) {BowelLockIncon = bool;}
 
     public int getUI() {return UI;}
     public void setUI(int number) {UI = number;}
@@ -48,11 +60,8 @@ public class PlayerStats {
     public boolean getMessing() {return messing;}
     public void setMessing(boolean bool) {messing = bool;}
 
-    // public boolean getHardcore() {return hardcore;}
-    // public void setHardcore(boolean bool) {hardcore = bool;}
-    
-    public boolean getScoreBoard() {return scoreboard;}
-    public void setScoreBoard(boolean bool) {scoreboard = bool;}
+    public boolean getHardcore() {return hardcore;}
+    public void setHardcore(boolean bool) {hardcore = bool;}
 
     public double getBladder() { return bladder; }
     public void setBladder(double amount) { bladder = Math.max(0, amount); }
@@ -73,23 +82,32 @@ public class PlayerStats {
     public double getBladderIncontinence() { return bladderIncontinence; }
     public void increaseBladderIncontinence(double amount) { bladderIncontinence = Math.min(bladderIncontinence + amount, 10); }
     public void decreaseBladderIncontinence(double amount) { bladderIncontinence = Math.max(bladderIncontinence - amount, 1); }
-    public void setBladderIncontinence(double amount) { bladderIncontinence = Math.max(1, amount); }
+    public void setBladderIncontinence(double amount) { bladderIncontinence = Math.max(1, Math.min(10, amount)); }
 
     public double getBowelIncontinence() { return bowelIncontinence; }
     public void increaseBowelIncontinence(double amount) { bowelIncontinence = Math.min(bowelIncontinence + amount, 10); }
     public void decreaseBowelIncontinence(double amount) { bowelIncontinence = Math.max(bladderIncontinence - amount, 1); }
-    public void setBowelIncontinence(double amount) { bowelIncontinence = Math.max(1, amount); }
+    public void setBowelIncontinence(double amount) { bowelIncontinence = Math.max(1, Math.min(10, amount)); }
 
+    public int getEffectDuration() { return EffectDuration; }
+    public void increaseEffectDuration(int amount) { EffectDuration = Math.min(EffectDuration + amount, 1000); }
+    public void decreaseEffectDuration(int amount) { EffectDuration = Math.max(EffectDuration - amount, 0); }
+    public void setEffectDuration(int amount) { EffectDuration = Math.max(0, amount); }
+    
+    public int getTimeWorn() { return timeworn; }
+    public void increaseTimeWorn(int amount) { timeworn = Math.max(timeworn + amount, 0); }
+    public void setTimeWorn(int amount) { timeworn = Math.max(0, amount); }
+    
     public double getBladderFillRate() { return bladderFillRate; }
     public void setBladderFillRate(double rate) { bladderFillRate = Math.max(rate, 0.001); }
 
     public double getBowelFillRate() { return bowelFillRate; }
     public void setBowelFillRate(double rate) { bowelFillRate = Math.max(rate, 0.001); }
 
-    public int getHydration() { return hydration; }
-    public void setHydration(int amount) { hydration = Math.min(amount, MAX_VALUE); }
-    public void increaseHydration(int amount) { hydration = Math.min(hydration + amount, MAX_VALUE); }
-    public void decreaseHydration(int amount) { hydration = Math.max(hydration - amount, 0); }
+    public double getHydration() { return hydration; }
+    public void setHydration(double amount) { hydration = Math.min(amount, MAX_VALUE); }
+    public void increaseHydration(double amount) { hydration = Math.min(hydration + amount, MAX_VALUE); }
+    public void decreaseHydration(double amount) { hydration = Math.max(hydration - amount, 0); }
 
     public int getUrgeToGo() { return urgeToGo; }
     public void setUrgeToGo(int amount) { urgeToGo = Math.min(amount, 100);}
@@ -120,7 +138,7 @@ public class PlayerStats {
                 if (layers == 2) {diaperWetness = Math.min(diaperWetness + bladder/16, MAX_VALUE);}
             }
             bladder = 0;
-            increaseBladderIncontinence(0.5);
+            if (!getBladderLockIncon()) {increaseBladderIncontinence(0.5);}
             urgeToGo = 0;
             if (FromWarning) {
                 player.playSound(player.getLocation(), "minecraft:pee1", SoundCategory.PLAYERS, 1.0f, 1.0f);
@@ -139,11 +157,27 @@ public class PlayerStats {
                 if (layers == 2) {diaperFullness = Math.min(diaperFullness + bowels/16, MAX_VALUE);}
             }
             bowels = 0;
-            increaseBowelIncontinence(0.5);
+            if(!getBowelLockIncon()){increaseBowelIncontinence(0.5);}
             urgeToGo = 0;
             if (FromWarning) {
                 player.playSound(player.getLocation(), "minecraft:mess1", SoundCategory.PLAYERS, 1.0f, 1.0f);
             }
+        }
+    }
+    public void unlockIncon(String type) {
+        switch (type.toLowerCase()) {
+            case "bladder":
+                setBladderLockIncon(false);
+                break;
+            case "bowel":
+                setBowelLockIncon(false);
+                break;
+            case "both":
+                setBladderLockIncon(false);
+                setBowelLockIncon(false);
+                break;
+            default:
+                System.out.println("Invalid incontinence type specified.");
         }
     }
 }

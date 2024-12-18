@@ -25,13 +25,16 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.CraftingInventory;
@@ -43,9 +46,14 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.UUID;
+
 
 public class PlayerEventListener implements Listener {
     private Plugin plugin;
+    HashMap<UUID, HashSet<NamespacedKey>> playerCraftedSpecialItems = new HashMap<>();
 
     public PlayerEventListener(Plugin plugin) {
         this.plugin = plugin;
@@ -107,7 +115,7 @@ public class PlayerEventListener implements Listener {
             ItemStack item = player.getInventory().getItemInMainHand();
 
             // Check if the item is your custom item
-            if (isCustomItem(item)) {
+            if (isCustomItem(item) && !stats.getHardcore()) {
                 int customModelData = item.getItemMeta().getCustomModelData();
 
                 //Give the player their used diaper.
@@ -121,6 +129,7 @@ public class PlayerEventListener implements Listener {
                 //Reset the underwear status, and assign a type (Underwear, Pullup, Diaper, Think Diaper)
                 stats.setDiaperFullness(0);
                 stats.setDiaperWetness(0);
+                stats.setTimeWorn(0);
                 if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
                 if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
                 if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
@@ -262,78 +271,253 @@ public class PlayerEventListener implements Listener {
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
-        ItemStack result = inventory.getResult();
+        ItemStack[] matrix = inventory.getMatrix();
 
         boolean blockCrafting = false;
         boolean hasLaxative = false;
         ItemStack foodItem = null;
+        Material foodItemType = null;
 
-        for (ItemStack item : inventory.getMatrix()) {
+        for (ItemStack item : matrix) {
             if (item == null) continue;
 
             if (isCustomItem(item)) {
                 blockCrafting = true; // Only block crafting if it's not intended
             }
 
-            if (item.hasItemMeta() && item.getItemMeta().getCustomModelData() == 626012) {
+            if (isLaxative(item)) {
                 hasLaxative = true;
             } else if (item.getType().isEdible()) {
-                foodItem = item;
+                if (foodItemType == null) {
+                    foodItemType = item.getType();
+                    foodItem = item;
+                } else if (foodItemType != item.getType()){
+                    inventory.setResult(null);
+                    return;
+                }
             }
         }
         if (blockCrafting) {
             inventory.setResult(null); // Cancel crafting if custom items are involved inappropriately
         }else if (hasLaxative && foodItem != null) {
             // Logic for creating laxative-imbued food items
-            ItemStack dupeItem = foodItem.clone();
-            ItemMeta meta = dupeItem.getItemMeta();
+            ItemStack result = foodItem.clone();
+            ItemMeta meta = result.getItemMeta();
             if (meta != null) {
                 meta.getPersistentDataContainer().set(
                     new NamespacedKey(plugin, "laxative_effect"),
                     PersistentDataType.BYTE,
                     (byte) 1
                 );
-                dupeItem.setItemMeta(meta);
+                result.setItemMeta(meta);
             }
-            inventory.setResult(dupeItem);
+            result.setAmount(1);
+            inventory.setResult(result);
         }
         else {
-            inventory.setResult(result); // Make sure other recipes can work
+            // inventory.setResult(result); // Make sure other recipes can work
         }
     }
+
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (event.isShiftClick()) {
-            // Add same logic check to avoid duplications
-            ItemStack currentItem = event.getCurrentItem();
-            if (currentItem != null && currentItem.hasItemMeta()) {
-                ItemMeta meta = currentItem.getItemMeta();
-                if (meta != null && meta.getPersistentDataContainer().has(
-                    new NamespacedKey(plugin, "laxative_effect"),
-                    PersistentDataType.BYTE
-                )) {
-                    // log or debug; manage how items are handled further.
+    public void onCraft(CraftItemEvent event) {
+        // Ensure the crafted item has the laxative effect
+        ItemStack result = event.getRecipe().getResult();
+        if (result.hasItemMeta() && result.getItemMeta().getPersistentDataContainer().has(
+                new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
+            
+            // Ensure this is a player crafting
+            if (!(event.getWhoClicked() instanceof Player)) return;
+            Player player = (Player) event.getWhoClicked();
+            CraftingInventory inventory = event.getInventory();
+            ItemStack[] matrix = inventory.getMatrix();
+
+            // Use flags to prevent reprocessing the same crafting event
+            boolean foodReduced = false;
+            boolean laxativeReduced = false;
+
+            // Reduce items in the crafting matrix
+            for (int i = 0; i < matrix.length; i++) {
+                ItemStack item = matrix[i];
+                if (item == null) continue;
+
+                if (isLaxative(item) && !laxativeReduced) {
+                    item.setAmount(item.getAmount() - 1);
+                    if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
+                    laxativeReduced = true;
+                } else if (item.getType().isEdible() && !foodReduced) {
+                    item.setAmount(item.getAmount() - 1);
+                    if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
+                    foodReduced = true;
                 }
+
+                // Stop when both reductions are complete
+                if (laxativeReduced && foodReduced) break;
             }
-        }
-        if (!(event.getWhoClicked() instanceof Player)) return;
 
-        // Player player = (Player) event.getWhoClicked();
-        ItemStack item = event.getCurrentItem();
+            // Use a delayed task to update the inventory safely
+            Bukkit.getScheduler().runTask(plugin, () -> inventory.setMatrix(matrix));
 
-        if (item != null && item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null && meta.getPersistentDataContainer().has(
-                new NamespacedKey(plugin, "laxative_effect"),
-                PersistentDataType.BYTE
-            )) {
-                // Add custom lore visible only to this player
-                meta.setLore(Collections.singletonList(ChatColor.RED + "Contains a laxative effect"));
-                item.setItemMeta(meta);
+            // Prevent shift-click issues
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                player.getInventory().addItem(result);
             }
         }
     }
+
+    // @EventHandler
+    // public void onCraft(CraftItemEvent event) {
+    //     // Ensure the crafted item has the laxative effect
+    //     ItemStack result = event.getRecipe().getResult();
+    //     if (result.hasItemMeta() && result.getItemMeta().getPersistentDataContainer().has(
+    //             new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
+    
+    //         // Ensure this is a player crafting
+    //         if (!(event.getWhoClicked() instanceof Player)) return;
+    //         Player player = (Player) event.getWhoClicked();
+    
+    //         CraftingInventory inventory = event.getInventory();
+    //         ItemStack[] matrix = inventory.getMatrix();
+    
+    //         // Use a flag to ensure we only process once
+    //         boolean foodReduced = false;
+    //         boolean laxativeReduced = false;
+    
+    //         // Loop through the crafting matrix and reduce items
+    //         for (int i = 0; i < matrix.length; i++) {
+    //             ItemStack item = matrix[i];
+    //             if (item == null) continue;
+    
+    //             if (isLaxative(item) && !laxativeReduced) {
+    //                 item.setAmount(item.getAmount() - 1);
+    //                 if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
+    //                 laxativeReduced = true;
+    //             } else if (item.getType().isEdible() && !foodReduced) {
+    //                 item.setAmount(item.getAmount() - 1);
+    //                 if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
+    //                 foodReduced = true;
+    //             }
+    
+    //             // Stop when both reductions are complete
+    //             if (laxativeReduced && foodReduced) break;
+    //         }
+    
+    //         // Update the inventory matrix
+    //         inventory.setMatrix(matrix);
+    
+    //         // Prevent shift-click from causing issues
+    //         if (event.isShiftClick()) {
+    //             event.setCancelled(true);
+    //             player.getInventory().addItem(result);
+    //         }
+    //     }
+    // }
+
+
+
+    // @EventHandler
+    // public void onCraft(CraftItemEvent event) {
+    //     // Handle ingredient reduction after crafting
+    //     CraftingInventory inventory = event.getInventory();
+    //     ItemStack result = event.getRecipe().getResult();
+
+    //     if (result.getItemMeta() != null &&
+    //         result.getItemMeta().getPersistentDataContainer().has(
+    //             new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
+
+    //         ItemStack[] matrix = inventory.getMatrix();
+    //         // Remove laxative and food item from the crafting matrix
+    //         for (int i = 0; i < matrix.length; i++) {
+    //             ItemStack item = matrix[i];
+    //             if (item == null) continue;
+    //             if(isLaxative(item))
+    //             {
+    //                 item.setAmount(item.getAmount() - 1);
+    //                 if (item.getAmount() <= 0) {
+    //                     matrix[i] = null;
+    //                 }
+    //             } else if(item.getType().isEdible()){
+    //                 item.setAmount(item.getAmount() - 1);
+    //                 if(item.getAmount() <= 0){
+    //                     matrix[i] = null;
+    //                 }
+    //             }
+    //         }
+    //         inventory.setMatrix(matrix);
+    //     }
+    // }
+
+    private boolean isLaxative(ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return false;
+        ItemMeta meta = item.getItemMeta();
+        return meta.hasCustomModelData() && meta.getCustomModelData() == 626012;
+    }
+
+    // @EventHandler
+    // public void onItemPickup(EntityPickupItemEvent  event) {
+    //     if (!(event.getEntity() instanceof Player)) {
+    //         return; // Ensure that the entity is a player
+    //     }
+    
+    //     Player player = (Player) event.getEntity();
+    //     ItemStack item = event.getItem().getItemStack();
+    //     ItemMeta meta = item.getItemMeta();
+    
+    //     if (meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
+    //         UUID playerUUID = player.getUniqueId();
+    //         playerCraftedSpecialItems.computeIfAbsent(playerUUID, k -> new HashSet<>()).add(new NamespacedKey(plugin, Integer.toString(item.getItemMeta().getCustomModelData())));
+    //     }
+    // }
+
+    // @EventHandler
+    // public void onInventoryClick(InventoryClickEvent event) {
+    //     if (event.isShiftClick()) {
+    //         // Add same logic check to avoid duplications
+    //         ItemStack currentItem = event.getCurrentItem();
+    //         if (currentItem != null && currentItem.hasItemMeta()) {
+    //             ItemMeta meta = currentItem.getItemMeta();
+    //             if (meta != null && meta.getPersistentDataContainer().has(
+    //                 new NamespacedKey(plugin, "laxative_effect"),
+    //                 PersistentDataType.BYTE
+    //             )) {
+    //                 // log or debug; manage how items are handled further.
+    //             }
+    //         }
+    //     }
+    //     if (!(event.getWhoClicked() instanceof Player)) return;
+
+    //     Player player = (Player) event.getWhoClicked();
+    //     ItemStack item = event.getCurrentItem();
+
+    //     if (item != null && item.hasItemMeta()) {
+    //         ItemMeta meta = item.getItemMeta();
+    //         if (meta != null && meta.getPersistentDataContainer().has(
+    //             new NamespacedKey(plugin, "laxative_effect"),
+    //             PersistentDataType.BYTE
+    //         )) {
+    //             // Add custom lore visible only to this player
+    //             updateLoreForPlayer(item, player);
+    //         }
+    //     }
+    // }
+
+    // private void updateLoreForPlayer(ItemStack item, Player player) {
+    //     if (item == null || !item.hasItemMeta()) return;
+    
+    //     ItemMeta meta = item.getItemMeta();
+    //     NamespacedKey laxativeKey = new NamespacedKey(plugin, "laxative_effect");
+    //     if (meta.getPersistentDataContainer().has(laxativeKey, PersistentDataType.BYTE)) {
+    //         HashSet<NamespacedKey> craftedItems = playerCraftedSpecialItems.get(player.getUniqueId());
+    //         if (craftedItems != null && craftedItems.contains(item.getItemMeta().getCustomModelData())) {
+    //             meta.setLore(Collections.singletonList(ChatColor.RED + "Contains a laxative effect"));
+    //         } else {
+    //             meta.setLore(null);
+    //         }
+    //         item.setItemMeta(meta);
+    //     }
+    // }
 
     @EventHandler
     public void onPlayerConsume(PlayerItemConsumeEvent event) {
@@ -347,31 +531,35 @@ public class PlayerEventListener implements Listener {
                 PersistentDataType.BYTE
             )) {
                 // Apply laxative effect
-                player.sendMessage(ChatColor.RED + "You feel the effects of the laxative...");
-                // Example: Reduce bowel stats
                 PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-                // stats.setBowels(Math.max(0, stats.getBowels() - 20)); // Reduce bowels by 20%
-            }
-        }
-    }
-
-    @EventHandler
-    public void onPotionEffect(EntityPotionEffectEvent event) {
-        if (event.getEntity() instanceof Player) {
-            Player player = (Player) event.getEntity();
-            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-
-            if (stats != null && event.getNewEffect() != null) {
-                PotionEffectType effectType = event.getNewEffect().getType();
-                
-                if (effectType.equals(PotionEffectType.SPEED)) {
-                    int amplifier = event.getNewEffect().getAmplifier();
-                    stats.setBladderFillRate(1 + (int) (0.2 * (amplifier + 1))); // Increase Bladder and bowel fill rate because of speed potion
-                    stats.setBowelFillRate(1 + (int) (0.2 * (amplifier + 1)));
+                if(stats.getMessing()){
+                    if (stats.getEffectDuration() == 0) {
+                        stats.setBowelFillRate(stats.getBowelFillRate() * 2);
+                    }
+                    stats.increaseEffectDuration(30);
+                    player.sendMessage(ChatColor.RED + "You feel the effects of the laxative...");
                 }
             }
         }
     }
+
+    // @EventHandler
+    // public void onPotionEffect(EntityPotionEffectEvent event) {
+    //     if (event.getEntity() instanceof Player) {
+    //         Player player = (Player) event.getEntity();
+    //         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+
+    //         if (stats != null && event.getNewEffect() != null) {
+    //             PotionEffectType effectType = event.getNewEffect().getType();
+                
+    //             if (effectType.equals(PotionEffectType.SPEED)) {
+    //                 int amplifier = event.getNewEffect().getAmplifier();
+    //                 stats.setBladderFillRate(1 + (int) (0.2 * (amplifier + 1))); // Increase Bladder and bowel fill rate because of speed potion
+    //                 stats.setBowelFillRate(1 + (int) (0.2 * (amplifier + 1)));
+    //             }
+    //         }
+    //     }
+    // }
     //Places custom item toilet
     @EventHandler
     public void onPlaceToilet(BlockPlaceEvent event) {
@@ -392,7 +580,25 @@ public class PlayerEventListener implements Listener {
             // Set the trapdoor to a specific orientation (optional)
             TrapDoor trapdoor = (TrapDoor) trapdoorBlock.getBlockData();
             trapdoor.setHalf(Bisected.Half.BOTTOM); // Make the trapdoor flush with the cauldron
-            trapdoor.setFacing(BlockFace.NORTH); // Set the trapdoor's facing direction
+            BlockFace playerDirection = event.getPlayer().getFacing();
+            switch (playerDirection) {
+                case NORTH:
+                    trapdoor.setFacing(BlockFace.SOUTH);
+                    break;
+                case EAST:
+                    trapdoor.setFacing(BlockFace.WEST);
+                    break;
+                case SOUTH:
+                    trapdoor.setFacing(BlockFace.NORTH);
+                    break;
+                case WEST:
+                    trapdoor.setFacing(BlockFace.EAST);
+                    break;
+                default:
+                    // Handle other cases if needed
+                    break;
+            }
+            // trapdoor.setFacing(BlockFace.NORTH); // Set the trapdoor's facing direction
             trapdoor.setOpen(true);
             trapdoorBlock.setBlockData(trapdoor);
         }
@@ -452,6 +658,7 @@ public class PlayerEventListener implements Listener {
         stats.decreaseBladderIncontinence(0.2);
         stats.setBowels(0);
         stats.decreaseBowelIncontinence(0.2);
+        stats.setUrgeToGo(0);
 
         BukkitTask[] taskId = new BukkitTask[1];
 
@@ -461,7 +668,7 @@ public class PlayerEventListener implements Listener {
                 // If the player is no longer a passenger of the armor stand
                 if (!armorStand.getPassengers().contains(player)) {
                     // Play the sound
-                    player.playSound(player.getLocation(), "minecraft:toilet", SoundCategory.PLAYERS, 1.0f, 1.0f);
+                    cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 1.0f, 1.0f);
     
                     // Remove the armor stand
                     armorStand.remove();
