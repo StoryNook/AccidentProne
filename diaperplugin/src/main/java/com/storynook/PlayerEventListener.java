@@ -69,6 +69,7 @@ public class PlayerEventListener implements Listener {
         NamespacedKey underwearkey = new NamespacedKey(plugin, "Underwear");
         NamespacedKey tapekey = new NamespacedKey(plugin, "Tape");
         NamespacedKey diaperpailkey = new NamespacedKey(plugin, "DiaperPail");
+        NamespacedKey toiletkey = new NamespacedKey(plugin, "Toilet");
         NamespacedKey laxkey = new NamespacedKey(plugin, "Laxative");
         NamespacedKey durkey = new NamespacedKey(plugin, "Diuretic");
         event.getPlayer().discoverRecipe(diaperkey);
@@ -77,6 +78,7 @@ public class PlayerEventListener implements Listener {
         event.getPlayer().discoverRecipe(underwearkey);
         event.getPlayer().discoverRecipe(tapekey);
         event.getPlayer().discoverRecipe(diaperpailkey);
+        event.getPlayer().discoverRecipe(toiletkey);
         event.getPlayer().discoverRecipe(laxkey);
         event.getPlayer().discoverRecipe(durkey);
     }
@@ -253,6 +255,17 @@ public class PlayerEventListener implements Listener {
         return false;
     }
 
+    // private boolean isCustomItemResult(ItemStack item) {
+    //     if (item == null || item.getType() != Material.SLIME_BALL) return false;
+    
+    //     ItemMeta meta = item.getItemMeta();
+    //     if (meta == null || !meta.hasCustomModelData()) return false;
+    
+    //     // List of valid CustomModelData values for your custom items
+    //     int modelData = meta.getCustomModelData();
+    //     return modelData == 626009 || modelData == 626001 || modelData == 626003; // Add other custom items here
+    // }
+
     // private boolean isUsed (ItemStack item) {
     //     if (item == null || !item.hasItemMeta()) {
     //     return false;
@@ -272,11 +285,18 @@ public class PlayerEventListener implements Listener {
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
         ItemStack[] matrix = inventory.getMatrix();
+        ItemStack result = inventory.getResult();
 
         boolean blockCrafting = false;
         boolean hasLaxative = false;
         ItemStack foodItem = null;
         Material foodItemType = null;
+
+        // if (isCustomItemResult(result)) {
+        //     if (!validateCustomIngredients(inventory.getMatrix())) {
+        //         inventory.setResult(null); // Cancel crafting if ingredients are invalid
+        //     }
+        // }
 
         for (ItemStack item : matrix) {
             if (item == null) continue;
@@ -301,24 +321,43 @@ public class PlayerEventListener implements Listener {
             inventory.setResult(null); // Cancel crafting if custom items are involved inappropriately
         }else if (hasLaxative && foodItem != null) {
             // Logic for creating laxative-imbued food items
-            ItemStack result = foodItem.clone();
-            ItemMeta meta = result.getItemMeta();
+            ItemStack lacedResult = foodItem.clone();
+            ItemMeta meta = lacedResult.getItemMeta();
             if (meta != null) {
                 meta.getPersistentDataContainer().set(
                     new NamespacedKey(plugin, "laxative_effect"),
                     PersistentDataType.BYTE,
                     (byte) 1
                 );
-                result.setItemMeta(meta);
+                lacedResult.setItemMeta(meta);
             }
-            result.setAmount(1);
-            inventory.setResult(result);
+            lacedResult.setAmount(1);
+            inventory.setResult(lacedResult);
         }
         else {
             // inventory.setResult(result); // Make sure other recipes can work
         }
     }
-
+    private boolean validateCustomIngredients(ItemStack[] matrix) {
+        for (ItemStack item : matrix) {
+            if (item == null) continue;
+    
+            if (item.getType() == Material.SLIME_BALL) {
+                ItemMeta meta = item.getItemMeta();
+                if (meta == null || !meta.hasCustomModelData()) {
+                    // If SLIME_BALL doesn't have CustomModelData, allow it as a base item
+                    continue;
+                }
+    
+                // Check CustomModelData for valid custom ingredients
+                int modelData = meta.getCustomModelData();
+                if (modelData != 626007 && modelData != 626008) {
+                    return false; // Found invalid ingredient
+                }
+            }
+        }
+        return true;
+    }
 
     @EventHandler
     public void onCraft(CraftItemEvent event) {
@@ -350,6 +389,14 @@ public class PlayerEventListener implements Listener {
                     item.setAmount(item.getAmount() - 1);
                     if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
                     foodReduced = true;
+                } else if (item.getType() == Material.SLIME_BALL) {
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta == null || !meta.hasCustomModelData() || (
+                        meta.getCustomModelData() != 626007 && // Diaper Stuffer
+                        meta.getCustomModelData() != 626008)) // Tape
+                    {
+                        matrix[i] = null; // Clear invalid items
+                    }
                 }
 
                 // Stop when both reductions are complete

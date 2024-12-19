@@ -11,6 +11,8 @@ import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class ItemManager {
     private final JavaPlugin plugin;
     public static ItemStack diaperpail;
@@ -111,15 +113,16 @@ public class ItemManager {
     }
     public void createDiaperStufferRecipe() {
         // Define the custom item
-        ItemStack item = new ItemStack(Material.SLIME_BALL);
+        ItemStack item = new ItemStack(Material.BARRIER);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("Diaper Stuffer");
+        meta.setDisplayName(ChatColor.WHITE + "Diaper Stuffer");
         meta.setCustomModelData(626007);// Custom Model Data for texture
         item.setItemMeta(meta);
         DiaperStuffer = item;
 
-        // Create the recipe
-        FurnaceRecipe recipe = new FurnaceRecipe(new NamespacedKey(plugin, "DiaperStuffer"), DiaperStuffer, Material.WHITE_WOOL, 0.5f, 200);
+         // Create the recipe
+        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "DiaperStuffer"), DiaperStuffer);
+        recipe.addIngredient(Material.WHITE_WOOL);
 
         // Register the recipe
         Bukkit.addRecipe(recipe);
@@ -157,7 +160,7 @@ public class ItemManager {
         recipe.setIngredient('S', new RecipeChoice.ExactChoice(ItemManager.DiaperStuffer));
         // recipe.setIngredient('S', new RecipeChoice.MaterialChoice(DiaperStuffer.getType()));
         recipe.setIngredient('P', Material.PAPER);
-        recipe.setIngredient('T', new RecipeChoice.MaterialChoice(ItemManager.Tape.getType()));
+        recipe.setIngredient('T', new RecipeChoice.ExactChoice(ItemManager.Tape));
 
         // Register the recipe
         Bukkit.addRecipe(recipe);
@@ -174,9 +177,9 @@ public class ItemManager {
         // Create the recipe
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "ThickDiaper"), thickdiaper);
         recipe.shape("TST", "SSS", "PSP"); 
-        recipe.setIngredient('S', new RecipeChoice.MaterialChoice(DiaperStuffer.getType()));
+        recipe.setIngredient('S', new RecipeChoice.ExactChoice(ItemManager.DiaperStuffer));
         recipe.setIngredient('P', Material.PAPER);
-        recipe.setIngredient('T', new RecipeChoice.MaterialChoice(Tape.getType()));
+        recipe.setIngredient('T', new RecipeChoice.ExactChoice(ItemManager.Tape));
 
         // Register the recipe
         Bukkit.addRecipe(recipe);
@@ -193,7 +196,7 @@ public class ItemManager {
         // Define the custom item
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "Pullup"), pullup);
         recipe.shape("W W", " S ", "PSP"); 
-        recipe.setIngredient('S', new RecipeChoice.MaterialChoice(DiaperStuffer.getType()));
+        recipe.setIngredient('S', new RecipeChoice.ExactChoice(ItemManager.DiaperStuffer));
         recipe.setIngredient('W', Material.WHITE_WOOL);
         recipe.setIngredient('P', Material.PAPER);
 
