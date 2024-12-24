@@ -65,8 +65,8 @@ public class Plugin extends JavaPlugin
     itemManager.createPullupRecipe();
     itemManager.createThickDiaperRecipe();
     itemManager.createUnderwearRecipe();
-    itemManager.createDiaperPailRecipe();
-    itemManager.createLaxRecipe();
+    // itemManager.createDiaperPailRecipe();
+    // itemManager.createLaxRecipe();
   
    
     getServer().getPluginManager().registerEvents(playerEventListener, this);
@@ -130,7 +130,7 @@ public class Plugin extends JavaPlugin
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
         }
-      }
+      } 
       playerStatsMap.put(playerUUID, stats);
       if (stats.getOptin() && stats.getUI() > 0) {
         ScoreBoard.createSidebar(player);
@@ -233,7 +233,7 @@ public class Plugin extends JavaPlugin
             PlayerStats stats = getPlayerStats(player.getUniqueId());
 
             if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) {
-              stats.decreaseHydration(0.25);
+              stats.decreaseHydration(0.1);
               if (stats.getEffectDuration() == 0) {
                 stats.setBladderFillRate(0.2);
                 stats.setBowelFillRate(0.07);
@@ -276,7 +276,7 @@ public class Plugin extends JavaPlugin
         warningCounter++;
         if (warningCounter >= Multiplier) {
           warningCounter = 0;
-          getLogger().info("Handling warnings for player: " + player.getName());
+          // getLogger().info("Handling warnings for player: " + player.getName());
           boolean isBladder = stats.getBladderIncontinence() > stats.getBowels() * stats.getBowelIncontinence() ? true : false;
           handleWarning(player, stats, isBladder);
         }
@@ -293,7 +293,7 @@ public class Plugin extends JavaPlugin
         player.sendMessage("Oh no! You had an accident...");
         stats.handleAccident(isBladder, player, true);
     } else if ((fullness/10) >= (Math.random() * (8 - 1 + 1) + 1)) {
-        player.sendMessage("You need to pee!");
+        player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
         sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
     }
 }
@@ -309,7 +309,7 @@ private void sneakCheck(Player player, PlayerStats stats, double need, double in
         } else {
             stats.increaseUrgeToGo(1);
         }
-    }, 60L);
+    }, 20L * 5);
 }
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){

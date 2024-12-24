@@ -1,17 +1,12 @@
 package com.storynook;
-import com.storynook.items.ItemManager;
-
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 
 public class CommandHandler implements CommandExecutor{
@@ -28,6 +23,10 @@ public class CommandHandler implements CommandExecutor{
         return true;
         }
         if (command.getName().equalsIgnoreCase("stats") && sender instanceof Player) {
+            if (!sender.hasPermission("diaperplugin.setunderwearlevels") || !sender.isOp()) {
+                sender.sendMessage("You do not have permission to use this command.");
+                return true;
+            }
             PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
             if (stats != null) {
                 sender.sendMessage("Your current statistics are:");
@@ -69,22 +68,33 @@ public class CommandHandler implements CommandExecutor{
                 
                 PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
                 if (targetStats != null) {
-                    image = ScoreBoard.getUnderwearStatus((int)targetStats.getDiaperWetness(), (int)targetStats.getDiaperFullness(), (int)targetStats.getUnderwearType(), 2);
-                    if ((int)targetStats.getDiaperWetness() > 1 && (int)targetStats.getDiaperFullness() > 1) {
-                        state = "Wet And Messy";
-                    } else if ((int)targetStats.getDiaperWetness() > 1) {
-                        state = "Wet";
-                    } else if ((int)targetStats.getDiaperFullness() > 1) {
-                        state = "Messy";
-                    } else if ((int)targetStats.getDiaperFullness() == 0 && (int)targetStats.getDiaperWetness() == 0) {
-                        state = "Clean";
-                    }
+
+                    Location playerLoc = player.getLocation();
+                    Location targetLoc = target.getLocation();
                     
-                    player.sendTitle(image, state, 10, 20, 10);
-                } else {
+                    double distance = playerLoc.distance(targetLoc);
+                    if(distance <=10){
+                        image = ScoreBoard.getUnderwearStatus((int)targetStats.getDiaperWetness(), (int)targetStats.getDiaperFullness(), (int)targetStats.getUnderwearType(), 2);
+                        if ((int)targetStats.getDiaperWetness() > 1 && (int)targetStats.getDiaperFullness() > 1) {
+                            // state = "Wet And Messy";
+                        } else if ((int)targetStats.getDiaperWetness() > 1) {
+                            // state = "Wet";
+                        } else if ((int)targetStats.getDiaperFullness() > 1) {
+                            // state = "Messy";
+                        } else if ((int)targetStats.getDiaperFullness() == 0 && (int)targetStats.getDiaperWetness() == 0) {
+                            // state = "Clean";
+                        }
+                        
+                        player.sendTitle(image, state, 10, 20, 10);
+                    } else {
+                        player.sendMessage("The target player is not within the specified distance.");
+                    } 
+                } 
+                else {
                     player.sendMessage("Cannot fetch target player's statistics.");
                 }
-            } else {
+            }
+            else {
                 player.sendMessage("Your current statistics are not available.");
             }
             return true;
@@ -110,7 +120,7 @@ public class CommandHandler implements CommandExecutor{
 
         if (command.getName().equalsIgnoreCase("setunderwearlevels") && sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.isOp()) {
+            if (!player.hasPermission("diaperplugin.setunderwearlevels") || !player.isOp()) {
                 player.sendMessage("You do not have permission to use this command.");
                 return true;
             }
@@ -233,11 +243,6 @@ public class CommandHandler implements CommandExecutor{
                 return true;
             }
 
-            if (!stats.isCaregiver(player.getUniqueId())) {
-                player.sendMessage("You do not have permission to use this command on the target player.");
-                return true;
-            }
-
             if (args.length == 0) {
                 player.sendMessage("Usage: /lockincon <bladder|bowel|both> <number> [playername]");
                 return true;
@@ -262,15 +267,30 @@ public class CommandHandler implements CommandExecutor{
             } else {
                 target = player; // Default to the sender if no target is specified
             }
-
             PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
+            if (!targetStats.isCaregiver(player.getUniqueId())) {
+                player.sendMessage("You do not have permission to use this command on the target player.");
+                return true;
+            }
+
             if (targetStats == null) {
                 player.sendMessage("Target player stats not available.");
                 return true;
             }
 
-            // Check for hardcore mode and ensure the sender is not trying to lock incontinence settings on themselves
-            if (stats.getHardcore()) {
+            if (player != null && sender instanceof Player) {
+                Player senderPlayer = (Player) sender;
+                Location senderLocation = senderPlayer.getLocation();
+                Location targetLocation = player.getLocation();
+        
+                // Check the distance between the sender and the target player
+                double distance = senderLocation.distance(targetLocation);
+                if (distance > 10) {
+                    sender.sendMessage("The target player is not within your range of 10 blocks.");
+                    return true;
+                }
+            }
+            if (stats.getHardcore() && target == sender) {
                 player.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
                 return true;
             }
@@ -303,7 +323,8 @@ public class CommandHandler implements CommandExecutor{
             Player player = null;
             if (sender instanceof Player) {
                 player = (Player) sender;
-            } else if (args.length > 0) {
+            } 
+            if (args.length > 0) {
                 // Attempt to get the target player by name if a player is not specified as the sender and sender has permission
                 Player target = plugin.getServer().getPlayer(args[0]);
                 if (target == null) {
@@ -325,12 +346,6 @@ public class CommandHandler implements CommandExecutor{
                 return true;
             }
 
-            // Check for hardcore mode and ensure the sender is a caregiver of the target player or has admin permission
-            if (stats.getHardcore() && player == sender) {
-                sender.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
-                return true;
-            }
-
             // Perform the unlock operation only if lockIncon is currently set to true
             if (args.length == 1) {
                 stats.unlockIncon(args[0]);
@@ -343,6 +358,24 @@ public class CommandHandler implements CommandExecutor{
             String type = args.length > 0 ? args[0].toLowerCase() : "both";
             stats.unlockIncon(type);
             sender.sendMessage("Incontinence settings have been unlocked for the specified type.");
+
+            if (player != null && sender instanceof Player) {
+                Player senderPlayer = (Player) sender;
+                Location senderLocation = senderPlayer.getLocation();
+                Location targetLocation = player.getLocation();
+
+                // Check the distance between the sender and the target player
+                double distance = senderLocation.distance(targetLocation);
+                if (distance > 10) {
+                    sender.sendMessage("The target player is not within your range of 10 blocks.");
+                    return true;
+                }
+            }
+            // Check for hardcore mode and ensure the sender is a caregiver of the target player or has admin permission
+            if (stats.getHardcore() && player == sender) {
+                sender.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
+                return true;
+            }
 
             return true;
         }

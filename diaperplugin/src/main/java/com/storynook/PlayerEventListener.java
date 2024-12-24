@@ -1,6 +1,5 @@
 package com.storynook;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -25,27 +24,21 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
@@ -68,19 +61,21 @@ public class PlayerEventListener implements Listener {
         NamespacedKey pullupkey = new NamespacedKey(plugin, "Pullup");
         NamespacedKey underwearkey = new NamespacedKey(plugin, "Underwear");
         NamespacedKey tapekey = new NamespacedKey(plugin, "Tape");
-        NamespacedKey diaperpailkey = new NamespacedKey(plugin, "DiaperPail");
+        // NamespacedKey diaperpailkey = new NamespacedKey(plugin, "DiaperPail");
         NamespacedKey toiletkey = new NamespacedKey(plugin, "Toilet");
-        NamespacedKey laxkey = new NamespacedKey(plugin, "Laxative");
-        NamespacedKey durkey = new NamespacedKey(plugin, "Diuretic");
+        NamespacedKey Stufferkey = new NamespacedKey(plugin, "DiaperStuffer");
+        // NamespacedKey laxkey = new NamespacedKey(plugin, "Laxative");
+        // NamespacedKey durkey = new NamespacedKey(plugin, "Diuretic");
         event.getPlayer().discoverRecipe(diaperkey);
         event.getPlayer().discoverRecipe(thickdiaperkey);
         event.getPlayer().discoverRecipe(pullupkey);
         event.getPlayer().discoverRecipe(underwearkey);
         event.getPlayer().discoverRecipe(tapekey);
-        event.getPlayer().discoverRecipe(diaperpailkey);
+        // event.getPlayer().discoverRecipe(diaperpailkey);
         event.getPlayer().discoverRecipe(toiletkey);
-        event.getPlayer().discoverRecipe(laxkey);
-        event.getPlayer().discoverRecipe(durkey);
+        event.getPlayer().discoverRecipe(Stufferkey);
+        // event.getPlayer().discoverRecipe(laxkey);
+        // event.getPlayer().discoverRecipe(durkey);
     }
 
     //Updates stats and world events when the player leaves
@@ -100,54 +95,103 @@ public class PlayerEventListener implements Listener {
         PlayerStats stats = plugin.getPlayerStats(event.getPlayer().getUniqueId());
         if (stats != null) {
             // Increase hydration when the player drinks
-            stats.increaseHydration(20);  // Adjust this amount as needed
+            stats.increaseHydration(40);  // Adjust this amount as needed
         }
     }
-    //Allows the player to change themselves
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        // Get the action (e.g., right-click, left-click)
-        Action action = event.getAction();
-        PlayerStats stats = plugin.getPlayerStats(event.getPlayer().getUniqueId());
+        handleInteraction(event.getPlayer(), event.getAction(), event.getPlayer(), false);
+    }
 
-        // Check if the action is a right-click (block or air)
-        if (action == Action.RIGHT_CLICK_AIR) {
-            // Get the item in the player's hand
-            Player player = event.getPlayer();
-            ItemStack item = player.getInventory().getItemInMainHand();
+    @EventHandler
+    public void onPlayerInteractWithEntity(PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() instanceof Player) {
+            Player actor = event.getPlayer();
+            Player target = (Player) event.getRightClicked();
+            // PlayerStats actorStats = plugin.getPlayerStats(actor.getUniqueId());
+            if (target instanceof Player){
+                PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
 
-            // Check if the item is your custom item
-            if (isCustomItem(item) && !stats.getHardcore()) {
+                if (targetStats != null && targetStats.isCaregiver(actor.getUniqueId())) {
+                    handleInteraction(actor, Action.RIGHT_CLICK_AIR, target, true);
+                }
+            }
+        }
+    }    
+
+    private void handleInteraction(Player actor, Action action, Player target, boolean isCaregiverInteraction) {
+        PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
+        if (action == Action.RIGHT_CLICK_AIR || isCaregiverInteraction) {
+            if(actor == target){
+                if (stats.getHardcore()) {
+                    actor.sendMessage("You are in HardCore mode. You should ask a caregiver for help.");
+                    return;
+                }
+                if (!stats.getOptin()) {
+                    return;
+                }
+            }
+            ItemStack item = actor.getInventory().getItemInMainHand();
+
+            if (isCustomItem(item)) {
                 int customModelData = item.getItemMeta().getCustomModelData();
 
-                //Give the player their used diaper.
-                if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){player.getInventory().addItem(ItemManager.stinkydiaper);}
-                if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){player.getInventory().addItem(ItemManager.wetpullup);}
-                if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){player.getInventory().addItem(ItemManager.wetdiaper);}
-                if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){player.getInventory().addItem(ItemManager.wetthickdiaper);}
-                // if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 0){player.getInventory().addItem(ItemManager.wetundies);}
-                // if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 0){player.getInventory().addItem(ItemManager.messyundies);}
+                // Logic to provide items based on wetness and fullness
+                distributeUsedItems(actor, stats);
 
-                //Reset the underwear status, and assign a type (Underwear, Pullup, Diaper, Think Diaper)
-                stats.setDiaperFullness(0);
-                stats.setDiaperWetness(0);
-                stats.setTimeWorn(0);
-                if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
-                if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
-                if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
-                if (customModelData == 626001) {stats.setUnderwearType(3);} //Thick Diaper
-                int currentAmount = item.getAmount();
-                if (currentAmount > 1) {
-                    item.setAmount(currentAmount - 1); // Decrease the amount by 1
-                } else {
-                    player.getInventory().setItemInMainHand(null); // Remove the item entirely if only 1 remains
+                // Reset and update
+                resetAndUpdateStats(stats, customModelData);
+
+                // Remove or decrement the item the actor is holding
+                decrementItem(actor, item);
+
+                // Feedback
+                if (actor == target) {
+                    actor.sendMessage(ChatColor.GREEN + "You got changed and cleaned!");
                 }
-                // Optional: Send feedback to the player
-                player.sendMessage(ChatColor.GREEN + "You got changed and cleaned!");
-                
+                else if(actor != target){
+                    actor.sendMessage(ChatColor.GREEN + "You changed: " + target.getName());
+                    target.sendMessage(ChatColor.GREEN + "You were changed by: " + actor.getName() + " Be sure to thank them!");
+                }
             }
         }
     }
+
+    private void distributeUsedItems(Player actor, PlayerStats stats) {
+        // Distribute items according to the target's diaper status
+        // Similar to the already implemented logic
+
+        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){actor.getInventory().addItem(ItemManager.stinkydiaper);}
+        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){actor.getInventory().addItem(ItemManager.wetpullup);}
+        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){actor.getInventory().addItem(ItemManager.wetdiaper);}
+        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){actor.getInventory().addItem(ItemManager.wetthickdiaper);}
+    }
+
+    private void resetAndUpdateStats(PlayerStats stats, int customModelData) {
+        // Reset stats and set new underwear type
+        // Similar to the already implemented logic
+        stats.setDiaperFullness(0);
+        stats.setDiaperWetness(0);
+        stats.setTimeWorn(0);
+        if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
+        if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
+        if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
+        if (customModelData == 626001) {stats.setUnderwearType(3);} //Thick Diaper
+    }
+
+    private void decrementItem(Player actor, ItemStack item) {
+        // Decrement or remove the item from the actor's inventory
+        // Similar to the already implemented logic
+
+        int currentAmount = item.getAmount();
+        if (currentAmount > 1) {
+            item.setAmount(currentAmount - 1); // Decrease the amount by 1
+        } else {
+            actor.getInventory().setItemInMainHand(null); // Remove the item entirely if only 1 remains
+        }
+    }
+
     //When weather changes, checks for thunder
     @EventHandler
     public void onWeatherChange(WeatherChangeEvent event) {
@@ -255,17 +299,6 @@ public class PlayerEventListener implements Listener {
         return false;
     }
 
-    // private boolean isCustomItemResult(ItemStack item) {
-    //     if (item == null || item.getType() != Material.SLIME_BALL) return false;
-    
-    //     ItemMeta meta = item.getItemMeta();
-    //     if (meta == null || !meta.hasCustomModelData()) return false;
-    
-    //     // List of valid CustomModelData values for your custom items
-    //     int modelData = meta.getCustomModelData();
-    //     return modelData == 626009 || modelData == 626001 || modelData == 626003; // Add other custom items here
-    // }
-
     // private boolean isUsed (ItemStack item) {
     //     if (item == null || !item.hasItemMeta()) {
     //     return false;
@@ -280,23 +313,26 @@ public class PlayerEventListener implements Listener {
 
     //     return CustomItemIDs.contains(customModelData);
     // }
-    //Prevents crafting with custom items
+
+
+
+
+
+
+
+
+
+
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
         ItemStack[] matrix = inventory.getMatrix();
-        ItemStack result = inventory.getResult();
 
         boolean blockCrafting = false;
         boolean hasLaxative = false;
         ItemStack foodItem = null;
         Material foodItemType = null;
-
-        // if (isCustomItemResult(result)) {
-        //     if (!validateCustomIngredients(inventory.getMatrix())) {
-        //         inventory.setResult(null); // Cancel crafting if ingredients are invalid
-        //     }
-        // }
+        int foodItemCount = 0;
 
         for (ItemStack item : matrix) {
             if (item == null) continue;
@@ -305,202 +341,119 @@ public class PlayerEventListener implements Listener {
                 blockCrafting = true; // Only block crafting if it's not intended
             }
 
-            if (isLaxative(item)) {
-                hasLaxative = true;
-            } else if (item.getType().isEdible()) {
-                if (foodItemType == null) {
-                    foodItemType = item.getType();
-                    foodItem = item;
-                } else if (foodItemType != item.getType()){
-                    inventory.setResult(null);
-                    return;
-                }
-            }
+            // if (isLaxative(item)) {
+            //     hasLaxative = true;
+            // } else if (item.getType().isEdible()) {
+            //     foodItemCount++;
+            //     if (foodItemType == null) {
+            //         foodItemType = item.getType();
+            //         foodItem = item;
+            //     } else if (foodItemType != item.getType()){
+            //         inventory.setResult(null);
+            //         return;
+            //     }
+            // }
         }
         if (blockCrafting) {
             inventory.setResult(null); // Cancel crafting if custom items are involved inappropriately
-        }else if (hasLaxative && foodItem != null) {
-            // Logic for creating laxative-imbued food items
-            ItemStack lacedResult = foodItem.clone();
-            ItemMeta meta = lacedResult.getItemMeta();
-            if (meta != null) {
-                meta.getPersistentDataContainer().set(
-                    new NamespacedKey(plugin, "laxative_effect"),
-                    PersistentDataType.BYTE,
-                    (byte) 1
-                );
-                lacedResult.setItemMeta(meta);
-            }
-            lacedResult.setAmount(1);
-            inventory.setResult(lacedResult);
         }
+        // else if (hasLaxative && foodItem != null && foodItemCount == 1) {
+        //     // Logic for creating laxative-imbued food items
+        //     ItemStack lacedResult = foodItem.clone();
+        //     ItemMeta meta = lacedResult.getItemMeta();
+        //     if (meta != null) {
+        //         meta.getPersistentDataContainer().set(
+        //             new NamespacedKey(plugin, "laxative_effect"),
+        //             PersistentDataType.BYTE,
+        //             (byte) 1
+        //         );
+        //         meta.setCustomModelData(626100);
+        //         lacedResult.setItemMeta(meta);
+        //     }
+        //     lacedResult.setAmount(1);
+        //     inventory.setResult(lacedResult);
+        // }
         else {
             // inventory.setResult(result); // Make sure other recipes can work
         }
     }
-    private boolean validateCustomIngredients(ItemStack[] matrix) {
-        for (ItemStack item : matrix) {
-            if (item == null) continue;
-    
-            if (item.getType() == Material.SLIME_BALL) {
-                ItemMeta meta = item.getItemMeta();
-                if (meta == null || !meta.hasCustomModelData()) {
-                    // If SLIME_BALL doesn't have CustomModelData, allow it as a base item
-                    continue;
-                }
-    
-                // Check CustomModelData for valid custom ingredients
-                int modelData = meta.getCustomModelData();
-                if (modelData != 626007 && modelData != 626008) {
-                    return false; // Found invalid ingredient
-                }
-            }
-        }
-        return true;
-    }
 
-    @EventHandler
-    public void onCraft(CraftItemEvent event) {
-        // Ensure the crafted item has the laxative effect
-        ItemStack result = event.getRecipe().getResult();
-        if (result.hasItemMeta() && result.getItemMeta().getPersistentDataContainer().has(
-                new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
-            
-            // Ensure this is a player crafting
-            if (!(event.getWhoClicked() instanceof Player)) return;
-            Player player = (Player) event.getWhoClicked();
-            CraftingInventory inventory = event.getInventory();
-            ItemStack[] matrix = inventory.getMatrix();
-
-            // Use flags to prevent reprocessing the same crafting event
-            boolean foodReduced = false;
-            boolean laxativeReduced = false;
-
-            // Reduce items in the crafting matrix
-            for (int i = 0; i < matrix.length; i++) {
-                ItemStack item = matrix[i];
-                if (item == null) continue;
-
-                if (isLaxative(item) && !laxativeReduced) {
-                    item.setAmount(item.getAmount() - 1);
-                    if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
-                    laxativeReduced = true;
-                } else if (item.getType().isEdible() && !foodReduced) {
-                    item.setAmount(item.getAmount() - 1);
-                    if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
-                    foodReduced = true;
-                } else if (item.getType() == Material.SLIME_BALL) {
-                    ItemMeta meta = item.getItemMeta();
-                    if (meta == null || !meta.hasCustomModelData() || (
-                        meta.getCustomModelData() != 626007 && // Diaper Stuffer
-                        meta.getCustomModelData() != 626008)) // Tape
-                    {
-                        matrix[i] = null; // Clear invalid items
-                    }
-                }
-
-                // Stop when both reductions are complete
-                if (laxativeReduced && foodReduced) break;
-            }
-
-            // Use a delayed task to update the inventory safely
-            Bukkit.getScheduler().runTask(plugin, () -> inventory.setMatrix(matrix));
-
-            // Prevent shift-click issues
-            if (event.isShiftClick()) {
-                event.setCancelled(true);
-                player.getInventory().addItem(result);
-            }
-        }
-    }
-
-    // @EventHandler
-    // public void onCraft(CraftItemEvent event) {
-    //     // Ensure the crafted item has the laxative effect
-    //     ItemStack result = event.getRecipe().getResult();
-    //     if (result.hasItemMeta() && result.getItemMeta().getPersistentDataContainer().has(
-    //             new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
-    
-    //         // Ensure this is a player crafting
-    //         if (!(event.getWhoClicked() instanceof Player)) return;
-    //         Player player = (Player) event.getWhoClicked();
-    
-    //         CraftingInventory inventory = event.getInventory();
-    //         ItemStack[] matrix = inventory.getMatrix();
-    
-    //         // Use a flag to ensure we only process once
-    //         boolean foodReduced = false;
-    //         boolean laxativeReduced = false;
-    
-    //         // Loop through the crafting matrix and reduce items
-    //         for (int i = 0; i < matrix.length; i++) {
-    //             ItemStack item = matrix[i];
-    //             if (item == null) continue;
-    
-    //             if (isLaxative(item) && !laxativeReduced) {
-    //                 item.setAmount(item.getAmount() - 1);
-    //                 if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
-    //                 laxativeReduced = true;
-    //             } else if (item.getType().isEdible() && !foodReduced) {
-    //                 item.setAmount(item.getAmount() - 1);
-    //                 if (item.getAmount() <= 0) matrix[i] = null; // Remove empty slot
-    //                 foodReduced = true;
-    //             }
-    
-    //             // Stop when both reductions are complete
-    //             if (laxativeReduced && foodReduced) break;
-    //         }
-    
-    //         // Update the inventory matrix
-    //         inventory.setMatrix(matrix);
-    
-    //         // Prevent shift-click from causing issues
-    //         if (event.isShiftClick()) {
-    //             event.setCancelled(true);
-    //             player.getInventory().addItem(result);
-    //         }
-    //     }
+    // private void clearCraftingGrid(CraftingInventory inventory) {
+    //     ItemStack[] emptyMatrix = new ItemStack[inventory.getSize()];
+    //     inventory.setMatrix(emptyMatrix);
     // }
 
-
-
     // @EventHandler
-    // public void onCraft(CraftItemEvent event) {
-    //     // Handle ingredient reduction after crafting
-    //     CraftingInventory inventory = event.getInventory();
+    // public void onCraftItem(CraftItemEvent event) {
+    //     if (!(event.getWhoClicked() instanceof Player)) return;
+    //     Player player = (Player) event.getWhoClicked();
+    //     CraftingInventory inventory = (CraftingInventory) event.getInventory();
+
     //     ItemStack result = event.getRecipe().getResult();
 
-    //     if (result.getItemMeta() != null &&
-    //         result.getItemMeta().getPersistentDataContainer().has(
-    //             new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
-
-    //         ItemStack[] matrix = inventory.getMatrix();
-    //         // Remove laxative and food item from the crafting matrix
-    //         for (int i = 0; i < matrix.length; i++) {
-    //             ItemStack item = matrix[i];
-    //             if (item == null) continue;
-    //             if(isLaxative(item))
-    //             {
-    //                 item.setAmount(item.getAmount() - 1);
-    //                 if (item.getAmount() <= 0) {
-    //                     matrix[i] = null;
-    //                 }
-    //             } else if(item.getType().isEdible()){
-    //                 item.setAmount(item.getAmount() - 1);
-    //                 if(item.getAmount() <= 0){
-    //                     matrix[i] = null;
-    //                 }
-    //             }
+    //     if (result.hasItemMeta()) {
+    //         ItemMeta meta = result.getItemMeta();
+    //         int customModelData = result.getItemMeta().getCustomModelData();
+    //         if (meta != null && (meta.getPersistentDataContainer().has(
+    //             new NamespacedKey(plugin, "laxative_effect"),
+    //             PersistentDataType.BYTE
+    //         ) || customModelData == 626100)) {
+    //             clearCraftingGrid(inventory);
     //         }
-    //         inventory.setMatrix(matrix);
     //     }
+
+    //     // // Cancel the default crafting to handle it manually
+    //     // event.setCancelled(true);
+
+    //     // // Prepare to decrement items
+    //     // ItemStack[] matrix = inventory.getMatrix();
+    //     // boolean foodReduced = false;
+    //     // boolean laxativeReduced = false;
+
+    //     // for (int i = 0; i < matrix.length; i++) {
+    //     //     ItemStack item = matrix[i];
+    //     //     if (item == null) continue;
+
+    //     //     if (isLaxative(item) && !laxativeReduced) {
+    //     //         item.setAmount(item.getAmount() - 1);
+    //     //         if (item.getAmount() <= 0) matrix[i] = null;
+    //     //         laxativeReduced = true;
+    //     //     } else if (item.getType().isEdible() && !foodReduced) {
+    //     //         item.setAmount(item.getAmount() - 1);
+    //     //         if (item.getAmount() <= 0) matrix[i] = null;
+    //     //         foodReduced = true;
+    //     //     }
+
+    //     //     if (laxativeReduced && foodReduced) break;
+    //     // }
+
+    //     // // Update the crafting matrix after a small delay to avoid conflicts
+    //     // Bukkit.getScheduler().runTask(plugin, () -> inventory.setMatrix(matrix));
+
+    //     // // Add the result to the player's inventory
+    //     // if (event.isShiftClick()) {
+    //     //     HashMap<Integer, ItemStack> excess = player.getInventory().addItem(result.clone());
+    //     //     // Drop excess items if inventory is full
+    //     //     for (ItemStack leftover : excess.values()) {
+    //     //         player.getWorld().dropItemNaturally(player.getLocation(), leftover);
+    //     //     }
+    //     // } else {
+    //     //     player.setItemOnCursor(result.clone());
+    //     // }
     // }
 
-    private boolean isLaxative(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) return false;
-        ItemMeta meta = item.getItemMeta();
-        return meta.hasCustomModelData() && meta.getCustomModelData() == 626012;
-    }
+    
+
+
+
+
+
+
+    // private boolean isLaxative(ItemStack item) {
+    //     if (item == null || !item.hasItemMeta()) return false;
+    //     ItemMeta meta = item.getItemMeta();
+    //     return meta.hasCustomModelData() && meta.getCustomModelData() == 626012;
+    // }
 
     // @EventHandler
     // public void onItemPickup(EntityPickupItemEvent  event) {
@@ -566,29 +519,28 @@ public class PlayerEventListener implements Listener {
     //     }
     // }
 
-    @EventHandler
-    public void onPlayerConsume(PlayerItemConsumeEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
+    // @EventHandler
+    // public void onPlayerConsume(PlayerItemConsumeEvent event) {
+    //     Player player = event.getPlayer();
+    //     ItemStack item = event.getItem();
 
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta != null && meta.getPersistentDataContainer().has(
-                new NamespacedKey(plugin, "laxative_effect"),
-                PersistentDataType.BYTE
-            )) {
-                // Apply laxative effect
-                PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-                if(stats.getMessing()){
-                    if (stats.getEffectDuration() == 0) {
-                        stats.setBowelFillRate(stats.getBowelFillRate() * 2);
-                    }
-                    stats.increaseEffectDuration(30);
-                    player.sendMessage(ChatColor.RED + "You feel the effects of the laxative...");
-                }
-            }
-        }
-    }
+    //     if (item.hasItemMeta()) {
+    //         ItemMeta meta = item.getItemMeta();
+    //         if (meta != null && meta.getPersistentDataContainer().has(
+    //             new NamespacedKey(plugin, "laxative_effect"),
+    //             PersistentDataType.BYTE
+    //         )) {
+    //             // Apply laxative effect
+    //             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+    //             if(stats.getMessing()){
+    //                 if (stats.getEffectDuration() == 0) {
+    //                     stats.setBowelFillRate(stats.getBowelFillRate() * 4);
+    //                 }
+    //                 stats.increaseEffectDuration(30);
+    //             }
+    //         }
+    //     }
+    // }
 
     // @EventHandler
     // public void onPotionEffect(EntityPotionEffectEvent event) {
@@ -738,6 +690,19 @@ public class PlayerEventListener implements Listener {
                 // Remove cauldron and trapdoor
                 block.setType(Material.AIR);
                 loc.add(0, 1, 0).getBlock().setType(Material.AIR);
+
+                // Drop the custom item
+                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item
+            }
+        }
+        if (block != null && block.getType() == Material.IRON_TRAPDOOR) {
+            Block cauldronBlock = block.getLocation().add(0, -1, 0).getBlock();
+            if (cauldronBlock.getType() == Material.CAULDRON) {
+                Location loc = block.getLocation();
+
+                // Remove cauldron and trapdoor
+                block.setType(Material.AIR);
+                loc.add(0, -1, 0).getBlock().setType(Material.AIR);
 
                 // Drop the custom item
                 block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item

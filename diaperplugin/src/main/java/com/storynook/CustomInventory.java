@@ -15,6 +15,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.ScoreboardManager;
 
+import net.md_5.bungee.api.ChatColor;
+
 
 public class CustomInventory implements Listener {
     private Plugin plugin;
@@ -27,18 +29,26 @@ public class CustomInventory implements Listener {
         PlayerStats stats = plugin.getPlayerStats(playerUUID);
         Inventory menu = Bukkit.createInventory(player, 9, "Settings");
 
-        ItemStack Optin = new ItemStack(Material.DIAMOND); // Custom button
+        ItemStack Optin = new ItemStack(Material.SLIME_BALL); // Custom button
         ItemMeta OptinMeta = Optin.getItemMeta();
         if (OptinMeta != null) {
-            List<String> lore = Arrays.asList("Opt into Plugin: " + stats.getOptin());
+            List<String> lore = Arrays.asList(
+                "Diaper Plugin: " + (stats.getOptin() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"), 
+                "Enables the plugin to track stats.", 
+                "This like, bladder, underwear type, incontinence, etc."
+            );
             OptinMeta.setLore(lore);
             OptinMeta.setDisplayName("Opt into plugin");
+            OptinMeta.setCustomModelData(626009);
             Optin.setItemMeta(OptinMeta);   
         }
         ItemStack Messing = new ItemStack(Material.SLIME_BALL);
         ItemMeta MessingMeta = Messing.getItemMeta();
         if (MessingMeta != null) {
-            List<String> lore = Arrays.asList("Messing accidents can happen. " + stats.getMessing());
+            List<String> lore = Arrays.asList(
+                "Messing accidents can happen: " + (stats.getMessing() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
+                "Enables the bowels to start filling."
+            );
             MessingMeta.setLore(lore);
             MessingMeta.setDisplayName("Messing");
             MessingMeta.setCustomModelData(626004);
@@ -52,15 +62,35 @@ public class CustomInventory implements Listener {
             if (stats.getUI() == 1) {UISetting = "Scoreboard";}
             if(stats.getUI() == 2){UISetting = "HotBar";}
             else{UISetting = "Error";}
-            List<String> lore = Arrays.asList("Current UI Selected " + UISetting);
+            List<String> lore = Arrays.asList(
+                "Current UI Selected " + UISetting,
+                "Different styles for you to pick from.",
+                "Classic Scoreboard style is defualt,",
+                "there is also HotBar, and Hidden."
+            );
             ScoreobardMeta.setLore(lore);
             ScoreobardMeta.setDisplayName("Stats Visable");
             ScoreBoard.setItemMeta(ScoreobardMeta);   
         }
+
+        ItemStack HardCore = new ItemStack(Material.FIRE_CHARGE); // Custom button
+        ItemMeta HardCoreMeta = HardCore.getItemMeta();
+        if (HardCoreMeta != null) {
+            List<String> lore = Arrays.asList(
+                "HardCore: " + (stats.getHardcore() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
+                "Removes you ablility to change yourself.",
+                "Only Caregivers can change you.",
+                "Also can't unlock or set your incontinence levels."
+            );
+            HardCoreMeta.setLore(lore);
+            HardCoreMeta.setDisplayName("HardCore");
+            HardCore.setItemMeta(HardCoreMeta);   
+        }
         
         menu.setItem(0, Optin);
         menu.setItem(1, Messing);
-        menu.setItem(2, ScoreBoard); // Set the button in the middle
+        menu.setItem(2, ScoreBoard);
+        menu.setItem(3, HardCore);
         player.openInventory(menu);
     }
 
@@ -86,7 +116,7 @@ public class CustomInventory implements Listener {
 
         ItemMeta meta = event.getCurrentItem().getItemMeta();
 
-        if (event.getCurrentItem().getType() == Material.DIAMOND) {
+        if (meta.hasCustomModelData() && meta.getCustomModelData() == 626009) {
             stats.setOptin(!stats.getOptin());
             player.sendMessage(stats.getOptin() ? "You have opted into the plugin." : "You have opted out of the plugin.");
             updateScoreboard(player, stats);
@@ -106,6 +136,10 @@ public class CustomInventory implements Listener {
                 if (stats.getUI() == 2){updateScoreboard(player, stats); player.sendMessage("Hotbar Style Selected");}
                 plugin.savePlayerStats(player); // Save the updated stats
             }
+        } else if (event.getCurrentItem().getType() == Material.FIRE_CHARGE) {
+            stats.setHardcore(!stats.getHardcore());
+            player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
+            plugin.savePlayerStats(player); // Save the updated stats
         }
     }
     private void updateScoreboard(Player player, PlayerStats stats) {
