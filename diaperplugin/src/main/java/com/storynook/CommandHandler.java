@@ -268,20 +268,23 @@ public class CommandHandler implements CommandExecutor{
                 target = player; // Default to the sender if no target is specified
             }
             PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
-            if (!targetStats.isCaregiver(player.getUniqueId())) {
-                player.sendMessage("You do not have permission to use this command on the target player.");
-                return true;
-            }
-
             if (targetStats == null) {
                 player.sendMessage("Target player stats not available.");
                 return true;
             }
+            if (!targetStats.isCaregiver(player.getUniqueId()) && target != player) {
+                player.sendMessage("You do not have permission to use this command on the target player.");
+                return true;
+            }
+            if (targetStats.getHardcore() && target == sender) {
+                player.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
+                return true;
+            }
 
-            if (player != null && sender instanceof Player) {
+            if (player != null && sender instanceof Player && target != player) {
                 Player senderPlayer = (Player) sender;
                 Location senderLocation = senderPlayer.getLocation();
-                Location targetLocation = player.getLocation();
+                Location targetLocation = target.getLocation();
         
                 // Check the distance between the sender and the target player
                 double distance = senderLocation.distance(targetLocation);
@@ -289,10 +292,6 @@ public class CommandHandler implements CommandExecutor{
                     sender.sendMessage("The target player is not within your range of 10 blocks.");
                     return true;
                 }
-            }
-            if (stats.getHardcore() && target == sender) {
-                player.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
-                return true;
             }
 
             switch (type) {
@@ -319,51 +318,48 @@ public class CommandHandler implements CommandExecutor{
             return true;
         }
 
-        if (command.getName().equalsIgnoreCase("unlockincon")) {
-            Player player = null;
-            if (sender instanceof Player) {
-                player = (Player) sender;
-            } 
-            if (args.length > 0) {
-                // Attempt to get the target player by name if a player is not specified as the sender and sender has permission
-                Player target = plugin.getServer().getPlayer(args[0]);
-                if (target == null) {
-                    sender.sendMessage("Player not found.");
-                    return true;
-                }
-                player = target;
-            } else {
-                if(!(sender instanceof Player)){
-                    sender.sendMessage("Usage: /unlockincon <bladder|bowel|both> [playername]");
-                    return true;
-                }
-                player = (Player) sender;
-            }
-
+        if (command.getName().equalsIgnoreCase("unlockincon") && sender instanceof Player) {
+            Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+
             if (stats == null) {
-                sender.sendMessage("Player Stats not available.");
                 return true;
             }
 
-            // Perform the unlock operation only if lockIncon is currently set to true
-            if (args.length == 1) {
-                stats.unlockIncon(args[0]);
-            } else if (args.length > 1) {
+            if(args.length == 0){
                 sender.sendMessage("Usage: /unlockincon <bladder|bowel|both> [playername]");
                 return true;
             }
+            
+            Player target;
+            if (args.length > 1) {
+                target = plugin.getServer().getPlayer(args[2]);
+                if (target == null) {
+                    player.sendMessage("Player not found.");
+                    return true;
+                }
+            } else {
+                target = player; // Default to the sender if no target is specified
+            }
+            PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
+            if (targetStats == null) {
+                player.sendMessage("Target player stats not available.");
+                return true;
+            }
+            if (!targetStats.isCaregiver(player.getUniqueId()) && target != player) {
+                player.sendMessage("You do not have permission to use this command on the target player.");
+                return true;
+            }
+            if (targetStats.getHardcore() && target == sender) {
+                player.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
+                return true;
+            }
 
-            // Check and unlock based on the argument provided
-            String type = args.length > 0 ? args[0].toLowerCase() : "both";
-            stats.unlockIncon(type);
-            sender.sendMessage("Incontinence settings have been unlocked for the specified type.");
-
-            if (player != null && sender instanceof Player) {
+            if (player != null && sender instanceof Player && target != player) {
                 Player senderPlayer = (Player) sender;
                 Location senderLocation = senderPlayer.getLocation();
-                Location targetLocation = player.getLocation();
-
+                Location targetLocation = target.getLocation();
+        
                 // Check the distance between the sender and the target player
                 double distance = senderLocation.distance(targetLocation);
                 if (distance > 10) {
@@ -371,11 +367,11 @@ public class CommandHandler implements CommandExecutor{
                     return true;
                 }
             }
-            // Check for hardcore mode and ensure the sender is a caregiver of the target player or has admin permission
-            if (stats.getHardcore() && player == sender) {
-                sender.sendMessage("You are in hardcore mode. Ask a caregiver for help.");
-                return true;
-            }
+
+            // Check and unlock based on the argument provided
+            String type = args.length > 0 ? args[0].toLowerCase() : "both";
+            targetStats.unlockIncon(type);
+            sender.sendMessage("Incontinence settings have been unlocked for the specified type.");
 
             return true;
         }

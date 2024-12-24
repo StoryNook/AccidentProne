@@ -165,8 +165,9 @@ public class PlayerEventListener implements Listener {
     private void handleInteraction(Player actor, Action action, Player target, boolean isCaregiverInteraction) {
         PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
         if (action == Action.RIGHT_CLICK_AIR || isCaregiverInteraction) {
+            ItemStack item = actor.getInventory().getItemInMainHand();
             if(actor == target){
-                if (stats.getHardcore()) {
+                if (stats.getHardcore() && isCustomItem(item) && !isUsed(item)) {
                     actor.sendMessage("You are in HardCore mode. You should ask a caregiver for help.");
                     return;
                 }
@@ -174,7 +175,6 @@ public class PlayerEventListener implements Listener {
                     return;
                 }
             }
-            ItemStack item = actor.getInventory().getItemInMainHand();
 
             if (isCustomItem(item) && !isUsed(item)) {
                 int customModelData = item.getItemMeta().getCustomModelData();
@@ -669,10 +669,22 @@ public class PlayerEventListener implements Listener {
         if (stats.getBladder() > 10) {
             stats.setBladder(0);
             stats.decreaseBladderIncontinence(0.2);
+            if (stats.getBladderIncontinence() > 7){
+                player.sendMessage("Good job making it to the potty!");
+            }
+            else if (stats.getBladderIncontinence() >= 5) {
+                player.sendMessage("Potty training us going well!");
+            }
         }
         if (stats.getMessing() && stats.getBowels() > 10) {
             stats.setBowels(0);
             stats.decreaseBowelIncontinence(0.2);
+            if (stats.getBowelIncontinence() > 7) {
+                player.sendMessage("Good job making it to the potty!");
+            }
+            else if (stats.getBowelIncontinence() >= 5) {
+                player.sendMessage("Potty training us going well!");
+            }
         }
         stats.setUrgeToGo(0);
 

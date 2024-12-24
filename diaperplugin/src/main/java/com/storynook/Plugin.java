@@ -196,7 +196,7 @@ public class Plugin extends JavaPlugin
             config.set("UI", stats.getUI());
             config.set("EffectDuration", stats.getEffectDuration());
             config.set("TimeWorn", stats.getTimeWorn());
-            config.set("Hardcoare", stats.getHardcore());
+            config.set("Hardcore", stats.getHardcore());
             config.set("BladderLockIncon", stats.getBladderLockIncon());
             config.set("BowelLockIncon", stats.getBowelLockIncon());
             List<String> uuidStrings = stats.getCaregivers().stream()
