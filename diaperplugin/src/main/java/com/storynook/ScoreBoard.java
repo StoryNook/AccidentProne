@@ -82,12 +82,11 @@ static String getUnderwearStatus(int wetness, int fullness, int type, int size) 
             stages = null;
             break;
     }
-    // char[] stages = small ? smallStages[type] : normalStages[type];
     int[][] stageMapping = {
         {2, 1}, // Type 0: Underwear
         {4, 1}, // Type 1: Pull-up
         {5, 2}, // Type 2: Diaper
-        {6, 3}  // Type 3: Super Diaper
+        {6, 3}  // Type 3: Thick Diaper
     };
     // Define maximum stages for wetness and fullness
     int maxWetnessLevels = stageMapping[type][0];

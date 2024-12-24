@@ -23,20 +23,14 @@ public class CommandHandler implements CommandExecutor{
         return true;
         }
         if (command.getName().equalsIgnoreCase("stats") && sender instanceof Player) {
-            if (!sender.hasPermission("diaperplugin.setunderwearlevels") || !sender.isOp()) {
-                sender.sendMessage("You do not have permission to use this command.");
-                return true;
-            }
             PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
             if (stats != null) {
                 sender.sendMessage("Your current statistics are:");
+                sender.sendMessage("HardCore: " + (stats.getHardcore() ? "On" : "Off"));
                 sender.sendMessage("Diaper wetness: " + stats.getDiaperWetness() + "/100");
                 sender.sendMessage("Diaper fullness: " + stats.getDiaperFullness() + "/100");
                 sender.sendMessage("Bladder incontinence: " + stats.getBladderIncontinence() + "/10");
                 sender.sendMessage("Bowel incontinence: " + stats.getBowelIncontinence() + "/10");
-                sender.sendMessage("Bladder fill rate: " + stats.getBladderFillRate());
-                sender.sendMessage("Bowel fill rate: " + stats.getBowelFillRate());
-                sender.sendMessage("Time Left " + stats.getEffectDuration());
                 sender.sendMessage("Time Full " + stats.getTimeWorn());
                 sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + " Bowels Locked? " + stats.getBowelLockIncon());
             } else {
@@ -180,8 +174,13 @@ public class CommandHandler implements CommandExecutor{
                         }
                         UUID targetUUID = target.getUniqueId();
                         if (!stats.getCaregivers().contains(targetUUID)) {
-                            stats.addCaregiver(targetUUID);
-                            sender.sendMessage("Added player " + target.getName() + " as a caregiver.");
+                            if (sender != target) {
+                                stats.addCaregiver(targetUUID);
+                                sender.sendMessage("Added player " + target.getName() + " as a caregiver.");
+                            }
+                            else{
+                                sender.sendMessage("You can't add yourself as a caregiver, silly bab.");
+                            }
                         } else {
                             sender.sendMessage("This player is already a caregiver.");
                         }
