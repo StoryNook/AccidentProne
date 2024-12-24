@@ -99,6 +99,37 @@ public class PlayerEventListener implements Listener {
         }
     }
 
+    //Checks to see if the item used in crafting is a custom item. (ID based)
+    private boolean isCustomItem(ItemStack item) {
+        if (item == null || !item.getItemMeta().hasCustomModelData()) {
+            return false;
+        }
+        int customModelData = item.getItemMeta().getCustomModelData();
+        List<Integer> CustomItemIDs = Arrays.asList(626009, 626001, 626002, 626003, 626004, 626005, 626011, 626010);
+        
+        // Check for custom emerald items defined in ItemManager
+        if (CustomItemIDs.contains(customModelData)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isUsed (ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (!meta.hasCustomModelData()) {
+            return false;
+        }
+
+        int customModelData = meta.getCustomModelData();
+        List<Integer> CustomItemIDs = Arrays.asList(626005, 626011, 626010, 626004);
+
+        return CustomItemIDs.contains(customModelData);
+    }
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         handleInteraction(event.getPlayer(), event.getAction(), event.getPlayer(), false);
@@ -134,7 +165,7 @@ public class PlayerEventListener implements Listener {
             }
             ItemStack item = actor.getInventory().getItemInMainHand();
 
-            if (isCustomItem(item)) {
+            if (isCustomItem(item) && !isUsed(item)) {
                 int customModelData = item.getItemMeta().getCustomModelData();
 
                 // Logic to provide items based on wetness and fullness
@@ -283,45 +314,6 @@ public class PlayerEventListener implements Listener {
             }
         }
     }
-    //Checks to see if the item used in crafting is a custom item. (ID based)
-    private boolean isCustomItem(ItemStack item) {
-        if (item == null || !item.getItemMeta().hasCustomModelData()) {
-            return false;
-        }
-        int customModelData = item.getItemMeta().getCustomModelData();
-        List<Integer> CustomItemIDs = Arrays.asList(626009, 626001, 626002, 626003, 626004,626005, 626011, 626010);
-        
-        // Check for custom emerald items defined in ItemManager
-        if (CustomItemIDs.contains(customModelData)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // private boolean isUsed (ItemStack item) {
-    //     if (item == null || !item.hasItemMeta()) {
-    //     return false;
-    //     }
-    //     ItemMeta meta = item.getItemMeta();
-    //     if (!meta.hasCustomModelData()) {
-    //         return false;
-    //     }
-
-    //     int customModelData = meta.getCustomModelData();
-    //     List<Integer> CustomItemIDs = Arrays.asList(626005, 626011, 626010, 626004);
-
-    //     return CustomItemIDs.contains(customModelData);
-    // }
-
-
-
-
-
-
-
-
-
 
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
