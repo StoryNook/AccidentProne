@@ -303,11 +303,14 @@ private void sneakCheck(Player player, PlayerStats stats, double need, double in
         double randomChance = (Math.random() * (10 - 1 + 1)) + 1;
         boolean sneakFails = randomChance <= incontinenceLevel;
 
-        if (!player.isSneaking() || sneakFails) {
+        if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10)) {
             player.sendMessage("Oh no! You had an accident...");
             stats.handleAccident(isBladder, player, true);
         } else {
-            stats.increaseUrgeToGo(1);
+            if(isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10){
+              stats.increaseUrgeToGo(1);
+            }
+            else{return;}
         }
     }, 20L * 5);
 }

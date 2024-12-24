@@ -32,6 +32,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
@@ -89,14 +90,24 @@ public class PlayerEventListener implements Listener {
         }
         plugin.savePlayerStats(event.getPlayer()); // Uses the plugin instance to save player stats
     }
-
+    //Handles the Player's consume event so they stay hydrated
     @EventHandler
     public void onPlayerDrink(PlayerItemConsumeEvent event) {
         PlayerStats stats = plugin.getPlayerStats(event.getPlayer().getUniqueId());
         if (stats != null) {
-            // Increase hydration when the player drinks
-            stats.increaseHydration(40);  // Adjust this amount as needed
+            ItemStack consumedItem = event.getItem();
+            if(isHydrating(consumedItem)){
+                // Increase hydration when the player drinks
+                stats.increaseHydration(40); 
+            }
+
         }
+    }
+    private boolean isHydrating(ItemStack item){
+        if (item.getType() == Material.POTION) {
+            return true;
+        }
+        return false;
     }
 
     //Checks to see if the item used in crafting is a custom item. (ID based)
@@ -185,6 +196,10 @@ public class PlayerEventListener implements Listener {
                     actor.sendMessage(ChatColor.GREEN + "You changed: " + target.getName());
                     target.sendMessage(ChatColor.GREEN + "You were changed by: " + actor.getName() + " Be sure to thank them!");
                 }
+            } else{
+                if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
+                    return;
+                }
             }
         }
     }
@@ -225,23 +240,22 @@ public class PlayerEventListener implements Listener {
 
     //When weather changes, checks for thunder
     @EventHandler
-    public void onWeatherChange(WeatherChangeEvent event) {
-        // Check if the weather is changing to thunder
-        if (event.toWeatherState()) {
-            // Iterate through all players
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (isNearThunder(player.getLocation())) {
-                    handleThunderEffect(player);
-                }
+    public void onLightningStrike(LightningStrikeEvent event) {
+        Location strikeLocation = event.getLightning().getLocation();
+        
+        // Iterate through all players
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (isNearLightning(player.getLocation(), strikeLocation)) {
+                handleThunderEffect(player);
             }
         }
     }
     //Check thunder proximity
-    private boolean isNearThunder(Location location) {
-        // Example check for nearby thunder (you can adjust the radius as needed)
-        Location thunderLocation = location.getWorld().getHighestBlockAt(location).getLocation();
-        return location.distance(thunderLocation) <= 50; // Check within 50 blocks
+    private boolean isNearLightning(Location location, Location lightningLocation) {
+        // Check distance between the two locations
+        return location.distance(lightningLocation) <= 50; // Adjust radius as needed
     }
+
     // Handle an accident if the player is near thunder
     private void handleThunderEffect(Player player) {
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
@@ -251,8 +265,11 @@ public class PlayerEventListener implements Listener {
             double chance = Math.min(4, Math.max(0, maxIncontinence / 2));// 1 in 4 chance of having an accident
             if (random.nextInt(4) < chance) {
                 boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                stats.handleAccident(bladderAccident, player, false);
-                player.sendMessage("You got so scared by the thunder that you had an accident!");
+                if (bladderAccident ? stats.getBladder() > 0 : stats.getBowels() > 0) {
+                    stats.handleAccident(bladderAccident, player, false);
+                    player.sendMessage("You got so scared by the lightening that you had an accident!");
+                }
+                return;
             }
         }
     }
@@ -310,6 +327,10 @@ public class PlayerEventListener implements Listener {
                 if (random.nextInt(4) < chance) {
                     stats.handleAccident(true, player,false);
                     player.sendMessage("Oh no! You wet the bed!");
+                }
+                else{
+                    stats.increaseBladder(40);
+                    if(stats.getMessing()){stats.increaseBowels(20);}
                 }
             }
         }
@@ -645,10 +666,14 @@ public class PlayerEventListener implements Listener {
         armorStand.addPassenger(player);
         // Keep bladder and bowel stats at 0 while sitting
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-        stats.setBladder(0);
-        stats.decreaseBladderIncontinence(0.2);
-        stats.setBowels(0);
-        stats.decreaseBowelIncontinence(0.2);
+        if (stats.getBladder() > 10) {
+            stats.setBladder(0);
+            stats.decreaseBladderIncontinence(0.2);
+        }
+        if (stats.getMessing() && stats.getBowels() > 10) {
+            stats.setBowels(0);
+            stats.decreaseBowelIncontinence(0.2);
+        }
         stats.setUrgeToGo(0);
 
         BukkitTask[] taskId = new BukkitTask[1];
@@ -659,7 +684,7 @@ public class PlayerEventListener implements Listener {
                 // If the player is no longer a passenger of the armor stand
                 if (!armorStand.getPassengers().contains(player)) {
                     // Play the sound
-                    cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 1.0f, 1.0f);
+                    cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 0.5f, 1.0f);
     
                     // Remove the armor stand
                     armorStand.remove();
