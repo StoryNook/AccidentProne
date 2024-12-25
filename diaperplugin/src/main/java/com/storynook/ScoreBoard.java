@@ -83,10 +83,10 @@ static String getUnderwearStatus(int wetness, int fullness, int type, int size) 
             break;
     }
     int[][] stageMapping = {
-        {2, 1}, // Type 0: Underwear
-        {4, 1}, // Type 1: Pull-up
-        {5, 2}, // Type 2: Diaper
-        {6, 3}  // Type 3: Thick Diaper
+        {1, 1}, // Type 0: Underwear
+        {3, 1}, // Type 1: Pull-up
+        {4, 2}, // Type 2: Diaper
+        {5, 3}  // Type 3: Thick Diaper
     };
     // Define maximum stages for wetness and fullness
     int maxWetnessLevels = stageMapping[type][0];
@@ -102,6 +102,7 @@ static String getUnderwearStatus(int wetness, int fullness, int type, int size) 
     if(wetness > 0 && fullness > 0) {
         // When both wetness and fullness are present
         int startingIndex = 0;
+        messStage++;
         if(type == 3){
             if (messStage == 1){startingIndex = 9;}
             if (messStage == 2) {startingIndex = 14;}
@@ -120,7 +121,7 @@ static String getUnderwearStatus(int wetness, int fullness, int type, int size) 
         stageIndex = wetStage;
     } else if (fullness > 0) {
         // Fullness only
-        stageIndex = maxWetnessLevels + messStage;
+        stageIndex = maxWetnessLevels + 1 + messStage;
         // stageIndex = messStage;
     } else {
         // Handle the case where there is neither wetness nor fullness (default state)
