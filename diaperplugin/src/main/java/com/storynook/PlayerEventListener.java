@@ -209,9 +209,9 @@ public class PlayerEventListener implements Listener {
         // Similar to the already implemented logic
 
         if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){actor.getInventory().addItem(ItemManager.stinkydiaper);}
-        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){actor.getInventory().addItem(ItemManager.wetpullup);}
-        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){actor.getInventory().addItem(ItemManager.wetdiaper);}
-        if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){actor.getInventory().addItem(ItemManager.wetthickdiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){actor.getInventory().addItem(ItemManager.wetpullup);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){actor.getInventory().addItem(ItemManager.wetdiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){actor.getInventory().addItem(ItemManager.wetthickdiaper);}
     }
 
     private void resetAndUpdateStats(PlayerStats stats, int customModelData) {

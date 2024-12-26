@@ -163,6 +163,14 @@ public class PlayerStats {
                 player.playSound(player.getLocation(), "minecraft:mess1", SoundCategory.PLAYERS, 1.0f, 1.0f);
             }
         }
+        if (isBladder ? getBladderIncontinence() > 7 : getBowelIncontinence() > 7) {
+            player.sendMessage("Seems liek someone is losing control");
+        }
+        else if (isBladder ? getBladderIncontinence() > 3 : getBowelIncontinence() > 3) {
+            player.sendMessage("You should try to make it to the potty next time.");
+        }else {
+            player.sendMessage("Oh no! You had an accident...");
+        }
     }
     public void unlockIncon(String type) {
         switch (type.toLowerCase()) {

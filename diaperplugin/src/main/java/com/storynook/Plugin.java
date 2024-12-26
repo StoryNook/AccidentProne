@@ -290,10 +290,16 @@ public class Plugin extends JavaPlugin
     double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
     if (randomChance < accidentProbability) {
-        player.sendMessage("Oh no! You had an accident...");
         stats.handleAccident(isBladder, player, true);
     } else if ((fullness/10) >= (Math.random() * (8 - 1 + 1) + 1)) {
+      if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
+        player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
+        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+      }else if(stats.getUrgeToGo() > 75){
+        player.sendMessage("you can't hold it much longer!");
+      }else{
         player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
+      }
         sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
     }
 }
@@ -304,7 +310,6 @@ private void sneakCheck(Player player, PlayerStats stats, double need, double in
         boolean sneakFails = randomChance <= incontinenceLevel;
 
         if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10)) {
-            player.sendMessage("Oh no! You had an accident...");
             stats.handleAccident(isBladder, player, true);
         } else {
             if(isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10){

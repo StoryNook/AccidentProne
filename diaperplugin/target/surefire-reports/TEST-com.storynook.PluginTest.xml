@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.storynook.PluginTest" time="0.011" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="com.storynook.PluginTest" time="0.009" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
@@ -12,7 +12,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="US"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-17-openjdk-amd64/lib"/>
-    <property name="sun.java.command" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter9803232599864266431.jar /home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire 2024-12-24T22-32-16_517-jvmRun1 surefire11149569181996598358tmp surefire_012452935810486184211tmp"/>
+    <property name="sun.java.command" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter13028651715834468790.jar /home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire 2024-12-25T02-44-23_188-jvmRun1 surefire17512805486172609037tmp surefire_0946593143681535527tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/test-classes:/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/classes:/home/dudepher/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/dudepher/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/dudepher/.m2/repository/org/spigotmc/spigot-api/1.15.1-R0.1-SNAPSHOT/spigot-api-1.15.1-R0.1-SNAPSHOT.jar:/home/dudepher/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/home/dudepher/.m2/repository/com/google/guava/guava/21.0/guava-21.0.jar:/home/dudepher/.m2/repository/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar:/home/dudepher/.m2/repository/net/md-5/bungeecord-chat/1.13-SNAPSHOT/bungeecord-chat-1.13-SNAPSHOT.jar:/home/dudepher/.m2/repository/org/yaml/snakeyaml/1.25/snakeyaml-1.25.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -27,7 +27,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter9803232599864266431.jar"/>
+    <property name="surefire.real.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter13028651715834468790.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.13+11-Ubuntu-2ubuntu124.04"/>
     <property name="user.name" value="dudepher"/>
@@ -52,5 +52,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="shouldAnswerWithTrue" classname="com.storynook.PluginTest" time="0"/>
+  <testcase name="shouldAnswerWithTrue" classname="com.storynook.PluginTest" time="0.001"/>
 </testsuite>
