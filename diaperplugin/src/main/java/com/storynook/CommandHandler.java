@@ -1,4 +1,6 @@
 package com.storynook;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -6,10 +8,11 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 
-public class CommandHandler implements CommandExecutor{
+public class CommandHandler implements CommandExecutor, TabCompleter{
     private Plugin plugin;
     public CommandHandler(Plugin plugin) {
         this.plugin = plugin;
@@ -21,6 +24,20 @@ public class CommandHandler implements CommandExecutor{
         CustomInventory.OpenSettings(player, plugin);
 
         return true;
+        }
+        if (command.getName().equalsIgnoreCase("pee") && sender instanceof Player) {
+            Player player = (Player) sender;
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+            stats.handleAccident(true, player, true);
+    
+            return true;
+        }
+        if (command.getName().equalsIgnoreCase("poop") && sender instanceof Player) {
+            Player player = (Player) sender;
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+            stats.handleAccident(false, player, true);
+    
+            return true;
         }
         if (command.getName().equalsIgnoreCase("stats") && sender instanceof Player) {
             PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
@@ -374,6 +391,157 @@ public class CommandHandler implements CommandExecutor{
 
             return true;
         }
+        if (command.getName().equalsIgnoreCase("dpset") && sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!player.hasPermission("diaperplugin.dpset") || !player.isOp()) {
+                player.sendMessage("You do not have permission to use this command.");
+                return true;
+            }
+
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+
+            if (stats == null) {
+                player.sendMessage("Player Stats not available");
+                return true;
+            }
+
+            if (args.length == 0) {
+                player.sendMessage("Usage: /dpset <bladder|bowel|both|type> <number> [playername]");
+                return true;
+            }
+
+            String type = args[0].toLowerCase();
+            double value;
+            try {
+                value = Double.parseDouble(args[1]);
+            } catch (NumberFormatException e) {
+                player.sendMessage("Invalid number format.");
+                return true;
+            }
+
+            Player target;
+            if (args.length > 2) {
+                target = plugin.getServer().getPlayer(args[2]);
+                if (target == null) {
+                    player.sendMessage("Player not found.");
+                    return true;
+                }
+            } else {
+                target = player; // Default to the sender if no target is specified
+            }
+            PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
+            if (targetStats == null) {
+                player.sendMessage("Target player stats not available.");
+                return true;
+            }
+
+            switch (type) {
+                case "bladder":
+                    targetStats.setBladder(value);
+                    player.sendMessage("Set bladder to: " + value);
+                    break;
+                case "bowel":
+                    targetStats.setBowels(value);
+                    player.sendMessage("Set bowels to: " + value);
+                    break;
+                case "both":
+                    targetStats.setBladder(value);
+                    targetStats.setBowels(value);
+                    player.sendMessage("Set both bladder and bowel to: " + value);
+                    break;
+                case "type":
+                    targetStats.setUnderwearType((int)value);
+                    break;
+                default:
+                    player.sendMessage("Usage: /dpset <bladder|bowel|both|type> <number> [playername]");
+            }
+            return true;
+        }
+        
         return false;
+    }
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        // Your tab completion logic here
+        List<String> completions = new ArrayList<>();
+        if (command.getName().equalsIgnoreCase("dpset")) {
+            if (args.length == 1) { // First argument completion
+                completions.add("bladder");
+                completions.add("bowel");
+                completions.add("both");
+                completions.add("type");
+                return completions; // Filter based on arguments (optional)
+            } else if (args.length == 2 && args[0].equalsIgnoreCase("type")) {
+                completions.add("0");
+                completions.add("1");
+                completions.add("2");
+                completions.add("3");
+            } else if (args.length == 3) {
+                // Add online player names to completions
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
+            }
+        }
+        else if (command.getName().equalsIgnoreCase("caregiver")) {
+            if (args.length == 1) { // First argument completion
+                completions.add("add");
+                completions.add("remove");
+                completions.add("list");
+                return completions; // Filter based on arguments (optional)
+            }else if (args.length == 2) {
+                // Add online player names to completions
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
+            }
+        }
+        else if (command.getName().equalsIgnoreCase("lockincon")) {
+            if (args.length == 1) { // First argument completion
+                completions.add("bladder");
+                completions.add("bowel");
+                completions.add("both");
+                return completions; // Filter based on arguments (optional)
+            }
+            else if (args.length == 2) {
+                completions.add("1");
+                completions.add("2");
+                completions.add("3");
+                completions.add("4");
+                completions.add("5");
+                completions.add("6");
+                completions.add("7");
+                completions.add("8");
+                completions.add("9");
+                completions.add("10");
+            }
+            else if (args.length == 3) {
+                // Add online player names to completions
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
+            }
+        }
+        else if (command.getName().equalsIgnoreCase("unlockincon")) {
+            if (args.length == 1) { // First argument completion
+                completions.add("bladder");
+                completions.add("bowel");
+                completions.add("both");
+                return completions; // Filter based on arguments (optional)
+            }else if (args.length == 2) {
+                // Add online player names to completions
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
+            }
+        }
+        else if (command.getName().equalsIgnoreCase("setunderwearlevels")) {
+            if (args.length == 1) { // First argument completion
+                completions.add("wetness");
+                completions.add("fullness");
+                return completions; // Filter based on arguments (optional)
+            }
+        }
+        return completions; // Always return the list, potentially empty.
     }
 }

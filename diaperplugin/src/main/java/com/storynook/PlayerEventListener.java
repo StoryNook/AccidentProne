@@ -143,7 +143,18 @@ public class PlayerEventListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        handleInteraction(event.getPlayer(), event.getAction(), event.getPlayer(), false);
+        Player actor = event.getPlayer();
+        ItemStack itemInHand = actor.getInventory().getItemInMainHand();
+        if (itemInHand != null && itemInHand.getType() != Material.AIR) {
+            int customModelData = itemInHand.getItemMeta().getCustomModelData();
+            if (customModelData == 626007) {
+                event.setCancelled(true); // Cancel the interaction
+                return; // Exit the method to prevent further execution
+            }
+        }
+        else{
+            handleInteraction(event.getPlayer(), event.getAction(), event.getPlayer(), false);
+        }
     }
 
     @EventHandler
@@ -151,6 +162,7 @@ public class PlayerEventListener implements Listener {
         if (event.getRightClicked() instanceof Player) {
             Player actor = event.getPlayer();
             Player target = (Player) event.getRightClicked();
+        
             // PlayerStats actorStats = plugin.getPlayerStats(actor.getUniqueId());
             if (target instanceof Player){
                 PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
@@ -322,16 +334,27 @@ public class PlayerEventListener implements Listener {
         if (worldTime >= 0 && worldTime < 1000) {
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats != null && stats.getOptin()) {
-                double chance = Math.min(4, Math.max(0, stats.getBladderIncontinence() / 2));
-                Random random = new Random();
-                if (random.nextInt(4) < chance) {
-                    stats.handleAccident(true, player,false);
-                    player.sendMessage("Oh no! You wet the bed!");
+                
+                if (stats.getBedwetting() == 1) {
+                    double chance = Math.min(4, Math.max(0, stats.getBladderIncontinence() / 2));
+                    Random random = new Random();
+                    if (random.nextInt(4) < chance) {
+                        if (stats.getBladder() > 10) {
+                            stats.handleAccident(true, player,false);
+                            player.sendMessage("Oh no! You wet the bed!");
+                            return;
+                        }
+                    }
                 }
-                else{
-                    stats.increaseBladder(40);
-                    if(stats.getMessing()){stats.increaseBowels(20);}
+                else if(stats.getBedwetting() == 2){
+                    if (stats.getBladder() > 10) {
+                        stats.handleAccident(true, player,false);
+                        player.sendMessage("Oh no! You wet the bed!");
+                        return;
+                    }
                 }
+                stats.increaseBladder(40);
+                if(stats.getMessing()){stats.increaseBowels(20);}
             }
         }
     }

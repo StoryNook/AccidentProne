@@ -59,8 +59,8 @@ public class CustomInventory implements Listener {
         if (ScoreobardMeta != null) {
             String UISetting;
             if (stats.getUI() == 0) {UISetting = "Hidden";}
-            if (stats.getUI() == 1) {UISetting = "Scoreboard";}
-            if(stats.getUI() == 2){UISetting = "HotBar";}
+            else if (stats.getUI() == 1) {UISetting = "Scoreboard";}
+            else if(stats.getUI() == 2){UISetting = "HotBar";}
             else{UISetting = "Error";}
             List<String> lore = Arrays.asList(
                 "Current UI Selected " + UISetting,
@@ -86,11 +86,29 @@ public class CustomInventory implements Listener {
             HardCoreMeta.setDisplayName("HardCore");
             HardCore.setItemMeta(HardCoreMeta);   
         }
+
+        ItemStack Bedwetting = new ItemStack(Material.RED_BED); // Custom button
+        ItemMeta BedwettingMeta = Bedwetting.getItemMeta();
+        if (BedwettingMeta != null) {
+            String BedwettingSetting;
+            if (stats.getBedwetting() == 2) {BedwettingSetting = ChatColor.GREEN + "On";}
+            else if (stats.getBedwetting() == 1) {BedwettingSetting = ChatColor.YELLOW + "Limited";}
+            else if(stats.getBedwetting() == 0){BedwettingSetting = ChatColor.RED + "Off";}
+            else{BedwettingSetting = "Error";}
+            List<String> lore = Arrays.asList(
+                "Bedwetting: " + BedwettingSetting,
+                "Limited will be random based on your bladder control."
+            );
+            BedwettingMeta.setLore(lore);
+            BedwettingMeta.setDisplayName("Bedwetting");
+            Bedwetting.setItemMeta(BedwettingMeta);   
+        }
         
         menu.setItem(0, Optin);
         menu.setItem(1, Messing);
         menu.setItem(2, ScoreBoard);
         menu.setItem(3, HardCore);
+        menu.setItem(4, Bedwetting);
         player.openInventory(menu);
     }
 
@@ -140,6 +158,20 @@ public class CustomInventory implements Listener {
             stats.setHardcore(!stats.getHardcore());
             player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
             plugin.savePlayerStats(player); // Save the updated stats
+        }
+        else if (event.getCurrentItem().getType() == Material.RED_BED) {
+            if(stats.getOptin()){
+                int newBedwetting = stats.getBedwetting();
+                newBedwetting++;
+                if (newBedwetting > 2) {
+                    newBedwetting = 0;
+                }
+                stats.setBedwetting(newBedwetting);
+                if (stats.getBedwetting() == 1){player.sendMessage(ChatColor.YELLOW + "Limited " + ChatColor.WHITE + "Bedwetting");}
+                if (stats.getBedwetting() == 0){player.sendMessage("Bedwetting " + ChatColor.RED + "Disabled");}
+                if (stats.getBedwetting() == 2){player.sendMessage("Bedwetting set to " + ChatColor.GREEN + "always");}
+                plugin.savePlayerStats(player); // Save the updated stats
+            }
         }
     }
     private void updateScoreboard(Player player, PlayerStats stats) {

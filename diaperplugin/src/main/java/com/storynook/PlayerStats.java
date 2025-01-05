@@ -24,6 +24,7 @@ public class PlayerStats {
     private boolean optin;
     private boolean messing;
     private int UI;
+    private int Bedwetting;
     private int EffectDuration = 0;
     private boolean hardcore;
     private boolean BladderLockIncon;
@@ -56,6 +57,9 @@ public class PlayerStats {
 
     public int getUI() {return UI;}
     public void setUI(int number) {UI = number;}
+
+    public int getBedwetting() {return Bedwetting;}
+    public void setBedwetting(int number) {Bedwetting = number;}
     
     public boolean getMessing() {return messing;}
     public void setMessing(boolean bool) {messing = bool;}
@@ -114,7 +118,7 @@ public class PlayerStats {
     public void increaseUrgeToGo(int amount) { urgeToGo = Math.min(urgeToGo + amount, 100); }
     
     public int getUnderwearType() { return UnderwearType; }
-    public void setUnderwearType(int type) { UnderwearType = type; }
+    public void setUnderwearType(int type) { UnderwearType = Math.max(0, Math.min(type, 3)); }
 
     public int getLayers() { return layers; }
     public void setLayers(int type) { layers = type; }
@@ -164,7 +168,7 @@ public class PlayerStats {
             }
         }
         if (isBladder ? getBladderIncontinence() > 7 : getBowelIncontinence() > 7) {
-            player.sendMessage("Seems liek someone is losing control");
+            player.sendMessage("Seems like someone is losing control");
         }
         else if (isBladder ? getBladderIncontinence() > 3 : getBowelIncontinence() > 3) {
             player.sendMessage("You should try to make it to the potty next time.");

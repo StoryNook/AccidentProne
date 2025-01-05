@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
@@ -78,12 +79,20 @@ public class Plugin extends JavaPlugin
     //Registers the commands
     commandHandler = new CommandHandler(this);
     getCommand("settings").setExecutor(commandHandler);
+    getCommand("pee").setExecutor(commandHandler);
+    getCommand("poop").setExecutor(commandHandler);
+    getCommand("dpset").setExecutor(commandHandler);
+    getCommand("dpset").setTabCompleter(commandHandler);
     getCommand("stats").setExecutor(commandHandler);
     getCommand("check").setExecutor(commandHandler);
     getCommand("setunderwearlevels").setExecutor(commandHandler);
+    getCommand("setunderwearlevels").setTabCompleter(commandHandler);
     getCommand("caregiver").setExecutor(commandHandler);
+    getCommand("caregiver").setTabCompleter(commandHandler);
     getCommand("lockincon").setExecutor(commandHandler);
+    getCommand("lockincon").setTabCompleter(commandHandler);
     getCommand("unlockincon").setExecutor(commandHandler);
+    getCommand("unlockincon").setTabCompleter(commandHandler);
 
     //Score board setup
     manager = Bukkit.getScoreboardManager();
@@ -121,6 +130,7 @@ public class Plugin extends JavaPlugin
       stats.setOptin(config.getBoolean("Optin"));
       stats.setMessing(config.getBoolean("Messing"));
       stats.setUI((int) config.getInt("UI", 1));
+      stats.setBedwetting((int) config.getInt("Bedwetting", 0));
       stats.setEffectDuration((int) config.getInt("EffectDuration", 0));
       stats.setTimeWorn((int) config.getInt("TimeWorn", 0));
       stats.setHardcore(config.getBoolean("Hardcore"));
@@ -161,6 +171,7 @@ public class Plugin extends JavaPlugin
       stats.setBladderLockIncon(false);
       stats.setBowelLockIncon(false);
       stats.setUI(1);
+      stats.setBedwetting(0);
       
       // Store the default stats in the playerStatsMap
       playerStatsMap.put(playerUUID, stats);
@@ -194,6 +205,7 @@ public class Plugin extends JavaPlugin
             config.set("Optin", stats.getOptin());
             config.set("Messing", stats.getMessing());
             config.set("UI", stats.getUI());
+            config.set("Bedwetting", stats.getBedwetting());
             config.set("EffectDuration", stats.getEffectDuration());
             config.set("TimeWorn", stats.getTimeWorn());
             config.set("Hardcore", stats.getHardcore());
@@ -313,6 +325,7 @@ private void sneakCheck(Player player, PlayerStats stats, double need, double in
             stats.handleAccident(isBladder, player, true);
         } else {
             if(isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10){
+              player.sendMessage("Good job! You held it in.");
               stats.increaseUrgeToGo(1);
             }
             else{return;}
