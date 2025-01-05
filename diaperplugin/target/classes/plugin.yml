@@ -1,7 +1,7 @@
 name: diaperplugin
 main: com.storynook.Plugin
 version: 1.0.1
-api-version: 1.20.6
+api-version: 1.19
 author: ["StoryNook"]
 description: "Bladder, bowels, diapers and more tracking, and usage"
 commands:
@@ -11,14 +11,12 @@ commands:
     desctription: "Allows the player to wet themselves"
   poop:
     description: "Aloows the player to mess themselves"
-  dpset:
+  debug:
     description: "Used for debugging and testing. Admins & OP only"
   stats:
     description: "Shows the player's stats."
   check:
     description: "Shows Players Diaper Status"
-  setunderwearlevels:
-    description: "Used for debugging"
   caregiver:
     description: "Manage your caregivers."
     usage: "/caregiver <add/remove/list> [player]"
@@ -28,8 +26,9 @@ commands:
   unlockincon:
     description: "Used to unlock a player's incontinance level"
     usage: "/unlockincon <bladder|bowel|both> [player]"
+  minfill:
+    description: "Used so players can set the min amount their stats need to be for a warning"
+    usage: "/minfill <amount|help>"
   permissions:
-    diaperplugin.setunderwearlevels:
-      description: "Permission to set underwear levels."
-    diaperplugin.dpset:
+    diaperplugin.debug:
       description: "Permission to set bladder, bowels, and underwearType."

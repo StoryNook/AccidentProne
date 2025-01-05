@@ -23,31 +23,51 @@ public class PlayerStats {
     private int layers = 0;
     private boolean optin;
     private boolean messing;
+    private boolean stinklines;
     private int UI;
     private int Bedwetting;
     private int EffectDuration = 0;
     private boolean hardcore;
     private boolean BladderLockIncon;
     private boolean BowelLockIncon;
+    private boolean AllCaregiver;
+    private boolean specialCG;
     private int timeworn = 0;
+    private int minFill = 30;
     private List<UUID> caregivers = new ArrayList<>();
 
     private static final int MAX_VALUE = 100;
 
-    public PlayerStats(UUID playerUUID) {
+    public PlayerStats(UUID playerUUID, Plugin plugin) {
         this.playerUUID = playerUUID;
+        this.plugin = plugin;
     }
-
+    private Plugin plugin;
     // Getters and setters for all fields
     public List<UUID> getCaregivers() {return caregivers;}
     public void addCaregiver(UUID caregiverUUID) { if(!caregivers.contains(caregiverUUID)){caregivers.add(caregiverUUID);}}
     public void removeCaregiver(UUID caregiverUUID) { caregivers.remove(caregiverUUID);}
     public boolean isCaregiver(UUID uuid) {
-        return caregivers.contains(uuid);
+        PlayerStats triggerStats = plugin.getPlayerStats(uuid);
+        if (caregivers.contains(uuid)) {
+            return true;
+        } else if (AllCaregiver && triggerStats.getspecialCG()){
+            return true;
+        }
+        else {return false;}
     }
 
     public boolean getOptin() {return optin;}
     public void setOptin(boolean bool) {optin = bool;}
+
+    public boolean getStinklines() {return stinklines;}
+    public void setStinklines(boolean bool) {stinklines = bool;}
+
+    public boolean getspecialCG() {return specialCG;}
+    public void setspecialCG(boolean bool) {specialCG = bool;}
+
+    public boolean getAllCaregiver() {return AllCaregiver;}
+    public void setAllCaregiver(boolean bool) {AllCaregiver = bool;}
 
     public boolean getBladderLockIncon() {return BladderLockIncon;}
     public void setBladderLockIncon(boolean bool) {BladderLockIncon = bool;}
@@ -107,6 +127,9 @@ public class PlayerStats {
 
     public double getBowelFillRate() { return bowelFillRate; }
     public void setBowelFillRate(double rate) { bowelFillRate = Math.max(rate, 0.001); }
+
+    public double getMinFill() { return minFill; }
+    public void setMinFill(int threshold) { minFill = Math.max(0, Math.min(100, threshold)); }
 
     public double getHydration() { return hydration; }
     public void setHydration(double amount) { hydration = Math.min(amount, MAX_VALUE); }

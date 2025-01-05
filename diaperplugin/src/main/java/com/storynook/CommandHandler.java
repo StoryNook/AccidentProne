@@ -11,6 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.ChatColor;
+
 
 public class CommandHandler implements CommandExecutor, TabCompleter{
     private Plugin plugin;
@@ -28,14 +30,18 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
         if (command.getName().equalsIgnoreCase("pee") && sender instanceof Player) {
             Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-            stats.handleAccident(true, player, true);
+            if (stats.getBladder() > 10) {
+                stats.handleAccident(true, player, true);
+            }
     
             return true;
         }
         if (command.getName().equalsIgnoreCase("poop") && sender instanceof Player) {
             Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-            stats.handleAccident(false, player, true);
+            if (stats.getBowels() > 10) {
+                stats.handleAccident(false, player, true);
+            }
     
             return true;
         }
@@ -43,13 +49,14 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
             if (stats != null) {
                 sender.sendMessage("Your current statistics are:");
-                sender.sendMessage("HardCore: " + (stats.getHardcore() ? "On" : "Off"));
+                sender.sendMessage("HardCore: " + (stats.getHardcore() ? ChatColor.RED + "On" : ChatColor.GREEN + "Off"));
                 sender.sendMessage("Diaper wetness: " + stats.getDiaperWetness() + "/100");
-                sender.sendMessage("Diaper fullness: " + stats.getDiaperFullness() + "/100");
+                if(stats.getDiaperFullness() > 0){sender.sendMessage("Diaper fullness: " + stats.getDiaperFullness() + "/100");}
                 sender.sendMessage("Bladder incontinence: " + stats.getBladderIncontinence() + "/10");
-                sender.sendMessage("Bowel incontinence: " + stats.getBowelIncontinence() + "/10");
+                if(stats.getMessing()){sender.sendMessage("Bowel incontinence: " + stats.getBowelIncontinence() + "/10");}
+                sender.sendMessage("MinFill: " + (int)stats.getMinFill());
                 sender.sendMessage("Time Full " + stats.getTimeWorn());
-                sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + " Bowels Locked? " + stats.getBowelLockIncon());
+                sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + (stats.getMessing() ? " Bowels Locked? " + stats.getBowelLockIncon() : ""));
             } else {
                 sender.sendMessage("Your current statistics are not available.");
             }
@@ -63,8 +70,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             
             if (stats != null) {
                 // Check for target player argument and optional validation
-                String image = "";
-                String state = "";
                 Player target = null;
                 
                 if (args.length > 0) {
@@ -85,18 +90,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     
                     double distance = playerLoc.distance(targetLoc);
                     if(distance <=10){
-                        image = ScoreBoard.getUnderwearStatus((int)targetStats.getDiaperWetness(), (int)targetStats.getDiaperFullness(), (int)targetStats.getUnderwearType(), 2);
-                        if ((int)targetStats.getDiaperWetness() > 1 && (int)targetStats.getDiaperFullness() > 1) {
-                            // state = "Wet And Messy";
-                        } else if ((int)targetStats.getDiaperWetness() > 1) {
-                            // state = "Wet";
-                        } else if ((int)targetStats.getDiaperFullness() > 1) {
-                            // state = "Messy";
-                        } else if ((int)targetStats.getDiaperFullness() == 0 && (int)targetStats.getDiaperWetness() == 0) {
-                            // state = "Clean";
-                        }
-                        
-                        player.sendTitle(image, state, 10, 20, 10);
+                        plugin.CheckLittles(player, targetStats);
                     } else {
                         player.sendMessage("The target player is not within the specified distance.");
                     } 
@@ -109,65 +103,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 player.sendMessage("Your current statistics are not available.");
             }
             return true;
-        }
-
-
-        // if (command.getName().equalsIgnoreCase("Check") && sender instanceof Player) {
-        //     PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
-        //     Player player = (Player) sender;
-        //     if (stats != null) {
-        //         String image = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 2);
-        //         String State = "";
-        //         if(stats.getDiaperWetness() > 1 && stats.getDiaperFullness() > 1){State = "Wet And Messy";}
-        //         else if (stats.getDiaperWetness() > 1) {State = "Wet";}
-        //         else if (stats.getDiaperFullness() > 1) {State = "Messy";}
-        //         else if(stats.getDiaperFullness() == 0 && stats.getDiaperWetness() == 0){State = "Clean";}
-        //         player.sendTitle(image,State,10, 20, 10);
-        //     } else {
-                
-        //     }
-        //     return true;
-        // }
-
-        if (command.getName().equalsIgnoreCase("setunderwearlevels") && sender instanceof Player) {
-            Player player = (Player) sender;
-            if (!player.hasPermission("diaperplugin.setunderwearlevels") || !player.isOp()) {
-                player.sendMessage("You do not have permission to use this command.");
-                return true;
-            }
-
-            if (args.length != 2) {
-                player.sendMessage("Usage: /setunderwearlevels <wetness|fullness> <value>");
-                return true;
-            }
-
-            String type = args[0].toLowerCase();
-            double value;
-            try {
-                value = Double.parseDouble(args[1]);
-            } catch (NumberFormatException e) {
-                player.sendMessage("Invalid number format.");
-                return true;
-            }
-
-            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-            if (stats == null) {
-                player.sendMessage("Player Stats not available");
-                return true;
-            }
-
-            switch (type) {
-                case "wetness":
-                    stats.setDiaperWetness(value);
-                    player.sendMessage("Set diaper wetness to: " + value);
-                    break;
-                case "fullness":
-                    stats.setDiaperFullness(value);
-                    player.sendMessage("Set diaper fullness to: " + value);
-                    break;
-                default:
-                    player.sendMessage("Usage: /setunderwearlevels <wetness|fullness> <value>");
-            }
         }
     
         if (command.getName().equalsIgnoreCase("caregiver") && sender instanceof Player) {
@@ -248,6 +183,42 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 sender.sendMessage("Usage: /caregiver <add|remove|list> [playername]");
             }
             return true;
+        }
+
+        if (command.getName().equalsIgnoreCase("minfill") && sender instanceof Player) {
+            Player player = (Player) sender;
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+        
+            if (stats == null) {
+                player.sendMessage("Player Stats not available");
+                return true;
+            }
+        
+            if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
+                player.sendMessage(ChatColor.GOLD + "Usage: /minfill <amount>");
+                player.sendMessage(ChatColor.GOLD + "This command sets the minimum fill level before a warning is triggered.");
+                player.sendMessage(ChatColor.GOLD + "This number assumes 1 incontinence.");
+                player.sendMessage(ChatColor.GOLD + "Example: /minfill 10 would set it so 1 full drop will need to be filled before a warning.");
+                player.sendMessage(ChatColor.GOLD + "Example: /minfill 0 would mean complete randomness. This is equivalent to full incontinence.");
+                player.sendMessage(ChatColor.GOLD + "Example: /minfill 100 would mean 9 drops are needed before a warning.");
+                return true;
+            } else if (args.length == 1) {
+                // Existing code for setting min fill
+                double value;
+                try {
+                    value = Double.parseDouble(args[0]);
+                    stats.setMinFill((int) value);
+                    player.sendMessage("Min Fill set to: " + (int)stats.getMinFill());
+                    return true;
+                } catch (NumberFormatException e) {
+                    player.sendMessage("Invalid number format.");
+                    return true;
+                }
+            } else {
+                // If the command is not recognized or incorrect usage, provide a message to the user
+                player.sendMessage("Usage: /minfill [amount|help]");
+                return true;
+            }
         }
 
         if (command.getName().equalsIgnoreCase("lockincon") && sender instanceof Player) {
@@ -349,7 +320,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             
             Player target;
             if (args.length > 1) {
-                target = plugin.getServer().getPlayer(args[2]);
+                target = plugin.getServer().getPlayer(args[1]);
                 if (target == null) {
                     player.sendMessage("Player not found.");
                     return true;
@@ -391,9 +362,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 
             return true;
         }
-        if (command.getName().equalsIgnoreCase("dpset") && sender instanceof Player) {
+        if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("diaperplugin.dpset") || !player.isOp()) {
+            if (!player.hasPermission("diaperplugin.debug") || !player.isOp()) {
                 player.sendMessage("You do not have permission to use this command.");
                 return true;
             }
@@ -406,7 +377,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             }
 
             if (args.length == 0) {
-                player.sendMessage("Usage: /dpset <bladder|bowel|both|type> <number> [playername]");
+                player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
                 return true;
             }
 
@@ -452,8 +423,24 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 case "type":
                     targetStats.setUnderwearType((int)value);
                     break;
+                case "wetness":
+                    targetStats.setDiaperWetness(value);
+                    player.sendMessage("Set diaper wetness to: " + value);
+                    break;
+                case "fullness":
+                    targetStats.setDiaperFullness(value);
+                    player.sendMessage("Set diaper fullness to: " + value);
+                    break;
+                case "effectduration":
+                    targetStats.setEffectDuration((int)value);;
+                    player.sendMessage("Set duration to: " + value);
+                    break;
+                case "timeworn":
+                    targetStats.setTimeWorn((int)value);
+                    player.sendMessage("Set timeworn to: " + value);
+                    break;
                 default:
-                    player.sendMessage("Usage: /dpset <bladder|bowel|both|type> <number> [playername]");
+                    player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
             }
             return true;
         }
@@ -464,12 +451,16 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         // Your tab completion logic here
         List<String> completions = new ArrayList<>();
-        if (command.getName().equalsIgnoreCase("dpset")) {
+        if (command.getName().equalsIgnoreCase("debug")) {
             if (args.length == 1) { // First argument completion
                 completions.add("bladder");
                 completions.add("bowel");
                 completions.add("both");
                 completions.add("type");
+                completions.add("wetness");
+                completions.add("fullness");
+                completions.add("effectduration");
+                completions.add("timeworn");
                 return completions; // Filter based on arguments (optional)
             } else if (args.length == 2 && args[0].equalsIgnoreCase("type")) {
                 completions.add("0");
@@ -535,11 +526,12 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 }
             }
         }
-        else if (command.getName().equalsIgnoreCase("setunderwearlevels")) {
-            if (args.length == 1) { // First argument completion
-                completions.add("wetness");
-                completions.add("fullness");
-                return completions; // Filter based on arguments (optional)
+        else if (command.getName().equalsIgnoreCase("check")) {
+            if (args.length == 1) {
+                // Add online player names to completions
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    completions.add(player.getName());
+                }
             }
         }
         return completions; // Always return the list, potentially empty.

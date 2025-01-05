@@ -5,10 +5,16 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -17,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 import com.storynook.items.ItemManager;
 
@@ -30,18 +37,25 @@ public class Plugin extends JavaPlugin
 {
   private HashMap<UUID, PlayerStats> playerStatsMap = new HashMap<>();
   private final Map<UUID, ArmorStand> armorStandTracker = new HashMap<>();
+  private Map<UUID, Integer> playerCyclesMap = new HashMap<>();
+  private Map<UUID, Integer> playerSecondsLeftMap = new HashMap<>();
+  private Map<UUID, Boolean> playerWarningsMap = new HashMap<>();
+  HashMap<UUID, Integer> rightclickCount = new HashMap<>();
+  HashMap<UUID, Boolean> firstimeran = new HashMap<>();
+  private Map<UUID, BukkitTask> stinkEffects = new HashMap<>();
+  // private Map<UUID, Boolean> playerSneakStatus = new HashMap<>();
+
 
   public Map<UUID, ArmorStand> getArmorStandTracker() {
       return armorStandTracker;
   }
   private CommandHandler commandHandler;
-  private int Multiplier;
   private ScoreboardManager manager;
   @Override
   public void onEnable()
   {
     ItemManager.init();
-    getLogger().warning("Plugin started, onEnable");
+    getLogger().info("Plugin started, onEnable");
     //Creates DataFoler if it doesn't exist.
     if (!getDataFolder().exists()) {
       getDataFolder().mkdirs();
@@ -52,7 +66,7 @@ public class Plugin extends JavaPlugin
         playerDataFolder.mkdirs();
         getLogger().info("Player data folder created");
       } catch (Exception e) {
-        getLogger().info("FIALED:Player data folder not created");
+        getLogger().warning("FIALED:Player data folder not created");
       }
     }
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
@@ -66,6 +80,7 @@ public class Plugin extends JavaPlugin
     itemManager.createPullupRecipe();
     itemManager.createThickDiaperRecipe();
     itemManager.createUnderwearRecipe();
+    // itemManager.createWasherRecipe();
     // itemManager.createDiaperPailRecipe();
     // itemManager.createLaxRecipe();
   
@@ -81,18 +96,19 @@ public class Plugin extends JavaPlugin
     getCommand("settings").setExecutor(commandHandler);
     getCommand("pee").setExecutor(commandHandler);
     getCommand("poop").setExecutor(commandHandler);
-    getCommand("dpset").setExecutor(commandHandler);
-    getCommand("dpset").setTabCompleter(commandHandler);
+    getCommand("debug").setExecutor(commandHandler);
+    getCommand("debug").setTabCompleter(commandHandler);
     getCommand("stats").setExecutor(commandHandler);
     getCommand("check").setExecutor(commandHandler);
-    getCommand("setunderwearlevels").setExecutor(commandHandler);
-    getCommand("setunderwearlevels").setTabCompleter(commandHandler);
+    getCommand("check").setTabCompleter(commandHandler);
     getCommand("caregiver").setExecutor(commandHandler);
     getCommand("caregiver").setTabCompleter(commandHandler);
     getCommand("lockincon").setExecutor(commandHandler);
     getCommand("lockincon").setTabCompleter(commandHandler);
     getCommand("unlockincon").setExecutor(commandHandler);
     getCommand("unlockincon").setTabCompleter(commandHandler);
+    getCommand("minfill").setExecutor(commandHandler);
+    getCommand("minfill").setTabCompleter(commandHandler);
 
     //Score board setup
     manager = Bukkit.getScoreboardManager();
@@ -101,13 +117,18 @@ public class Plugin extends JavaPlugin
   @Override
   public void onDisable()
   {
+    for (BukkitTask task : stinkEffects.values()) {
+        if (task != null) {
+            task.cancel();
+        }
+    }
     saveAllPlayerStats();
   }
 
   public void loadPlayerStats(Player player) {
     getLogger().warning("Player Joined " + player.getName());
     UUID playerUUID = player.getUniqueId();
-    PlayerStats stats = new PlayerStats(playerUUID);
+    PlayerStats stats = new PlayerStats(playerUUID, this);
     File playerFile = getPlayerFile(playerUUID);
     
 
@@ -129,11 +150,15 @@ public class Plugin extends JavaPlugin
       stats.setLayers(config.getInt("layers", 0));
       stats.setOptin(config.getBoolean("Optin"));
       stats.setMessing(config.getBoolean("Messing"));
+      stats.setStinklines(config.getBoolean("Stinklines", false));
       stats.setUI((int) config.getInt("UI", 1));
       stats.setBedwetting((int) config.getInt("Bedwetting", 0));
       stats.setEffectDuration((int) config.getInt("EffectDuration", 0));
       stats.setTimeWorn((int) config.getInt("TimeWorn", 0));
-      stats.setHardcore(config.getBoolean("Hardcore"));
+      stats.setMinFill((int) config.getInt("MinFill", 30));
+      stats.setHardcore(config.getBoolean("Hardcore", false));
+      stats.setspecialCG(config.getBoolean("specialCG", false));
+      stats.setAllCaregiver(config.getBoolean("AllCaregiver", false));
       stats.setBladderLockIncon(config.getBoolean("BladderLockIncon"));
       stats.setBowelLockIncon(config.getBoolean("BowelLockIncon"));
       if (config.contains("Caregivers")) {
@@ -165,8 +190,12 @@ public class Plugin extends JavaPlugin
       stats.setLayers(0);
       stats.setOptin(false);
       stats.setMessing(false);
+      stats.setStinklines(false);
+      stats.setAllCaregiver(false);
+      stats.setspecialCG(false);
       stats.setEffectDuration(0);
       stats.setTimeWorn(0);
+      stats.setMinFill(30);
       stats.setHardcore(false);
       stats.setBladderLockIncon(false);
       stats.setBowelLockIncon(false);
@@ -204,10 +233,14 @@ public class Plugin extends JavaPlugin
             config.set("Layers", stats.getLayers());
             config.set("Optin", stats.getOptin());
             config.set("Messing", stats.getMessing());
+            config.set("Stinklines", stats.getStinklines());
+            config.set("specialCG", stats.getspecialCG());
+            config.set("AllCaregiver", stats.getAllCaregiver());
             config.set("UI", stats.getUI());
             config.set("Bedwetting", stats.getBedwetting());
             config.set("EffectDuration", stats.getEffectDuration());
             config.set("TimeWorn", stats.getTimeWorn());
+            config.set("MinFill", stats.getMinFill());
             config.set("Hardcore", stats.getHardcore());
             config.set("BladderLockIncon", stats.getBladderLockIncon());
             config.set("BowelLockIncon", stats.getBowelLockIncon());
@@ -225,9 +258,25 @@ public class Plugin extends JavaPlugin
           }
     }
   }
+  public void manageStinkEffects(Player player) {
+    UUID playerUUID = player.getUniqueId();
+    PlayerStats stats = getPlayerStats(playerUUID);
+    
+    if (stats.getStinklines() && stats.getDiaperFullness() >= 100) {
+        if (!stinkEffects.containsKey(playerUUID)) {
+            StinklinesEffect effect = new StinklinesEffect(player, this);
+            stinkEffects.put(playerUUID, effect.runTaskTimer(this, 0L, 5L)); // Run every second
+        }
+    } else {
+        if (stinkEffects.containsKey(playerUUID)) {
+            stinkEffects.get(playerUUID).cancel();
+            stinkEffects.remove(playerUUID);
+        }
+    }
+  }
   private File getPlayerFile(UUID playerUUID) {
     return new File(getDataFolder(), "players" + File.separator + playerUUID.toString() + ".yml");
-}
+  }
   public PlayerStats getPlayerStats(UUID playerUUID) {
     return playerStatsMap.get(playerUUID);
   }
@@ -259,16 +308,37 @@ public class Plugin extends JavaPlugin
                 stats.increaseTimeWorn(1);
               }
               if (stats.getTimeWorn() >= 600 && player.getHealth() > 1) {
-                  double newHealth = player.getHealth() - 0.5;
-                  player.setHealth(Math.max(newHealth, 0));
+                player.damage(0.5);
               }
-              if (stats.getHydration() <= 10) {
+              if (stats.getHydration() < 10) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2 * 20, 2), true);
               }
-              else if (stats.getHydration() >= 11) {
+              else if (stats.getHydration() >= 10) {
                 player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
               }
-              triggerWarnings(player, stats);
+              int cycles = playerCyclesMap.getOrDefault(player.getUniqueId(), 0);
+              int secondsLeft = playerSecondsLeftMap.getOrDefault(player.getUniqueId(), 0);
+              boolean warning = playerWarningsMap.getOrDefault(player.getUniqueId(), false);
+              if (!warning && cycles > 6) {
+                secondsLeft = 0;
+                triggerWarnings(player, stats);
+              }
+              else {
+                if (cycles > 7 && warning) {
+                  cycles = 0;
+                }
+                if (warning) {
+                  secondsLeft++;
+                  boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
+                  double fullness = isBladder ? stats.getBladder() : stats.getBowels();
+                  double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
+                  sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
+                }
+              }
+              cycles++;
+              playerCyclesMap.put(player.getUniqueId(), cycles);
+              playerSecondsLeftMap.put(player.getUniqueId(), secondsLeft);
+              // getLogger().info("Waning: " + warning + " cycles: " + cycles + " SecondsLeft: " + secondsLeft + " Player: " + player.getName());
           }
         }
     }, 0L, 20L * 2);  // Run every 2 second (40 ticks)
@@ -277,19 +347,16 @@ public class Plugin extends JavaPlugin
     double bladderUrge = stats.getBladder() * stats.getBladderIncontinence();
     double bowelUrge = stats.getBowels() * stats.getBowelIncontinence();
     double urgeToGo = Math.max(bladderUrge, bowelUrge);
-    if(stats.getUrgeToGo() < urgeToGo){stats.setUrgeToGo((int)urgeToGo);}
+    stats.setUrgeToGo((int)urgeToGo);
   }
   //Warning system, and accident triggers.
-  private int warningCounter = 0;
   private void triggerWarnings(Player player, PlayerStats stats) {
       if (stats != null) {
         calculateUrgeToGo(stats);
-        Multiplier = Math.max(8, 75 - (67 * Math.min(stats.getUrgeToGo(), 100)) / 100);
-        warningCounter++;
-        if (warningCounter >= Multiplier) {
-          warningCounter = 0;
-          // getLogger().info("Handling warnings for player: " + player.getName());
-          boolean isBladder = stats.getBladderIncontinence() > stats.getBowels() * stats.getBowelIncontinence() ? true : false;
+        boolean warning = playerWarningsMap.getOrDefault(player.getUniqueId(), false);
+        boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
+        double random = (Math.random() * 100) + (stats.getMinFill() - ((isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence()) * (stats.getMinFill()/10)));
+        if (Math.min((int)random, 100) <= ((int)stats.getUrgeToGo()) && warning == false) {
           handleWarning(player, stats, isBladder);
         }
       }
@@ -298,40 +365,44 @@ public class Plugin extends JavaPlugin
   private void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
     double fullness = isBladder ? stats.getBladder() : stats.getBowels();
     double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-    double randomChance = (Math.random() * (10 - 1 + 1)) + 1;
+    double randomChance = (Math.random() * 10) + 1;
     double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
     if (randomChance < accidentProbability) {
-        stats.handleAccident(isBladder, player, true);
-    } else if ((fullness/10) >= (Math.random() * (8 - 1 + 1) + 1)) {
+      stats.handleAccident(isBladder, player, true);
+    } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
       if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
         player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
         player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+        playerWarningsMap.put(player.getUniqueId(), true);
       }else if(stats.getUrgeToGo() > 75){
         player.sendMessage("you can't hold it much longer!");
+        playerWarningsMap.put(player.getUniqueId(), true);
       }else{
         player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
+        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+        playerWarningsMap.put(player.getUniqueId(), true);
       }
-        sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
     }
-}
+  }
 
-private void sneakCheck(Player player, PlayerStats stats, double need, double incontinenceLevel, boolean isBladder) {
-    Bukkit.getScheduler().runTaskLater(this, () -> {
-        double randomChance = (Math.random() * (10 - 1 + 1)) + 1;
-        boolean sneakFails = randomChance <= incontinenceLevel;
-
-        if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10)) {
-            stats.handleAccident(isBladder, player, true);
-        } else {
-            if(isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10){
-              player.sendMessage("Good job! You held it in.");
-              stats.increaseUrgeToGo(1);
-            }
-            else{return;}
-        }
-    }, 20L * 5);
-}
+  private void sneakCheck(Player player, PlayerStats stats, double need, double incontinenceLevel, boolean isBladder) {
+    double randomChance = (Math.random() * 10) + 1;
+    boolean sneakFails = randomChance <= incontinenceLevel;
+    int secondsleft = playerSecondsLeftMap.get(player.getUniqueId());
+    
+    if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) {  
+        stats.handleAccident(isBladder, player, true);
+        playerSecondsLeftMap.put(player.getUniqueId(), 0);
+        playerWarningsMap.put(player.getUniqueId(), false);
+    } else {
+      if((isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && player.isSneaking() && secondsleft <= 3){
+        player.sendMessage("Good job! You held it in.");
+        playerSecondsLeftMap.put(player.getUniqueId(), 0);
+        playerWarningsMap.put(player.getUniqueId(), false);
+      }
+    }
+  }
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();
@@ -393,5 +464,47 @@ private void sneakCheck(Player player, PlayerStats stats, double need, double in
             else {player.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());}
         }
     }, 0L, 20L);  // Update every second (20 ticks)
+  }
+
+  public void CheckLittles(Player player, PlayerStats stats){
+    if (stats != null) {
+        // Check for target player argument and optional validation
+        String image = "";
+        String state = "";
+        
+        if (stats != null) {
+            image = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 2);
+            if ((int)stats.getDiaperWetness() > 1 && (int)stats.getDiaperFullness() > 1) {
+                // state = "Wet And Messy";
+            } else if ((int)stats.getDiaperWetness() > 1) {
+                // state = "Wet";
+            } else if ((int)stats.getDiaperFullness() > 1) {
+                // state = "Messy";
+            } else if ((int)stats.getDiaperFullness() == 0 && (int)stats.getDiaperWetness() == 0) {
+                // state = "Clean";
+            }
+            player.sendTitle(image, state, 10, 20, 10);
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            scheduler.schedule(() -> rightclickCount.put(player.getUniqueId(), 0), 4, TimeUnit.SECONDS);
+            // rightclickCount.put(player.getUniqueId(), 0);
+        } 
+    }
+  }
+  private ConcurrentHashMap<UUID, String> playerInputAwaiting = new ConcurrentHashMap<>();
+
+  public boolean isAwaitingInput(UUID uuid) {
+      return playerInputAwaiting.containsKey(uuid);
+  }
+
+  public String getAwaitingInputType(UUID uuid) {
+      return playerInputAwaiting.get(uuid);
+  }
+
+  public void setAwaitingInput(UUID uuid, String type) {
+      playerInputAwaiting.put(uuid, type);
+  }
+
+  public void clearAwaitingInput(UUID uuid) {
+      playerInputAwaiting.remove(uuid);
   }
 }

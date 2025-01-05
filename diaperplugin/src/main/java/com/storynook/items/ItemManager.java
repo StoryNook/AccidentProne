@@ -33,6 +33,7 @@ public class ItemManager {
     public static ItemStack toilet;
     public static ItemStack DiaperStuffer;
     public static ItemStack Tape;
+    // public static ItemStack Washer;
 
     public static void init(){
         //Create the non-craftable Items.
@@ -115,6 +116,25 @@ public class ItemManager {
     //     // Register the recipe
     //     Bukkit.addRecipe(recipe);
     // }
+
+    // public void createWasherRecipe() {
+    //     // Define the custom item
+    //     ItemStack item = new ItemStack(Material.FURNACE);
+    //     ItemMeta meta = item.getItemMeta();
+    //     meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
+    //     meta.setCustomModelData(626014);// Custom Model Data for texture
+    //     item.setItemMeta(meta);
+    //     Washer = item;
+
+    //      // Create the recipe
+    //     ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Washer"), Washer);
+    //     recipe.addIngredient(Material.FURNACE);
+    //     recipe.addIngredient(Material.WATER_BUCKET);
+
+    //     // Register the recipe
+    //     Bukkit.addRecipe(recipe);
+    // }
+
     public void createDiaperStufferRecipe() {
         // Define the custom item
         ItemStack item = new ItemStack(Material.BARRIER);
