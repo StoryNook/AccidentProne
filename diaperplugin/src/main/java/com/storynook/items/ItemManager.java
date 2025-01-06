@@ -8,6 +8,7 @@ import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.RecipeChoice;
@@ -24,10 +25,10 @@ public class ItemManager {
     private JavaPlugin plugin;
     public static ItemStack diaperpail;
     public static ItemStack diaper;
-    public static ItemStack stinkydiaper;
-    public static ItemStack wetdiaper;
-    public static ItemStack wetpullup;
-    public static ItemStack wetthickdiaper;
+    // public static ItemStack stinkydiaper;
+    // public static ItemStack wetdiaper;
+    // public static ItemStack wetpullup;
+    // public static ItemStack wetthickdiaper;
     public static ItemStack underwear;
     public static ItemStack thickdiaper;
     public static ItemStack pullup;
@@ -44,10 +45,10 @@ public class ItemManager {
     public ItemManager(JavaPlugin plugin){this.plugin = plugin;}
     public static void init(JavaPlugin plugin){
         //Create the non-craftable Items.
-        createWetDiaper();
-        createStinkyDiaper();
-        createWetPullup();
-        createWetThickDiaper();
+        // createWetDiaper();
+        // createStinkyDiaper();
+        // createWetPullup();
+        // createWetThickDiaper();
         // for (Material woolColor : Material.values()) {
         //     if (woolColor.name().endsWith("_WOOL")) {
         //         createPants(woolColor, 0, "Clean Pants");
@@ -59,41 +60,93 @@ public class ItemManager {
         // }
     }
 
-    public static void createStinkyDiaper(){
-        // Define the custom item
-        ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("Stinky Diaper");
-        meta.setCustomModelData(626004);
+    private static StringBuilder Cleantime(int timeworn){
+            int totalHours = (int) (timeworn / 20); // Total hours based on the assumption that each tick is approximately 1/20th of a second
+            int months = totalHours / (30 * 24);
+            int weeks = (totalHours % (30 * 24)) / (7 * 24);
+            int days = ((totalHours % (30 * 24)) % (7 * 24)) / 24;
+            int hours = ((totalHours % (30 * 24)) % (7 * 24)) % 24;
+    
+            // Output the time worn in a readable format
+            StringBuilder timeWornDisplay = new StringBuilder();
+            if (months > 0) {
+                timeWornDisplay.append(months).append(" month").append(months > 1 ? "s" : "").append(" ");
+            }
+            if (weeks > 0 || (months == 0 && weeks == 0 && days == 0)) { // Include weeks only if not zero or if no months are present
+                timeWornDisplay.append(weeks).append(" week").append(weeks > 1 ? "s" : "").append(" ");
+            }
+            if (days > 0 || (months == 0 && weeks == 0)) { // Include days only if not zero or if no months and no weeks are present
+                timeWornDisplay.append(days).append(" day").append(days > 1 ? "s" : "").append(" ");
+            }
+            if (hours > 0 || (months == 0 && weeks == 0 && days == 0)) { // Include hours only if not zero or if no months, no weeks, and no days are present
+                timeWornDisplay.append(hours).append(" hour").append(hours > 1 ? "s" : "").append(" ");
+            }
+            return timeWornDisplay;
+        }
+    
+        public static ItemStack createStinkyDiaper(Player owner, int wetness, int fullness, int timeworn){
+            // Define the custom item
+            ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
+            ItemMeta meta = item.getItemMeta();
+            meta.setDisplayName("Stinky Diaper");
+            meta.setCustomModelData(626004);
+            List<String> lore = Arrays.asList(
+                        "Owner: " + ChatColor.AQUA + owner.getDisplayName(),
+                        "Useage: " + ChatColor.GREEN + Math.max(fullness, wetness),
+                        "Time Worn: " + ChatColor.YELLOW + Cleantime(timeworn)
+                );
+        meta.setLore(lore);
         item.setItemMeta(meta);
-        stinkydiaper = item;
+        // stinkydiaper = item;
+        return item;
     }
-    public static void createWetDiaper(){
+    public static ItemStack createWetDiaper(Player owner, int wetness, int fullness, int timeworn){
         // Define the custom item
         ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Wet Diaper");
         meta.setCustomModelData(626005);
+        List<String> lore = Arrays.asList(
+                    "Owner: " + ChatColor.AQUA + owner.getDisplayName(),
+                    "Useage: " + ChatColor.GREEN + Math.max(fullness, wetness),
+                    "Time Worn: " + ChatColor.YELLOW + Cleantime(timeworn)
+                );
+        meta.setLore(lore);
         item.setItemMeta(meta);
-        wetdiaper = item;
+        // wetdiaper = item;
+        return item;
     }
-    public static void createWetPullup(){
+    public static ItemStack createWetPullup(Player owner, int wetness, int fullness, int timeworn){
         // Define the custom item
         ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Wet Pullup");
         meta.setCustomModelData(626010);
+        List<String> lore = Arrays.asList(
+                    "Owner: " + ChatColor.AQUA + owner.getDisplayName(),
+                    "Useage: " + ChatColor.GREEN + Math.max(fullness, wetness),
+                    "Time Worn: " + ChatColor.YELLOW + Cleantime(timeworn)
+                );
+        meta.setLore(lore);
         item.setItemMeta(meta);
-        wetpullup = item;
+        // wetpullup = item;
+        return item;
     }
-    public static void createWetThickDiaper(){
+    public static ItemStack createWetThickDiaper(Player owner, int wetness, int fullness, int timeworn){
         // Define the custom item
         ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Wet Thick Diaper");
         meta.setCustomModelData(626011);
+        List<String> lore = Arrays.asList(
+                    "Owner: " + ChatColor.AQUA + owner.getDisplayName(),
+                    "Useage: " + ChatColor.GREEN + Math.max(fullness, wetness),
+                    "Time Worn: " + ChatColor.YELLOW + Cleantime(timeworn)
+                );
+        meta.setLore(lore);
         item.setItemMeta(meta);
-        wetthickdiaper = item;
+        // wetthickdiaper = item;
+        return item;
     }
     //Recipes for crafting custom items
     public void createToiletRecipe() {

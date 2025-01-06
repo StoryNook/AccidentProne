@@ -334,7 +334,7 @@ public class PlayerEventListener implements Listener {
             int customModelData = item.getItemMeta().getCustomModelData();
 
             // Logic to provide items based on wetness and fullness
-            distributeUsedItems(actor, stats);
+            distributeUsedItems(actor, target, stats);
 
             // Reset and update
             resetAndUpdateStats(stats, customModelData);
@@ -357,14 +357,14 @@ public class PlayerEventListener implements Listener {
         }
     }
 
-    private void distributeUsedItems(Player actor, PlayerStats stats) {
+    private void distributeUsedItems(Player actor, Player target, PlayerStats stats) {
         // Distribute items according to the target's diaper status
         // Similar to the already implemented logic
 
-        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){actor.getInventory().addItem(ItemManager.stinkydiaper);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){actor.getInventory().addItem(ItemManager.wetpullup);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){actor.getInventory().addItem(ItemManager.wetdiaper);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){actor.getInventory().addItem(ItemManager.wetthickdiaper);}
+        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){ItemStack stinkydiaper = ItemManager.createStinkyDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(stinkydiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){ItemStack wetpullup = ItemManager.createWetPullup(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn()); actor.getInventory().addItem(wetpullup);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){ItemStack wetdiaper = ItemManager.createWetDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetdiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){ItemStack wetthickdiaper = ItemManager.createWetThickDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetthickdiaper);}
     }
 
     private void resetAndUpdateStats(PlayerStats stats, int customModelData) {
