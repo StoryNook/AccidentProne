@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -54,7 +55,7 @@ public class Plugin extends JavaPlugin
   @Override
   public void onEnable()
   {
-    ItemManager.init();
+    ItemManager.init(this);
     getLogger().info("Plugin started, onEnable");
     //Creates DataFoler if it doesn't exist.
     if (!getDataFolder().exists()) {
