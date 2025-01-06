@@ -859,23 +859,17 @@ public class PlayerEventListener implements Listener {
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
         if (stats.getBladder() > 10) {
             stats.setBladder(0);
-            stats.decreaseBladderIncontinence(0.2);
-            if (stats.getBladderIncontinence() > 7){
-                player.sendMessage("Good job making it to the potty!");
-            }
-            else if (stats.getBladderIncontinence() >= 5) {
-                player.sendMessage("Potty training us going well!");
-            }
+            if(!stats.getBladderLockIncon()){stats.decreaseBladderIncontinence(0.2);}
         }
         if (stats.getMessing() && stats.getBowels() > 10) {
             stats.setBowels(0);
-            stats.decreaseBowelIncontinence(0.2);
-            if (stats.getBowelIncontinence() > 7) {
-                player.sendMessage("Good job making it to the potty!");
-            }
-            else if (stats.getBowelIncontinence() >= 5) {
-                player.sendMessage("Potty training us going well!");
-            }
+            if(!stats.getBowelLockIncon()){stats.decreaseBowelIncontinence(0.2);}
+        }
+        if (stats.getBowelIncontinence() > 7 || stats.getBladderIncontinence() > 7) {
+            player.sendMessage("Good job making it to the potty!");
+        }
+        else if (stats.getBowelIncontinence() >= 5 || stats.getBladderIncontinence() >= 5) {
+            player.sendMessage("Potty training is going well!");
         }
         stats.setUrgeToGo(0);
 
