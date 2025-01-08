@@ -27,6 +27,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 import com.storynook.items.ItemManager;
+import com.storynook.items.underwear;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -74,13 +75,14 @@ public class Plugin extends JavaPlugin
     CustomInventory customInventory = new CustomInventory(this);
     //Create all the custom recipes and items related
     ItemManager itemManager = new ItemManager(this);
+    underwear underwear = new underwear(this);
     itemManager.createToiletRecipe();
-    itemManager.createTapeRecipe();
-    itemManager.createDiaperStufferRecipe();
-    itemManager.createDiaperRecipe();
-    itemManager.createPullupRecipe();
-    itemManager.createThickDiaperRecipe();
-    itemManager.createUnderwearRecipe();
+    underwear.createTapeRecipe();
+    underwear.createDiaperStufferRecipe();
+    underwear.createDiaperRecipe();
+    underwear.createPullupRecipe();
+    underwear.createThickDiaperRecipe();
+    underwear.createUnderwearRecipe();
     // itemManager.createWasherRecipe();
     // itemManager.createDiaperPailRecipe();
     // itemManager.createLaxRecipe();

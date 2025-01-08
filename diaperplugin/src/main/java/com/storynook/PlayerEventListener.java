@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Random;
 
 import com.storynook.items.ItemManager;
+import com.storynook.items.underwear;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -16,12 +18,16 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -45,6 +51,7 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataHolder;
 import org.bukkit.persistence.PersistentDataType;
@@ -361,10 +368,10 @@ public class PlayerEventListener implements Listener {
         // Distribute items according to the target's diaper status
         // Similar to the already implemented logic
 
-        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){ItemStack stinkydiaper = ItemManager.createStinkyDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(stinkydiaper);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){ItemStack wetpullup = ItemManager.createWetPullup(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn()); actor.getInventory().addItem(wetpullup);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){ItemStack wetdiaper = ItemManager.createWetDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetdiaper);}
-        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){ItemStack wetthickdiaper = ItemManager.createWetThickDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetthickdiaper);}
+        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){ItemStack stinkydiaper = underwear.createStinkyDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(stinkydiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){ItemStack wetpullup = underwear.createWetPullup(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn()); actor.getInventory().addItem(wetpullup);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){ItemStack wetdiaper = underwear.createWetDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetdiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){ItemStack wetthickdiaper = underwear.createWetThickDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetthickdiaper);}
     }
 
     private void resetAndUpdateStats(PlayerStats stats, int customModelData) {
@@ -740,6 +747,47 @@ public class PlayerEventListener implements Listener {
     //         }
     //     }
     // }
+
+
+
+
+    // @EventHandler
+    // public void onWasherPlace(BlockPlaceEvent event) {
+    //     ItemStack item = event.getItemInHand();
+
+    //     if (item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
+    //         event.setCancelled(true);
+            
+    //         // Get the location where the block was supposed to be placed
+    //         Block block = event.getBlockPlaced();
+    //         Location loc = block.getLocation();
+            
+    //         // Create and place an invisible item frame
+    //         ItemFrame itemFrame = (ItemFrame) loc.getWorld().spawnEntity(loc, EntityType.ITEM_FRAME);
+            
+    //         itemFrame.setInvulnerable(true);
+    //         itemFrame.setSilent(true); // Prevent sound
+    //         itemFrame.setMetadata("isInvisible", new FixedMetadataValue(plugin, true));
+
+    //         // Set custom modeled item in the item frame
+    //         ItemStack furnaceItem = new ItemStack(Material.FURNACE);
+    //         ItemMeta meta = furnaceItem.getItemMeta();
+    //         meta.setCustomModelData(626014); // Set the custom model data
+    //         furnaceItem.setItemMeta(meta);
+            
+    //         itemFrame.setItem(furnaceItem);
+    //         loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+    //         // Optional: You can set the orientation of the item frame if necessary
+    //         // itemFrame.setFacingDirection(BlockFace.NORTH, true); 
+    //     }
+    // }
+
+
+
+
+
+
+
 
     // @EventHandler
     // public void onWasherPlace(BlockPlaceEvent event) {
