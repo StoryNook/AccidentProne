@@ -1,22 +1,13 @@
 package com.storynook.items;
 
-import java.util.Arrays;
-import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.RecipeChoice;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.md_5.bungee.api.ChatColor;
@@ -24,31 +15,11 @@ import net.md_5.bungee.api.ChatColor;
 public class ItemManager {
     private JavaPlugin plugin;
     public static ItemStack diaperpail;
-    // public static ItemStack cleanPants;
-    // public static ItemStack wetPants;
-    // public static ItemStack dirtyPants;
-    // public static ItemStack wetAndDirtyPants;
     // public static ItemStack lax;
     // public static ItemStack dur;
     public static ItemStack toilet;
-    // public static ItemStack Washer;
+    public static ItemStack Washer;
     public ItemManager(JavaPlugin plugin){this.plugin = plugin;}
-    public static void init(JavaPlugin plugin){
-        //Create the non-craftable Items.
-        // createWetDiaper();
-        // createStinkyDiaper();
-        // createWetPullup();
-        // createWetThickDiaper();
-        // for (Material woolColor : Material.values()) {
-        //     if (woolColor.name().endsWith("_WOOL")) {
-        //         createPants(woolColor, 0, "Clean Pants");
-        //         createPants(woolColor, 20, "Wet Pants");
-        //         createPants(woolColor, 40, "Dirty Pants");
-        //         createPants(woolColor, 60, "Wet and Dirty Pants");
-        //         createCleanPantsRecipe(plugin, woolColor);
-        //     }
-        // }
-    }
 
     //Recipes for crafting custom items
     public void createToiletRecipe() {
@@ -89,23 +60,23 @@ public class ItemManager {
 
 
 
-    // public void createWasherRecipe() {
-    //     // Define the custom item
-    //     ItemStack item = new ItemStack(Material.FURNACE);
-    //     ItemMeta meta = item.getItemMeta();
-    //     meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
-    //     meta.setCustomModelData(626014);// Custom Model Data for texture
-    //     item.setItemMeta(meta);
-    //     Washer = item;
+    public void createWasherRecipe() {
+        // Define the custom item
+        ItemStack item = new ItemStack(Material.FURNACE);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
+        meta.setCustomModelData(626014);// Custom Model Data for texture
+        item.setItemMeta(meta);
+        Washer = item;
 
-    //      // Create the recipe
-    //     ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Washer"), Washer);
-    //     recipe.addIngredient(Material.FURNACE);
-    //     recipe.addIngredient(Material.WATER_BUCKET);
+         // Create the recipe
+        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Washer"), Washer);
+        recipe.addIngredient(Material.FURNACE);
+        recipe.addIngredient(Material.WATER_BUCKET);
 
-    //     // Register the recipe
-    //     Bukkit.addRecipe(recipe);
-    // }
+        // Register the recipe
+        Bukkit.addRecipe(recipe);
+    }
 
     // public void createLaxRecipe() {
     //     // Define the custom item

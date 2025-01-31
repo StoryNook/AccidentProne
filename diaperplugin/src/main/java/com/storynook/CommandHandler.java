@@ -1,5 +1,6 @@
 package com.storynook;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,12 +11,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+
+import com.storynook.menus.SettingsMenu;
 
 import net.md_5.bungee.api.ChatColor;
 
 
 public class CommandHandler implements CommandExecutor, TabCompleter{
     private Plugin plugin;
+    HashMap<UUID, Boolean> NightVisionToggle = new HashMap<>();
     public CommandHandler(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -23,7 +29,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
        if (command.getName().equalsIgnoreCase("settings") && sender instanceof Player) {
         Player player = (Player) sender;
-        CustomInventory.OpenSettings(player, plugin);
+        SettingsMenu.OpenSettings(player, plugin);
 
         return true;
         }
@@ -50,10 +56,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             if (stats != null) {
                 sender.sendMessage("Your current statistics are:");
                 sender.sendMessage("HardCore: " + (stats.getHardcore() ? ChatColor.RED + "On" : ChatColor.GREEN + "Off"));
-                sender.sendMessage("Diaper wetness: " + stats.getDiaperWetness() + "/100");
-                if(stats.getDiaperFullness() > 0){sender.sendMessage("Diaper fullness: " + stats.getDiaperFullness() + "/100");}
-                sender.sendMessage("Bladder incontinence: " + stats.getBladderIncontinence() + "/10");
-                if(stats.getMessing()){sender.sendMessage("Bowel incontinence: " + stats.getBowelIncontinence() + "/10");}
+                sender.sendMessage("Diaper wetness: " + Math.round(stats.getDiaperWetness()) + "/100");
+                if(stats.getDiaperFullness() > 0){sender.sendMessage("Diaper fullness: " + Math.round(stats.getDiaperFullness()) + "/100");}
+                sender.sendMessage("Bladder incontinence: " + Math.round(stats.getBladderIncontinence()) + "/10");
+                if(stats.getMessing()){sender.sendMessage("Bowel incontinence: " + Math.round(stats.getBowelIncontinence()) + "/10");}
                 sender.sendMessage("MinFill: " + (int)stats.getMinFill());
                 sender.sendMessage("Time Full " + stats.getTimeWorn());
                 sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + (stats.getMessing() ? " Bowels Locked? " + stats.getBowelLockIncon() : ""));
@@ -90,7 +96,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     
                     double distance = playerLoc.distance(targetLoc);
                     if(distance <=10){
-                        plugin.CheckLittles(player, targetStats);
+                        plugin.CheckLittles(player, targetStats, target);
                     } else {
                         player.sendMessage("The target player is not within the specified distance.");
                     } 
@@ -362,6 +368,18 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
 
             return true;
         }
+        if (command.getName().equalsIgnoreCase("nightvision") || command.getName().equalsIgnoreCase("nv")  && sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!player.hasPermission("diaperplugin.nightvision") || !player.isOp()) {
+                player.sendMessage("You do not have permission to use this command.");
+                return true;
+            }
+            UUID playerUUID = player.getUniqueId();
+            boolean currentState = NightVisionToggle.getOrDefault(playerUUID, false);
+            NightVisionToggle.put(playerUUID, !currentState);
+    
+            return true;
+        }
         if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("diaperplugin.debug") || !player.isOp()) {
@@ -447,6 +465,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
         
         return false;
     }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         // Your tab completion logic here

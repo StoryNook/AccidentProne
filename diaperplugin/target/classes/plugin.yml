@@ -29,6 +29,12 @@ commands:
   minfill:
     description: "Used so players can set the min amount their stats need to be for a warning"
     usage: "/minfill <amount|help>"
+  nightvision:
+    description: "Toggles NightVision"
+  nv:
+    description: "Toggles NightVision"
   permissions:
     diaperplugin.debug:
       description: "Permission to set bladder, bowels, and underwearType."
+    diaperplugin.nightvision:
+      description: "Allows the player to apply a nightvision effect"

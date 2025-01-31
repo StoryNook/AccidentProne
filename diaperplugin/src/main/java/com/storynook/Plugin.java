@@ -16,19 +16,32 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Levelled;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
-import com.storynook.items.ItemManager;
-import com.storynook.items.underwear;
 
+import com.storynook.Event_Listeners.PantsCrafting;
+import com.storynook.Event_Listeners.washer;
+import com.storynook.items.ItemManager;
+import com.storynook.items.pants;
+import com.storynook.items.underwear;
+import com.storynook.menus.Caregivermenu;
+import com.storynook.menus.IncontinenceMenu;
+import com.storynook.menus.SettingsMenu;
+
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -43,8 +56,10 @@ public class Plugin extends JavaPlugin
   private Map<UUID, Integer> playerSecondsLeftMap = new HashMap<>();
   private Map<UUID, Boolean> playerWarningsMap = new HashMap<>();
   HashMap<UUID, Integer> rightclickCount = new HashMap<>();
+  HashMap<UUID, Integer> HydrationSpike = new HashMap<>();
+  HashMap<UUID, Double> activityMultiplier = new HashMap<>();
   HashMap<UUID, Boolean> firstimeran = new HashMap<>();
-  private Map<UUID, BukkitTask> stinkEffects = new HashMap<>();
+  private Map<UUID, BukkitTask> ParticleEffects = new HashMap<>();
   // private Map<UUID, Boolean> playerSneakStatus = new HashMap<>();
 
 
@@ -56,7 +71,6 @@ public class Plugin extends JavaPlugin
   @Override
   public void onEnable()
   {
-    ItemManager.init(this);
     getLogger().info("Plugin started, onEnable");
     //Creates DataFoler if it doesn't exist.
     if (!getDataFolder().exists()) {
@@ -72,10 +86,16 @@ public class Plugin extends JavaPlugin
       }
     }
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
-    CustomInventory customInventory = new CustomInventory(this);
+    SettingsMenu SettingsMenu = new SettingsMenu(this);
+    Caregivermenu caregivermenu = new Caregivermenu(this);
+    IncontinenceMenu incontinencemenu = new IncontinenceMenu(this);
+    PantsCrafting pantsCrafting = new PantsCrafting(this);
+    washer washer = new washer(this);
     //Create all the custom recipes and items related
     ItemManager itemManager = new ItemManager(this);
     underwear underwear = new underwear(this);
+    pants pants = new pants(this);
+
     itemManager.createToiletRecipe();
     underwear.createTapeRecipe();
     underwear.createDiaperStufferRecipe();
@@ -83,13 +103,20 @@ public class Plugin extends JavaPlugin
     underwear.createPullupRecipe();
     underwear.createThickDiaperRecipe();
     underwear.createUnderwearRecipe();
-    // itemManager.createWasherRecipe();
+    underwear.WashedUnderwear();
+    pants.createCleanPantsRecipe();
+    pants.WashedPants();
+    itemManager.createWasherRecipe();
     // itemManager.createDiaperPailRecipe();
     // itemManager.createLaxRecipe();
   
    
     getServer().getPluginManager().registerEvents(playerEventListener, this);
-    getServer().getPluginManager().registerEvents(customInventory, this);
+    getServer().getPluginManager().registerEvents(SettingsMenu, this);
+    getServer().getPluginManager().registerEvents(caregivermenu, this);
+    getServer().getPluginManager().registerEvents(incontinencemenu, this);
+    getServer().getPluginManager().registerEvents(pantsCrafting, this);
+    getServer().getPluginManager().registerEvents((Listener) washer, this);
     UpdateStats();
 
     playerStatsMap = new HashMap<UUID, PlayerStats>();
@@ -112,6 +139,8 @@ public class Plugin extends JavaPlugin
     getCommand("unlockincon").setTabCompleter(commandHandler);
     getCommand("minfill").setExecutor(commandHandler);
     getCommand("minfill").setTabCompleter(commandHandler);
+    getCommand("nightvision").setExecutor(commandHandler);
+    getCommand("nv").setExecutor(commandHandler);
 
     //Score board setup
     manager = Bukkit.getScoreboardManager();
@@ -120,7 +149,7 @@ public class Plugin extends JavaPlugin
   @Override
   public void onDisable()
   {
-    for (BukkitTask task : stinkEffects.values()) {
+    for (BukkitTask task : ParticleEffects.values()) {
         if (task != null) {
             task.cancel();
         }
@@ -153,7 +182,7 @@ public class Plugin extends JavaPlugin
       stats.setLayers(config.getInt("layers", 0));
       stats.setOptin(config.getBoolean("Optin"));
       stats.setMessing(config.getBoolean("Messing"));
-      stats.setStinklines(config.getBoolean("Stinklines", false));
+      stats.setParticleEffects(config.getInt("Stinklines", 0));
       stats.setUI((int) config.getInt("UI", 1));
       stats.setBedwetting((int) config.getInt("Bedwetting", 0));
       stats.setEffectDuration((int) config.getInt("EffectDuration", 0));
@@ -162,6 +191,7 @@ public class Plugin extends JavaPlugin
       stats.setHardcore(config.getBoolean("Hardcore", false));
       stats.setspecialCG(config.getBoolean("specialCG", false));
       stats.setAllCaregiver(config.getBoolean("AllCaregiver", false));
+      stats.setvisableUnderwear(config.getBoolean("visableUnderwear", false));
       stats.setBladderLockIncon(config.getBoolean("BladderLockIncon"));
       stats.setBowelLockIncon(config.getBoolean("BowelLockIncon"));
       if (config.contains("Caregivers")) {
@@ -193,13 +223,14 @@ public class Plugin extends JavaPlugin
       stats.setLayers(0);
       stats.setOptin(false);
       stats.setMessing(false);
-      stats.setStinklines(false);
+      stats.setParticleEffects(0);
       stats.setAllCaregiver(false);
       stats.setspecialCG(false);
       stats.setEffectDuration(0);
       stats.setTimeWorn(0);
       stats.setMinFill(30);
       stats.setHardcore(false);
+      stats.setvisableUnderwear(false);
       stats.setBladderLockIncon(false);
       stats.setBowelLockIncon(false);
       stats.setUI(1);
@@ -236,7 +267,7 @@ public class Plugin extends JavaPlugin
             config.set("Layers", stats.getLayers());
             config.set("Optin", stats.getOptin());
             config.set("Messing", stats.getMessing());
-            config.set("Stinklines", stats.getStinklines());
+            config.set("Stinklines", stats.getParticleEffects());
             config.set("specialCG", stats.getspecialCG());
             config.set("AllCaregiver", stats.getAllCaregiver());
             config.set("UI", stats.getUI());
@@ -245,6 +276,7 @@ public class Plugin extends JavaPlugin
             config.set("TimeWorn", stats.getTimeWorn());
             config.set("MinFill", stats.getMinFill());
             config.set("Hardcore", stats.getHardcore());
+            config.set("visableUnderwear", stats.getvisableUnderwear());
             config.set("BladderLockIncon", stats.getBladderLockIncon());
             config.set("BowelLockIncon", stats.getBowelLockIncon());
             List<String> uuidStrings = stats.getCaregivers().stream()
@@ -261,22 +293,6 @@ public class Plugin extends JavaPlugin
           }
     }
   }
-  public void manageStinkEffects(Player player) {
-    UUID playerUUID = player.getUniqueId();
-    PlayerStats stats = getPlayerStats(playerUUID);
-    
-    if (stats.getStinklines() && stats.getDiaperFullness() >= 100) {
-        if (!stinkEffects.containsKey(playerUUID)) {
-            StinklinesEffect effect = new StinklinesEffect(player, this);
-            stinkEffects.put(playerUUID, effect.runTaskTimer(this, 0L, 5L)); // Run every second
-        }
-    } else {
-        if (stinkEffects.containsKey(playerUUID)) {
-            stinkEffects.get(playerUUID).cancel();
-            stinkEffects.remove(playerUUID);
-        }
-    }
-  }
   private File getPlayerFile(UUID playerUUID) {
     return new File(getDataFolder(), "players" + File.separator + playerUUID.toString() + ".yml");
   }
@@ -290,31 +306,163 @@ public class Plugin extends JavaPlugin
                 savePlayerStats(player);
             }
         }
+  }
+  public boolean isNearRunningWater(Player player) {
+    Location playerLocation = player.getLocation();
+    World world = player.getWorld();
+
+    // Define the search radius around the player
+    int radius = 3;
+
+    for (int x = -radius; x <= radius; x++) {
+        for (int y = -1; y <= 1; y++) { // Check one block above and below the player
+            for (int z = -radius; z <= radius; z++) {
+                // Get the block at the current offset
+                Block block = world.getBlockAt(playerLocation.clone().add(x, y, z));
+
+                // Check if the block is water and is flowing
+                if (block.getType() == Material.WATER) {
+                    BlockData data = block.getBlockData();
+                    if (data instanceof Levelled) {
+                        Levelled water = (Levelled) data;
+
+                        // Flowing water has a level > 0
+                        if (water.getLevel() > 0) {
+                            return true; // Found flowing water nearby
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    return false; // No running water found nearby
+  }
+
+  public boolean isOutsideInRain(Player player) {
+    World world = player.getWorld();
+
+    // Check if it is raining in the world
+    if (!world.hasStorm()) {
+        return false; // No rain, player cannot be in the rain
+    }
+
+    Location playerLocation = player.getLocation();
+    int playerX = playerLocation.getBlockX();
+    int playerY = playerLocation.getBlockY();
+    int playerZ = playerLocation.getBlockZ();
+
+    // Check for blocks directly above the player
+    for (int y = playerY + 1; y <= world.getMaxHeight(); y++) {
+        Block block = world.getBlockAt(playerX, y, playerZ);
+
+        if (!block.isPassable()) { // A non-passable block is blocking the rain
+            return false; // Player is sheltered from the rain
+        }
+    }
+
+    return true; // No blocks above, and it's raining
+  }
+
+
   private void UpdateStats() {
     Bukkit.getScheduler().runTaskTimer(this, () -> {
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerStats stats = getPlayerStats(player.getUniqueId());
+            if (commandHandler.NightVisionToggle.getOrDefault(player.getUniqueId(), false))
+            {
+              player.removePotionEffect(PotionEffectType.NIGHT_VISION);
+              player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 15 * 20, 1), true);
+            }
 
-            if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) {
-              stats.decreaseHydration(0.1);
+            if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) { // Default to 1.0 if no multiplier is set
+              double hydrationDecreaseRate = 0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0);
+              stats.decreaseHydration(hydrationDecreaseRate);
               if (stats.getEffectDuration() == 0) {
                 stats.setBladderFillRate(0.2);
                 stats.setBowelFillRate(0.07);
               }
-              stats.increaseBladder(stats.getBladderFillRate());
-              if (player.getFoodLevel() > 2 && stats.getMessing()) {
-                  stats.increaseBowels(stats.getBowelFillRate());
+              if (HydrationSpike.getOrDefault(player.getUniqueId(), 0) > 0 || isNearRunningWater(player) || isOutsideInRain(player)) {
+                stats.increaseBladder(stats.getBladderFillRate() * 2);
+              }
+              else {
+                stats.increaseBladder(stats.getBladderFillRate());
+              }
+
+              if (stats.getMessing()) {
+                double saturation = player.getSaturation();
+                int hunger = player.getFoodLevel();
+
+                double adjustedRate;
+
+                if (saturation > 0) {
+                    // While saturation > 0, base fill rate on saturation depletion
+                    double saturationImpact = (5.0 - saturation) / 5.0; // Scales from 0 to 1
+                    adjustedRate = stats.getBowelFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0) * (1 + saturationImpact);
+                } else {
+                    // Once saturation = 0, base fill rate on hunger depletion
+                    adjustedRate = stats.getBowelFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0) * 1.5; // Spike when saturation is 0
+                    adjustedRate *= (1 + (20 - hunger) * 0.02); // Add hunger impact
+                }
+
+                stats.increaseBowels(adjustedRate);
               }
               stats.decreaseEffectDuration(1);
               if (stats.getDiaperFullness() >= 100 || stats.getDiaperWetness() >= 100) {
                 stats.increaseTimeWorn(1);
               }
+              if (stats.getDiaperFullness() > 0) {
+                // double reducedFullness = Math.min(stats.getDiaperFullness(), 100) / 100; // Ensure fullness does not exceed 100
+                
+                int underweartype = stats.getUnderwearType();
+                int slownessLevel = 0;
+                int diaperFullness = (int) stats.getDiaperFullness();
+                int[] fullnessThresholds = {25 * underweartype, 50 * underweartype, 75 * underweartype, 100 * underweartype};
+                
+                if (diaperFullness >= fullnessThresholds[3]) {
+                  slownessLevel = underweartype + 1; // Max slowness at full 100%
+                } else if (diaperFullness >= fullnessThresholds[2]) {
+                    slownessLevel = Math.min(3, underweartype + 1);
+                } else if (diaperFullness >= fullnessThresholds[1]) {
+                    slownessLevel = Math.min(2, underweartype + 1);
+                } else if (diaperFullness >= fullnessThresholds[0]) {
+                    slownessLevel = Math.min(1, underweartype + 1);
+                } else if(diaperFullness >=100 && underweartype < 1) {
+                  slownessLevel = 2;
+                }
+                
+                player.removePotionEffect(PotionEffectType.SLOW);
+                if (slownessLevel > 0) {
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, slownessLevel - 1), true); // Apply effect with zero-based index adjustment
+                }
+                // if (reducedFullness == 1.0 && stats.getUnderwearType() >= 3) {
+                //   slownessLevel = 4;
+                // }
+                // else if (reducedFullness == 0.75) {
+                //   slownessLevel = 3;
+                // }
+                // else if (reducedFullness == 0.50) {
+                //   slownessLevel = 2;
+                // }
+                // else if (reducedFullness == 0.25) {
+                //   slownessLevel = 1;
+                // }
+
+                // player.removePotionEffect(PotionEffectType.SLOW);
+                // player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, slownessLevel), true);
+              }
+              else if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() < 1){
+                player.removePotionEffect(PotionEffectType.SLOW);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, 1), true);
+              }
+              else if (stats.getDiaperFullness() == 0) {
+                player.removePotionEffect(PotionEffectType.SLOW);
+              }
               if (stats.getTimeWorn() >= 600 && player.getHealth() > 1) {
                 player.damage(0.5);
               }
               if (stats.getHydration() < 10) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 2 * 20, 2), true);
+                player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 50, 2), true);
               }
               else if (stats.getHydration() >= 10) {
                 player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
@@ -394,10 +542,13 @@ public class Plugin extends JavaPlugin
     boolean sneakFails = randomChance <= incontinenceLevel;
     int secondsleft = playerSecondsLeftMap.get(player.getUniqueId());
     
-    if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) {  
-        stats.handleAccident(isBladder, player, true);
-        playerSecondsLeftMap.put(player.getUniqueId(), 0);
-        playerWarningsMap.put(player.getUniqueId(), false);
+    if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
+      if (sneakFails && player.isSneaking()) {
+        player.sendMessage("You body has betrayed you. You couldn't hold it.");
+      } 
+      stats.handleAccident(isBladder, player, true);
+      playerSecondsLeftMap.put(player.getUniqueId(), 0);
+      playerWarningsMap.put(player.getUniqueId(), false);
     } else {
       if((isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && player.isSneaking() && secondsleft <= 3){
         player.sendMessage("Good job! You held it in.");
@@ -409,7 +560,7 @@ public class Plugin extends JavaPlugin
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();
-    int fullCount = value / 10;
+    int fullCount = (int) Math.ceil(value / 10.0);
     int emptyCount = 10 - fullCount;
     if (isWater) {
       for (int i = 0; i < emptyCount; i++) {
@@ -469,7 +620,7 @@ public class Plugin extends JavaPlugin
     }, 0L, 20L);  // Update every second (20 ticks)
   }
 
-  public void CheckLittles(Player player, PlayerStats stats){
+  public void CheckLittles(Player player, PlayerStats stats, Player target){
     if (stats != null) {
         // Check for target player argument and optional validation
         String image = "";
@@ -487,11 +638,45 @@ public class Plugin extends JavaPlugin
                 // state = "Clean";
             }
             player.sendTitle(image, state, 10, 20, 10);
+            if (player != target) {
+              target.sendTitle(ChatColor.GOLD + player.getName(), ChatColor.AQUA +" Just checked you.", 10, 20, 10);
+              // target.sendMessage(ChatColor.GOLD + player.getName() + ChatColor.AQUA +" just checked you.");
+            }
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> rightclickCount.put(player.getUniqueId(), 0), 4, TimeUnit.SECONDS);
             // rightclickCount.put(player.getUniqueId(), 0);
         } 
     }
+  }
+
+  public void manageParticleEffects(Player player) {
+    // UUID playerUUID = player.getUniqueId();
+    // PlayerStats stats = getPlayerStats(playerUUID);
+    
+    // if (stats.getParticleEffects() == 2 && stats.getDiaperFullness() >= 100) {
+    //   if (!ParticleEffects.containsKey(playerUUID)) {
+    //     ParticleEffect effect = new ParticleEffect(player, this);
+    //     ParticleEffects.put(playerUUID, effect.runTaskTimer(this, 0L, 5L)); // Run every second
+    //   }
+    // }
+    // else if (stats.getParticleEffects() == 3 && stats.getDiaperWetness() >= 100 || stats.getDiaperFullness() >= 100){
+    //   if (!ParticleEffects.containsKey(playerUUID)) {
+    //     ParticleEffect effect = new ParticleEffect(player, this);
+    //     ParticleEffects.put(playerUUID, effect.runTaskTimer(this, 0L, 5L)); // Run every second
+    //   }
+    // }
+    // else if (stats.getParticleEffects() == 1 && stats.getDiaperWetness() >= 100) {
+    //   if (!ParticleEffects.containsKey(playerUUID)) {
+    //     ParticleEffect effect = new ParticleEffect(player, this);
+    //     ParticleEffects.put(playerUUID, effect.runTaskTimer(this, 0L, 5L)); // Run every second
+    //   }
+    // }
+    // else if (stats.getParticleEffects() == 0) {
+    //     if (ParticleEffects.containsKey(playerUUID)) {
+    //       ParticleEffects.get(playerUUID).cancel();
+    //       ParticleEffects.remove(playerUUID);
+    //     }
+    // }
   }
   private ConcurrentHashMap<UUID, String> playerInputAwaiting = new ConcurrentHashMap<>();
 
@@ -509,5 +694,13 @@ public class Plugin extends JavaPlugin
 
   public void clearAwaitingInput(UUID uuid) {
       playerInputAwaiting.remove(uuid);
+  }
+  public void activityMultiplier(UUID uniqueId, double d) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'activityMultiplier'");
+  }
+  public void HydrationSpike(UUID uniqueId, int i) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'HydrationSpike'");
   }
 }
