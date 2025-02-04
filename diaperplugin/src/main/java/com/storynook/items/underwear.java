@@ -27,6 +27,18 @@ public class underwear {
     public static ItemStack Tape;
     public underwear(JavaPlugin plugin){this.plugin = plugin;}
 
+    public void createAllRecipes() {
+
+        createTapeRecipe();
+        createDiaperStufferRecipe();
+        createDiaperRecipe();
+        createPullupRecipe();
+        createThickDiaperRecipe();
+        createUnderwearRecipe();
+        WashedUnderwear();
+
+    }
+
     public void createDiaperStufferRecipe() {
         // Define the custom item
         ItemStack item = new ItemStack(Material.BARRIER);

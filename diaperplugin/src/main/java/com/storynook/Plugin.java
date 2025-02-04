@@ -68,9 +68,11 @@ public class Plugin extends JavaPlugin
   }
   private CommandHandler commandHandler;
   private ScoreboardManager manager;
+
   @Override
   public void onEnable()
   {
+    
     getLogger().info("Plugin started, onEnable");
     //Creates DataFoler if it doesn't exist.
     if (!getDataFolder().exists()) {
@@ -97,13 +99,7 @@ public class Plugin extends JavaPlugin
     pants pants = new pants(this);
 
     itemManager.createToiletRecipe();
-    underwear.createTapeRecipe();
-    underwear.createDiaperStufferRecipe();
-    underwear.createDiaperRecipe();
-    underwear.createPullupRecipe();
-    underwear.createThickDiaperRecipe();
-    underwear.createUnderwearRecipe();
-    underwear.WashedUnderwear();
+    underwear.createAllRecipes();
     pants.createCleanPantsRecipe();
     pants.WashedPants();
     itemManager.createWasherRecipe();
@@ -111,41 +107,45 @@ public class Plugin extends JavaPlugin
     // itemManager.createLaxRecipe();
   
    
-    getServer().getPluginManager().registerEvents(playerEventListener, this);
-    getServer().getPluginManager().registerEvents(SettingsMenu, this);
-    getServer().getPluginManager().registerEvents(caregivermenu, this);
-    getServer().getPluginManager().registerEvents(incontinencemenu, this);
-    getServer().getPluginManager().registerEvents(pantsCrafting, this);
-    getServer().getPluginManager().registerEvents((Listener) washer, this);
+    // Create an array of all your listener objects
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, pantsCrafting, washer};
+
+    // Loop through and register each listener
+    for (Object listener : listeners) {
+        if (listener instanceof Listener) {
+            getServer().getPluginManager().registerEvents((Listener) listener, this);
+        }
+    }
+
+    // getServer().getPluginManager().registerEvents(playerEventListener, this);
+    // getServer().getPluginManager().registerEvents(SettingsMenu, this);
+    // getServer().getPluginManager().registerEvents(caregivermenu, this);
+    // getServer().getPluginManager().registerEvents(incontinencemenu, this);
+    // getServer().getPluginManager().registerEvents(pantsCrafting, this);
+    // getServer().getPluginManager().registerEvents((Listener) washer, this);
     UpdateStats();
 
     playerStatsMap = new HashMap<UUID, PlayerStats>();
 
     //Registers the commands
     commandHandler = new CommandHandler(this);
-    getCommand("settings").setExecutor(commandHandler);
-    getCommand("pee").setExecutor(commandHandler);
-    getCommand("poop").setExecutor(commandHandler);
-    getCommand("debug").setExecutor(commandHandler);
-    getCommand("debug").setTabCompleter(commandHandler);
-    getCommand("stats").setExecutor(commandHandler);
-    getCommand("check").setExecutor(commandHandler);
-    getCommand("check").setTabCompleter(commandHandler);
-    getCommand("caregiver").setExecutor(commandHandler);
-    getCommand("caregiver").setTabCompleter(commandHandler);
-    getCommand("lockincon").setExecutor(commandHandler);
-    getCommand("lockincon").setTabCompleter(commandHandler);
-    getCommand("unlockincon").setExecutor(commandHandler);
-    getCommand("unlockincon").setTabCompleter(commandHandler);
-    getCommand("minfill").setExecutor(commandHandler);
-    getCommand("minfill").setTabCompleter(commandHandler);
-    getCommand("nightvision").setExecutor(commandHandler);
-    getCommand("nv").setExecutor(commandHandler);
+
+    String[] singleCommands = {"settings", "pee", "poop", "stats", "nightvision", "nv"};
+    for (String cmd : singleCommands) {
+        getCommand(cmd).setExecutor(commandHandler);
+    }
+
+    String[] dualCommands = {"debug", "check", "caregiver", "lockincon", "unlockincon", "minfill"};
+    for (String cmd : dualCommands) {
+        getCommand(cmd).setExecutor(commandHandler);
+        getCommand(cmd).setTabCompleter(commandHandler);
+    }
 
     //Score board setup
     manager = Bukkit.getScoreboardManager();
     UpdateStatsBar();
   }
+
   @Override
   public void onDisable()
   {
@@ -415,41 +415,31 @@ public class Plugin extends JavaPlugin
                 // double reducedFullness = Math.min(stats.getDiaperFullness(), 100) / 100; // Ensure fullness does not exceed 100
                 
                 int underweartype = stats.getUnderwearType();
-                int slownessLevel = 0;
                 int diaperFullness = (int) stats.getDiaperFullness();
-                int[] fullnessThresholds = {25 * underweartype, 50 * underweartype, 75 * underweartype, 100 * underweartype};
                 
-                if (diaperFullness >= fullnessThresholds[3]) {
-                  slownessLevel = underweartype + 1; // Max slowness at full 100%
-                } else if (diaperFullness >= fullnessThresholds[2]) {
-                    slownessLevel = Math.min(3, underweartype + 1);
-                } else if (diaperFullness >= fullnessThresholds[1]) {
-                    slownessLevel = Math.min(2, underweartype + 1);
-                } else if (diaperFullness >= fullnessThresholds[0]) {
-                    slownessLevel = Math.min(1, underweartype + 1);
-                } else if(diaperFullness >=100 && underweartype < 1) {
-                  slownessLevel = 2;
+                // Define thresholds for each underwear type
+                int[][] fullnessThresholds = {
+                    {100},                     // Level 0: 1 threshold at 100%
+                    {50, 100},                 // Level 1: thresholds at 50% and 100%
+                    {33, 66, 100},             // Level 2: thresholds at ~33%, ~66%, and 100%
+                    {25, 50, 75, 100}          // Level 3: thresholds at 25%, 50%, 75%, and 100%
+                };
+                
+                int slownessLevel = 0;
+                int[] thresholdsForType = fullnessThresholds[underweartype];
+                
+                // Iterate from highest to lowest threshold
+                for (int i = thresholdsForType.length - 1; i >= 0; i--) {
+                    if (diaperFullness >= thresholdsForType[i]) {
+                        slownessLevel = i + 1;
+                        break;
+                    }
                 }
                 
                 player.removePotionEffect(PotionEffectType.SLOW);
                 if (slownessLevel > 0) {
-                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, slownessLevel - 1), true); // Apply effect with zero-based index adjustment
+                    player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, slownessLevel - 1), true);
                 }
-                // if (reducedFullness == 1.0 && stats.getUnderwearType() >= 3) {
-                //   slownessLevel = 4;
-                // }
-                // else if (reducedFullness == 0.75) {
-                //   slownessLevel = 3;
-                // }
-                // else if (reducedFullness == 0.50) {
-                //   slownessLevel = 2;
-                // }
-                // else if (reducedFullness == 0.25) {
-                //   slownessLevel = 1;
-                // }
-
-                // player.removePotionEffect(PotionEffectType.SLOW);
-                // player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 50, slownessLevel), true);
               }
               else if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() < 1){
                 player.removePotionEffect(PotionEffectType.SLOW);

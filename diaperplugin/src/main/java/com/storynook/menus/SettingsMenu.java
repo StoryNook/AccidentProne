@@ -144,8 +144,8 @@ public class SettingsMenu implements Listener {
             ItemMeta InconlMeta = Incon.getItemMeta();
             if (InconlMeta != null) {
                 List<String> lore = Arrays.asList(
-                    "Current Bladder incon: " + stats.getBladderIncontinence(),
-                    stats.getMessing() ? "Current Bowel Incon: " + stats.getBowelIncontinence() : "Locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No"),
+                    "Current Bladder incon: " + Math.round(stats.getBladderIncontinence()),
+                    stats.getMessing() ? "Current Bowel Incon: " + Math.round(stats.getBowelIncontinence()) : "Locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No"),
                     stats.getMessing() ? "Bladder locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No") : "",
                     stats.getMessing() ? "Bowel locked? " + (stats.getBowelLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No") : ""
                 );
@@ -317,7 +317,7 @@ public class SettingsMenu implements Listener {
                 stats.setvisableUnderwear(!stats.getvisableUnderwear());
                 player.sendMessage(stats.getvisableUnderwear() ? "Undies are now visible using Optifine." : "Undies are now hidden.");
                 OpenSettings(player, plugin);
-                PlayerEventListener.equipDiaperArmor(player);
+                PlayerEventListener.equipDiaperArmor(player, false, false);
             }
         }
     }

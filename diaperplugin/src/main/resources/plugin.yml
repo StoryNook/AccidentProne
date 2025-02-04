@@ -4,6 +4,7 @@ version: 1.0.1
 api-version: 1.19
 author: ["StoryNook"]
 description: "Bladder, bowels, diapers and more tracking, and usage"
+# softdepend: [Vault]
 commands:
   settings:
     description: "Open player settings for SNDP"
@@ -33,8 +34,8 @@ commands:
     description: "Toggles NightVision"
   nv:
     description: "Toggles NightVision"
-  permissions:
-    diaperplugin.debug:
-      description: "Permission to set bladder, bowels, and underwearType."
-    diaperplugin.nightvision:
-      description: "Allows the player to apply a nightvision effect"
+permissions:
+  diaperplugin.debug:
+    description: "Permission to set bladder, bowels, and underwearType."
+  diaperplugin.nightvision:
+    description: "Allows the player to apply a nightvision effect"

@@ -33,6 +33,7 @@ public class pants {
         meta.setColor(getColorFromWool(woolMaterial));
         meta.setCustomModelData(626015);
         item.setItemMeta(meta);
+        meta.setUnbreakable(true);
         AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), "generic.armor", 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.LEGS);
         meta.addAttributeModifier(Attribute.GENERIC_ARMOR, modifier);
         item.setItemMeta(meta);

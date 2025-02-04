@@ -222,12 +222,15 @@ public class PlayerStats {
         else if(diaperFullness >= 100 && diaperWetness < 100){
             changeLeggingsModel(player, 626017);
         }
+        if (visableUnderwear) {
+            PlayerEventListener.equipDiaperArmor(player, false, true);
+        }
         // plugin.manageParticleEffects(player);
     }
 
     private void changeLeggingsModel(Player player, int modelData) {
         ItemStack leggings = player.getInventory().getLeggings();
-        if (leggings != null) {
+        if (leggings != null && leggings.getType() == Material.LEATHER_LEGGINGS) {
             LeatherArmorMeta meta = (LeatherArmorMeta) leggings.getItemMeta();
             if (meta.getCustomModelData() == 626015 || meta.getCustomModelData() == 626016 || meta.getCustomModelData() == 626017) {
                 meta.setCustomModelData(modelData);

@@ -2,6 +2,7 @@ package com.storynook;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import com.storynook.items.ItemManager;
 import com.storynook.items.pants;
@@ -76,165 +77,148 @@ import java.util.UUID;
 
 public class PlayerEventListener implements Listener {
     private static Plugin plugin;
-        HashMap<UUID, HashSet<NamespacedKey>> playerCraftedSpecialItems = new HashMap<>();
-        HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
-    
-        public PlayerEventListener(Plugin plugin) {
-            this.plugin = plugin;
-        }
-        //Loads the player stats when the login, and discovers all of the custom crafting recipes
-        @EventHandler
-        public void onPlayerJoin(PlayerJoinEvent event) {
-            plugin.loadPlayerStats(event.getPlayer()); //Uses the plugin instance to load player stats
-            //Discover all of the custom crafting recipes
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diaper"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "ThickDiaper"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Pullup"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Underwear"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Tape"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "CleanPants"));
-            // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperPail"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Toilet"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperStuffer"));
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Washer"));
-            // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
-            // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diuretic"));
-    
-    
-            
-            // plugin.manageParticleEffects(event.getPlayer());
-        }
-    
-        //Updates stats and world events when the player leaves
-        @EventHandler
-        public void onPlayerQuit(PlayerQuitEvent event) {
-            Player player = event.getPlayer();
-            if (player.getVehicle() instanceof ArmorStand) {
-                player.leaveVehicle();
-                ArmorStand armorStand = (ArmorStand) player.getVehicle();
-                armorStand.remove();
-            }
-            plugin.savePlayerStats(event.getPlayer()); // Uses the plugin instance to save player stats
-        }
-
-        @EventHandler
-        public void onPlayerMove(PlayerMoveEvent event) {
-            Player player = event.getPlayer();
-            UUID playerUUID = player.getUniqueId();
-
-            // Determine if the player is sprinting or walking normally
-            if (player.isSprinting()) {
-                plugin.activityMultiplier.put(playerUUID, 1.5); // Increase for sprinting
-            } else {
-                plugin.activityMultiplier.put(playerUUID, 1.0); // Normal walking or standing still
-            }
-
-            // Check for jumping specifically
-            if (player.isOnGround() && player.getLocation().getY() > event.getFrom().getY()) {
-                PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-                // The player location is ascending from the last event call and they were on the ground
-                Double currentMultiplier = plugin.activityMultiplier.getOrDefault(playerUUID, 1.0);
-                // double diaperFullness = stats.getDiaperFullness();
+    HashMap<UUID, HashSet<NamespacedKey>> playerCraftedSpecialItems = new HashMap<>();
+    HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
+    static HashMap<UUID, Boolean> Justchanged = new HashMap<>();
         
-                // // Check if diaper is at a threshold level
-                // if (diaperFullness == 25 || diaperFullness == 50 || diaperFullness == 75 || diaperFullness == 100) {
-                //     // Reduce jump height by halving the vertical movement delta
-                //     double reducedJumpHeight = event.getDelta().y() * 0.5;
-                //     event.setDelta(new Vector(event.getDelta().x(), (float)reducedJumpHeight, event.getDelta().z()));
-                // }
-                plugin.activityMultiplier.put(playerUUID, currentMultiplier + 0.5);
-            }
+    public PlayerEventListener(Plugin plugin) {
+        this.plugin = plugin;
+    }
+                //Loads the player stats when the login, and discovers all of the custom crafting recipes
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        plugin.loadPlayerStats(event.getPlayer()); //Uses the plugin instance to load player stats
+        //Discover all of the custom crafting recipes
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diaper"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "ThickDiaper"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Pullup"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Underwear"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Tape"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "CleanPants"));
+        // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperPail"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Toilet"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperStuffer"));
+        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Washer"));
+        // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
+        // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diuretic"));
+
+
+        
+        // plugin.manageParticleEffects(event.getPlayer());
+    }
+            
+    //Updates stats and world events when the player leaves
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        Player player = event.getPlayer();
+        if (player.getVehicle() instanceof ArmorStand) {
+            player.leaveVehicle();
+            ArmorStand armorStand = (ArmorStand) player.getVehicle();
+            armorStand.remove();
+        }
+        plugin.savePlayerStats(event.getPlayer()); // Uses the plugin instance to save player stats
+    }
+        
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        Player player = event.getPlayer();
+        UUID playerUUID = player.getUniqueId();
+
+        // Determine if the player is sprinting or walking normally
+        if (player.isSprinting()) {
+            plugin.activityMultiplier.put(playerUUID, 1.5); // Increase for sprinting
+        } else {
+            plugin.activityMultiplier.put(playerUUID, 1.0); // Normal walking or standing still
         }
 
+        // Check for jumping specifically
+        if (player.isOnGround() && player.getLocation().getY() > event.getFrom().getY()) {
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+            // The player location is ascending from the last event call and they were on the ground
+            Double currentMultiplier = plugin.activityMultiplier.getOrDefault(playerUUID, 1.0);
+            // double diaperFullness = stats.getDiaperFullness();
     
-        //Handles the Player's consume event so they stay hydrated
-        @EventHandler
-        public void onPlayerDrink(PlayerItemConsumeEvent event) {
-            PlayerStats stats = plugin.getPlayerStats(event.getPlayer().getUniqueId());
-            if (stats != null) {
-                ItemStack consumedItem = event.getItem();
-                if(isHydrating(consumedItem)){
-                    // Increase hydration when the player drinks
-                    plugin.HydrationSpike.put(event.getPlayer().getUniqueId(), 10);
-                    stats.increaseHydration(40); 
-                }
+            // // Check if diaper is at a threshold level
+            // if (diaperFullness == 25 || diaperFullness == 50 || diaperFullness == 75 || diaperFullness == 100) {
+            //     // Reduce jump height by halving the vertical movement delta
+            //     double reducedJumpHeight = event.getDelta().y() * 0.5;
+            //     event.setDelta(new Vector(event.getDelta().x(), (float)reducedJumpHeight, event.getDelta().z()));
+            // }
+            plugin.activityMultiplier.put(playerUUID, currentMultiplier + 0.5);
+        }
+    }
+        
+            
+    //Handles the Player's consume event so they stay hydrated
+    @EventHandler
+    public void onPlayerDrink(PlayerItemConsumeEvent event) {
+        PlayerStats stats = plugin.getPlayerStats(event.getPlayer().getUniqueId());
+        if (stats != null) {
+            ItemStack consumedItem = event.getItem();
+            if(isHydrating(consumedItem)){
+                // Increase hydration when the player drinks
+                plugin.HydrationSpike.put(event.getPlayer().getUniqueId(), 10);
+                stats.increaseHydration(40); 
             }
         }
-        private boolean isHydrating(ItemStack item){
-            if (item.getType() == Material.POTION) {
-                return true;
-            }
+    }
+    private boolean isHydrating(ItemStack item){
+        if (item.getType() == Material.POTION) {
+            return true;
+        }
+        return false;
+    }
+            
+    //Checks to see if the item used in crafting is a custom item. (ID based)
+    private boolean isCustomItem(ItemStack item) {
+        if (item == null) {
             return false;
         }
-    
-        //Checks to see if the item used in crafting is a custom item. (ID based)
-        private boolean isCustomItem(ItemStack item) {
-            if (item == null) {
-                return false;
-            }
-            ItemMeta meta = item.getItemMeta();
-            if (meta == null || !meta.hasCustomModelData()) {
-                return false;
-            }
-            int customModelData = item.getItemMeta().getCustomModelData();
-            List<Integer> CustomItemIDs = Arrays.asList(626009, 626001, 626002, 626003, 626004, 626005, 626011, 626010);
-            
-            return CustomItemIDs.contains(customModelData);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasCustomModelData()) {
+            return false;
         }
-    
-        private boolean NotVailidUnderwear (ItemStack item) {
-            if (item == null || !item.hasItemMeta()) {
-                return false;
-            }
-            ItemMeta meta = item.getItemMeta();
-            if (!meta.hasCustomModelData()) {
-                return false;
-            }
-    
-            int customModelData = meta.getCustomModelData();
-            List<Integer> CustomItemIDs = Arrays.asList(626005, 626011, 626010, 626004, 626007, 626008, 626006);
-    
-            return CustomItemIDs.contains(customModelData);
-        }  
-    
-        @EventHandler
-        public void onPlayerInteractWithEntity(PlayerInteractEntityEvent event) {
-            if (event.getRightClicked() instanceof Player) {
-    
-                Player actor = event.getPlayer();
-                Player target = (Player) event.getRightClicked();
+        int customModelData = item.getItemMeta().getCustomModelData();
+        List<Integer> CustomItemIDs = Arrays.asList(626009, 626001, 626002, 626003, 626004, 626005, 626011, 626010);
+        
+        return CustomItemIDs.contains(customModelData);
+    }
             
-                if (target instanceof Player){
-                    int rightclicktimes = plugin.rightclickCount.getOrDefault(actor.getUniqueId(), 0);
-                    PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
-                    ItemStack item = actor.getInventory().getItemInMainHand();
-                    if (targetStats != null && targetStats.getOptin()) {
-                        if (targetStats != null && targetStats.isCaregiver(actor.getUniqueId())) {
-                            if (item != null && item.getType() != Material.AIR) {
-                                ItemMeta meta = item.getItemMeta();
-                                if (meta != null && meta.hasCustomModelData()) {
-                                    int customModelData = item.getItemMeta().getCustomModelData();
-                                    if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
-                                        return;
-                                    }
-                                    rightclicktimes++;
-                                    if (rightclicktimes > 1) {
-                                        // rightclicktimes = 1;
-                                        plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
-                                        return;
-                                    }
-                                    else if (rightclicktimes == 1){
-                                        plugin.firstimeran.put(actor.getUniqueId(), true);
-                                        plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
-                                        playAudio(actor, customModelData, targetStats.getUnderwearType());
-                                        handleRightClickHold(actor, target, true, customModelData, targetStats.getUnderwearType());
-                                    }
-                                    else {
-                                        return;
-                                    }
+    private boolean NotVailidUnderwear (ItemStack item) {
+        if (item == null || !item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (!meta.hasCustomModelData()) {
+            return false;
+        }
+
+        int customModelData = meta.getCustomModelData();
+        List<Integer> CustomItemIDs = Arrays.asList(626005, 626011, 626010, 626004, 626007, 626008, 626006);
+
+        return CustomItemIDs.contains(customModelData);
+    }  
+            
+    @EventHandler
+    public void onPlayerInteractWithEntity(PlayerInteractEntityEvent event) {
+        if (event.getRightClicked() instanceof Player) {
+
+            Player actor = event.getPlayer();
+            Player target = (Player) event.getRightClicked();
+        
+            if (target instanceof Player){
+                int rightclicktimes = plugin.rightclickCount.getOrDefault(actor.getUniqueId(), 0);
+                PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
+                ItemStack item = actor.getInventory().getItemInMainHand();
+                if (targetStats != null && targetStats.getOptin()) {
+                    if (targetStats != null && targetStats.isCaregiver(actor.getUniqueId())) {
+                        if (item != null && item.getType() != Material.AIR) {
+                            ItemMeta meta = item.getItemMeta();
+                            if (meta != null && meta.hasCustomModelData()) {
+                                int customModelData = item.getItemMeta().getCustomModelData();
+                                if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
+                                    return;
                                 }
-                            }
-                            if (item != null && item.getType() == Material.AIR && actor.isSneaking()) {
                                 rightclicktimes++;
                                 if (rightclicktimes > 1) {
                                     // rightclicktimes = 1;
@@ -244,220 +228,245 @@ public class PlayerEventListener implements Listener {
                                 else if (rightclicktimes == 1){
                                     plugin.firstimeran.put(actor.getUniqueId(), true);
                                     plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
-                                    plugin.CheckLittles(actor, targetStats, target);
+                                    playAudio(actor, customModelData, targetStats.getUnderwearType());
+                                    handleRightClickHold(actor, target, true, customModelData, targetStats.getUnderwearType());
                                 }
                                 else {
                                     return;
                                 }
                             }
                         }
-                    }
-                }
-            }
-        }
-    
-        @EventHandler
-        public void onPlayerInteract(PlayerInteractEvent event) {
-            Player actor = event.getPlayer();
-            ItemStack itemInHand = actor.getInventory().getItemInMainHand();
-            if (itemInHand != null && itemInHand.getType() != Material.AIR) {
-                ItemMeta meta = itemInHand.getItemMeta();
-                if (meta != null && meta.hasCustomModelData()) {
-                    int rightclicktimes = plugin.rightclickCount.getOrDefault(actor.getUniqueId(), 0);
-                    int customModelData = meta.getCustomModelData();
-                    if (customModelData == 626007) {
-                        event.setCancelled(true); // Cancel the interaction
-                        return; // Exit the method to prevent further execution
-                    }
-                    else if(isCustomItem(itemInHand) && !NotVailidUnderwear(itemInHand)){
-                        if (event.getAction().name().contains("RIGHT_CLICK")) {
-                            PlayerStats Stats = plugin.getPlayerStats(actor.getUniqueId());
-                            if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasCustomModelData()) {
-                                plugin.rightclickCount.put(actor.getUniqueId(), 0);
-                                plugin.firstimeran.put(actor.getUniqueId(), false);
-                                return;
-                            } else if (Stats.getHardcore()) {
-                                actor.sendMessage("You are in HardCore mode. You should ask a caregiver for help.");
+                        if (item != null && item.getType() == Material.AIR && actor.isSneaking()) {
+                            rightclicktimes++;
+                            if (rightclicktimes > 1) {
+                                // rightclicktimes = 1;
+                                plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
                                 return;
                             }
-                            else if (!Stats.getOptin()) {
-                                return;
+                            else if (rightclicktimes == 1){
+                                plugin.firstimeran.put(actor.getUniqueId(), true);
+                                plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
+                                plugin.CheckLittles(actor, targetStats, target);
                             }
                             else {
-                                rightclicktimes++;
-                                if (rightclicktimes > 1) {
-                                    plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
-                                    return;
-                                }
-                                else if (rightclicktimes == 1){
-                                    plugin.firstimeran.put(actor.getUniqueId(), true);
-                                    plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
-                                    playAudio(actor, customModelData, Stats.getUnderwearType());
-                                    handleRightClickHold(actor, null, false, customModelData, Stats.getUnderwearType());
-                                }
-                                else {
-                                    return;
-                                }
+                                return;
                             }
                         }
                     }
                 }
             }
         }
-    
-        private void handleRightClickHold(Player actor, Player target, boolean isCaregiverInteraction, int totype, int fromtype) {
-    
-            if (plugin.rightclickCount.get(actor.getUniqueId()) > 0 && plugin.firstimeran.get(actor.getUniqueId())) {
-                plugin.firstimeran.put(actor.getUniqueId(), false);
-                BossBar bossBar = Bukkit.createBossBar(ChatColor.GREEN + "Changing", BarColor.BLUE, BarStyle.SOLID);
-                bossBar.addPlayer(actor);
-                bossBar.setProgress(0.0); // Start with progress 0 (empty)
-    
-                int timeLeft = 5; // Time in seconds
-    
-                BukkitRunnable task = new BukkitRunnable() {
-                    private int ticksLeft = 20 * timeLeft; // Convert seconds to ticks
-                    @Override
-                    public void run() {
-                        if (isCaregiverInteraction && target != null) {
-                            Player caregiver = (Player) actor;
-                            Location senderLocation = caregiver.getLocation();
-                            Location targetLocation = target.getLocation();
-                    
-                            // Check the distance between the sender and the target player
-                            double distance = senderLocation.distance(targetLocation);
-                            distanceinBlocks.put(actor.getUniqueId(), distance);
-                        }
-                        if (ticksLeft <= 0) {
-                            bossBar.removePlayer(actor);
-                            handleInteraction(actor, target, isCaregiverInteraction);
-                            stopAudio(actor, totype, fromtype);
+    }
+            
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        Player actor = event.getPlayer();
+        ItemStack itemInHand = actor.getInventory().getItemInMainHand();
+        if (itemInHand != null && itemInHand.getType() != Material.AIR) {
+            ItemMeta meta = itemInHand.getItemMeta();
+            if (meta != null && meta.hasCustomModelData()) {
+                int rightclicktimes = plugin.rightclickCount.getOrDefault(actor.getUniqueId(), 0);
+                int customModelData = meta.getCustomModelData();
+                if (customModelData == 626007) {
+                    event.setCancelled(true); // Cancel the interaction
+                    return; // Exit the method to prevent further execution
+                }
+                else if(isCustomItem(itemInHand) && !NotVailidUnderwear(itemInHand)){
+                    if (event.getAction().name().contains("RIGHT_CLICK")) {
+                        PlayerStats Stats = plugin.getPlayerStats(actor.getUniqueId());
+                        if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasCustomModelData()) {
                             plugin.rightclickCount.put(actor.getUniqueId(), 0);
-                            this.cancel();
-                        } else {
-                            ItemStack item = actor.getInventory().getItemInMainHand();
-                            if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData() || (isCaregiverInteraction && distanceinBlocks.get(actor.getUniqueId()) > 3)) {
-                                plugin.rightclickCount.put(actor.getUniqueId(), 0);
-                                bossBar.removePlayer(actor);
-                                stopAudio(actor,totype, fromtype);
-                                this.cancel();
+                            plugin.firstimeran.put(actor.getUniqueId(), false);
+                            return;
+                        } else if (Stats.getHardcore()) {
+                            actor.sendMessage("You are in HardCore mode. You should ask a caregiver for help.");
+                            return;
+                        }
+                        else if (!Stats.getOptin()) {
+                            return;
+                        }
+                        else {
+                            rightclicktimes++;
+                            if (rightclicktimes > 1) {
+                                plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
+                                return;
                             }
-                            ticksLeft--;
-                            double progress = (double) ticksLeft / (20 * timeLeft);
-                            bossBar.setProgress(progress);
+                            else if (rightclicktimes == 1){
+                                plugin.firstimeran.put(actor.getUniqueId(), true);
+                                plugin.rightclickCount.put(actor.getUniqueId(), rightclicktimes);
+                                playAudio(actor, customModelData, Stats.getUnderwearType());
+                                handleRightClickHold(actor, null, false, customModelData, Stats.getUnderwearType());
+                            }
+                            else {
+                                return;
+                            }
                         }
                     }
-                };
-    
-                task.runTaskTimer(plugin, 0L, 1L); // Run every tick
-            }
-        }
-    
-        private void playAudio(Player player, int totype, int fromtype) {
-            if ((totype == 626002 && fromtype != 0) || fromtype != 0) {
-                player.playSound(player.getLocation(), "minecraft:diaperchange", SoundCategory.PLAYERS, 1.0f, 1.0f);
-            }
-        }
-    
-        private void stopAudio(Player player, int totype, int fromtype) {
-            if ((totype == 626002 && fromtype != 0) || fromtype !=0) {
-                player.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
-            }
-        }
-        private void handleInteraction(Player actor, Player target, boolean isCaregiverInteraction) {
-            if (!isCaregiverInteraction) {
-                target = actor;
-            }
-            PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
-            ItemStack item = actor.getInventory().getItemInMainHand();
-    
-            if (isCustomItem(item) && !NotVailidUnderwear(item)) {
-                int customModelData = item.getItemMeta().getCustomModelData();
-    
-                // Logic to provide items based on wetness and fullness
-                distributeUsedItems(actor, target, stats);
-    
-                // Reset and update
-                resetAndUpdateStats(stats, customModelData, target);
-    
-                // Remove or decrement the item the actor is holding
-                decrementItem(actor, item);
-    
-                if (actor == target) {
-                    actor.sendMessage(ChatColor.GREEN + "You got changed and cleaned!");
-                }
-                else if(actor != target){
-                    actor.sendMessage(ChatColor.GREEN + "You changed: " + target.getName());
-                    target.sendMessage(ChatColor.GREEN + "You were changed by: " + actor.getName() + " Be sure to thank them!");
-                }
-            } else{
-                if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
-                    return;
                 }
             }
         }
-    
-        private void distributeUsedItems(Player actor, Player target, PlayerStats stats) {
-            // Distribute items according to the target's diaper status
-    
-            if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){ItemStack stinkydiaper = underwear.createStinkyDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(stinkydiaper);}
-            else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){ItemStack wetpullup = underwear.createWetPullup(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn()); actor.getInventory().addItem(wetpullup);}
-            else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){ItemStack wetdiaper = underwear.createWetDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetdiaper);}
-            else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){ItemStack wetthickdiaper = underwear.createWetThickDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetthickdiaper);}
-            else if (stats.getDiaperWetness() >= 100 && stats.getDiaperFullness() >= 100){
-                ItemStack wetANDdirtyunderwear = underwear.createWetANDDirtyUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetANDdirtyunderwear);
-            }
-            else if(stats.getDiaperWetness() >= 100 && stats.getUnderwearType() == 0){ItemStack wetunderwear = underwear.createWetUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetunderwear);}
-            else if(stats.getDiaperFullness() >= 100 && stats.getUnderwearType() == 0){ItemStack dirtyunderwear = underwear.createDirtyUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(dirtyunderwear);}
-            else if (stats.getDiaperFullness() == 0 && stats.getDiaperWetness() == 0) {
-                switch (stats.getUnderwearType()) {
-                    case 0:
-                        actor.getInventory().addItem(underwear.Underwear());
-                        break;
-                    case 1:
-                        actor.getInventory().addItem(underwear.Pullup());
-                        break;
-                    case 2:
-                        actor.getInventory().addItem(underwear.Diaper());
-                        break;
-                    case 3:
-                        actor.getInventory().addItem(underwear.ThickDiaper());
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    
-        private void decrementItem(Player actor, ItemStack item) {
-            // Decrement or remove the item from the actor's inventory
+    }
+            
+    private void handleRightClickHold(Player actor, Player target, boolean isCaregiverInteraction, int totype, int fromtype) {
 
-            int currentAmount = item.getAmount();
-            if (currentAmount > 1) {
-                item.setAmount(currentAmount - 1);
-            } else {
-                actor.getInventory().setItemInMainHand(null);
+        if (plugin.rightclickCount.get(actor.getUniqueId()) > 0 && plugin.firstimeran.get(actor.getUniqueId())) {
+            plugin.firstimeran.put(actor.getUniqueId(), false);
+            BossBar bossBar = Bukkit.createBossBar(ChatColor.GREEN + "Changing", BarColor.BLUE, BarStyle.SOLID);
+            bossBar.addPlayer(actor);
+            bossBar.setProgress(0.0); // Start with progress 0 (empty)
+
+            int timeLeft = 5; // Time in seconds
+
+            BukkitRunnable task = new BukkitRunnable() {
+                private int ticksLeft = 20 * timeLeft; // Convert seconds to ticks
+                @Override
+                public void run() {
+                    if (isCaregiverInteraction && target != null) {
+                        Player caregiver = (Player) actor;
+                        Location senderLocation = caregiver.getLocation();
+                        Location targetLocation = target.getLocation();
+                
+                        // Check the distance between the sender and the target player
+                        double distance = senderLocation.distance(targetLocation);
+                        distanceinBlocks.put(actor.getUniqueId(), distance);
+                    }
+                    if (ticksLeft <= 0) {
+                        bossBar.removePlayer(actor);
+                        handleInteraction(actor, target, isCaregiverInteraction);
+                        stopAudio(actor, totype, fromtype);
+                        plugin.rightclickCount.put(actor.getUniqueId(), 0);
+                        this.cancel();
+                    } else {
+                        ItemStack item = actor.getInventory().getItemInMainHand();
+                        if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData() || (isCaregiverInteraction && distanceinBlocks.get(actor.getUniqueId()) > 3)) {
+                            plugin.rightclickCount.put(actor.getUniqueId(), 0);
+                            bossBar.removePlayer(actor);
+                            stopAudio(actor,totype, fromtype);
+                            this.cancel();
+                        }
+                        ticksLeft--;
+                        double progress = (double) ticksLeft / (20 * timeLeft);
+                        bossBar.setProgress(progress);
+                    }
+                }
+            };
+
+            task.runTaskTimer(plugin, 0L, 1L); // Run every tick
+        }
+    }
+
+    private void playAudio(Player player, int totype, int fromtype) {
+        if ((totype == 626002 && fromtype != 0) || fromtype != 0) {
+            player.playSound(player.getLocation(), "minecraft:diaperchange", SoundCategory.PLAYERS, 1.0f, 1.0f);
+        }
+    }
+
+    private void stopAudio(Player player, int totype, int fromtype) {
+        if ((totype == 626002 && fromtype != 0) || fromtype !=0) {
+            player.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
+        }
+    }
+    private void handleInteraction(Player actor, Player target, boolean isCaregiverInteraction) {
+        if (!isCaregiverInteraction) {
+            target = actor;
+        }
+        PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
+        ItemStack item = actor.getInventory().getItemInMainHand();
+
+        if (isCustomItem(item) && !NotVailidUnderwear(item)) {
+            int customModelData = item.getItemMeta().getCustomModelData();
+            
+            // Remove or decrement the item the actor is holding
+            decrementItem(actor, item);
+            // Logic to provide items based on wetness and fullness
+            distributeUsedItems(actor, target, stats);
+
+            // Reset and update
+            resetAndUpdateStats(stats, customModelData, target);
+
+            if (actor == target) {
+                actor.sendMessage(ChatColor.GREEN + "You got changed and cleaned!");
+            }
+            else if(actor != target){
+                actor.sendMessage(ChatColor.GREEN + "You changed: " + target.getName());
+                target.sendMessage(ChatColor.GREEN + "You were changed by: " + actor.getName() + " Be sure to thank them!");
+            }
+        } else{
+            if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
+                return;
             }
         }
-    
-        private void resetAndUpdateStats(PlayerStats stats, int customModelData, Player target) {
-            // Reset stats and set new underwear type
-            stats.setDiaperFullness(0);
-            stats.setDiaperWetness(0);
-            stats.setTimeWorn(0);
-            if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
-            if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
-            if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
-            if (customModelData == 626001) {stats.setUnderwearType(3);} //Thick Diaper
-            equipDiaperArmor(target);
-            plugin.manageParticleEffects(target);
-        }
+    }
+            
+    private void distributeUsedItems(Player actor, Player target, PlayerStats stats) {
+        // Distribute items according to the target's diaper status
 
-    public static void equipDiaperArmor(Player target) {
+        if(stats.getDiaperFullness() > 0 && stats.getUnderwearType() > 0){ItemStack stinkydiaper = underwear.createStinkyDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(stinkydiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 1){ItemStack wetpullup = underwear.createWetPullup(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn()); actor.getInventory().addItem(wetpullup);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 2){ItemStack wetdiaper = underwear.createWetDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetdiaper);}
+        else if(stats.getDiaperWetness() > 0 && stats.getUnderwearType() == 3){ItemStack wetthickdiaper = underwear.createWetThickDiaper(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetthickdiaper);}
+        else if (stats.getDiaperWetness() >= 100 && stats.getDiaperFullness() >= 100){
+            ItemStack wetANDdirtyunderwear = underwear.createWetANDDirtyUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetANDdirtyunderwear);
+        }
+        else if(stats.getDiaperWetness() >= 100 && stats.getUnderwearType() == 0){ItemStack wetunderwear = underwear.createWetUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(wetunderwear);}
+        else if(stats.getDiaperFullness() >= 100 && stats.getUnderwearType() == 0){ItemStack dirtyunderwear = underwear.createDirtyUndies(target, (int)stats.getDiaperWetness(),(int)stats.getDiaperFullness(),stats.getTimeWorn());actor.getInventory().addItem(dirtyunderwear);}
+        else if (stats.getDiaperFullness() == 0 && stats.getDiaperWetness() == 0) {
+            switch (stats.getUnderwearType()) {
+                case 0:
+                    actor.getInventory().addItem(underwear.Underwear());
+                    break;
+                case 1:
+                    actor.getInventory().addItem(underwear.Pullup());
+                    break;
+                case 2:
+                    actor.getInventory().addItem(underwear.Diaper());
+                    break;
+                case 3:
+                    actor.getInventory().addItem(underwear.ThickDiaper());
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+            
+    private void decrementItem(Player actor, ItemStack item) {
+        // Decrement or remove the item from the actor's inventory
+
+        int currentAmount = item.getAmount();
+        if (currentAmount > 1) {
+            item.setAmount(currentAmount - 1);
+        } else {
+            actor.getInventory().setItemInMainHand(null);
+        }
+    }
+
+    private void resetAndUpdateStats(PlayerStats stats, int customModelData, Player target) {
+        // Reset stats and set new underwear type
+        stats.setDiaperFullness(0);
+        stats.setDiaperWetness(0);
+        stats.setTimeWorn(0);
+        if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
+        if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
+        if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
+        if (customModelData == 626001) {stats.setUnderwearType(3);} //Thick Diaper
+        Justchanged.put(target.getUniqueId(), true);
+        equipDiaperArmor(target, true, false);
+        plugin.manageParticleEffects(target);
+    }
+        
+    public static void equipDiaperArmor(Player target, boolean changed, boolean accident) {
         PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
         PlayerInventory inventory = target.getInventory();
         if (inventory.getLeggings() != null) {
-            return;
+            ItemStack leggings = target.getInventory().getLeggings();
+            if (isDiaper(leggings) && !stats.getvisableUnderwear()) {
+                    target.getInventory().setLeggings(null);
+                    return;
+            }
+            else if (isDiaper(leggings) && (changed || accident)) {
+                target.getInventory().setLeggings(null);
+            }
         }
         if (stats.getvisableUnderwear() && inventory.getLeggings() == null) {
             ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS);
@@ -543,11 +552,8 @@ public class PlayerEventListener implements Listener {
             leggings.setItemMeta(meta);
             inventory.setLeggings(leggings);
         }
-        else{
-            inventory.setLeggings(null);
-        }
     }
-
+                
     @EventHandler
     public void EquipLeggings(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -561,36 +567,27 @@ public class PlayerEventListener implements Listener {
                 if(leggingsmeta != null && leggingsmeta.hasCustomModelData()){
                     if (isDiaper(leggings)) {
                         inventory.setLeggings(null);
-                        if (!isCustomPants(itemInHand)) {
-                            inventory.setLeggings(itemInHand);
-                            inventory.removeItem(itemInHand);
-                        }
+                        // if (!isCustomPants(itemInHand)) {
+                        //     inventory.setLeggings(itemInHand);
+                        //     inventory.removeItem(itemInHand);
+                        // }
                     }
                 }
-                // if (isCustomPants(itemInHand)) {
-                //     if (itemInHand.getItemMeta() instanceof LeatherArmorMeta) {
-                //         LeatherArmorMeta meta = (LeatherArmorMeta) itemInHand.getItemMeta();
-                //         AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), "generic.armor", 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.LEGS);
-                //         player.getAttribute(Attribute.GENERIC_ARMOR).getModifiers().clear();
-                //         meta.addAttributeModifier(Attribute.GENERIC_ARMOR, modifier);
-                //         itemInHand.setItemMeta(meta);
-                //     } 
-                // }
             }
             else return;
         }
     }
-    
-
+                    
+                
     @EventHandler
     public void onLeggingsBreak(PlayerItemBreakEvent event) {
         ItemStack brokenItem = event.getBrokenItem();
         if (isLeggings(brokenItem)) {
             Player player = event.getPlayer();
-            Bukkit.getScheduler().runTaskLater(plugin, () -> equipDiaperArmor(player), 1L);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> equipDiaperArmor(player, false, false), 1L);
         }
     }
-
+                
     @EventHandler
     public void onLeggingsClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
@@ -639,7 +636,7 @@ public class PlayerEventListener implements Listener {
             }
         }
     }
-
+                
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
         Player player = (Player) event.getPlayer();
@@ -647,10 +644,10 @@ public class PlayerEventListener implements Listener {
 
         // Check if the leggings are empty
         if (leggings == null || leggings.getType().isAir()) {
-            equipDiaperArmor(player);
+            equipDiaperArmor(player, false, false);
         }
     }
-    private boolean isDiaper(ItemStack item) {
+    private static boolean isDiaper(ItemStack item) {
         if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
             return false;
         }
@@ -658,16 +655,36 @@ public class PlayerEventListener implements Listener {
             return false;
         }
         ItemMeta meta = item.getItemMeta();
-        if(meta.hasCustomModelData() && (
-               meta.getCustomModelData() == 626002 ||  // Underwear
-               meta.getCustomModelData() == 626003 ||  // Pullup
-               meta.getCustomModelData() == 626009 ||  // Diaper
-               meta.getCustomModelData() == 626001     // Thick Diaper
-        )) return true;
+        if (meta.hasCustomModelData()) {
+            int modelData = meta.getCustomModelData();
+            Set<Integer> diaperModels = new HashSet<>(Arrays.asList(626001, 626002, 626003, 626009,
+                    626022, 626023, 626024, 626025, 626026, 626027, 626028, 626029,
+                    626030, 626031, 626032, 626033));
+            return diaperModels.contains(modelData);
+        }
+        // ItemMeta meta = item.getItemMeta();
+        // if(meta.hasCustomModelData() && (
+        //        meta.getCustomModelData() == 626001 ||  // Thick Diaper
+        //        meta.getCustomModelData() == 626002 ||  // Underwear
+        //        meta.getCustomModelData() == 626003 ||  // Pullup
+        //        meta.getCustomModelData() == 626009 ||  // Diaper
+        //        meta.getCustomModelData() == 626022 ||
+        //        meta.getCustomModelData() == 626023 ||
+        //        meta.getCustomModelData() == 626024 ||
+        //        meta.getCustomModelData() == 626025 ||
+        //        meta.getCustomModelData() == 626026 ||
+        //        meta.getCustomModelData() == 626027 ||
+        //        meta.getCustomModelData() == 626028 ||
+        //        meta.getCustomModelData() == 626029 ||
+        //        meta.getCustomModelData() == 626030 ||
+        //        meta.getCustomModelData() == 626031 ||
+        //        meta.getCustomModelData() == 626032 ||
+        //        meta.getCustomModelData() == 626033
+        // )) return true;
         return false;
     }
-
-    private boolean isCustomPants(ItemStack item) {
+            
+    private static boolean isCustomPants(ItemStack item) {
         if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
             return false;
         }
@@ -775,9 +792,11 @@ public class PlayerEventListener implements Listener {
             double chance = Math.min(4, Math.max(0, maxIncontinence / 2));
 
             if (random.nextInt(4) < chance) {
-                boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                stats.handleAccident(bladderAccident, player, false);
-                player.sendMessage("You got so scared by the attack that you had an accident!");
+                if (stats.getBladder() >= 10 || stats.getBowels() >= 10) {
+                    boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
+                    stats.handleAccident(bladderAccident, player, false);
+                    player.sendMessage("You got so scared by the attack that you had an accident!");
+                }
             }
         }
     }

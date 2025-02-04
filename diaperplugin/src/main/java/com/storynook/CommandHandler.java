@@ -370,7 +370,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
         }
         if (command.getName().equalsIgnoreCase("nightvision") || command.getName().equalsIgnoreCase("nv")  && sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("diaperplugin.nightvision") || !player.isOp()) {
+            if (!player.hasPermission("diaperplugin.nightvision") && !player.isOp()) {
                 player.sendMessage("You do not have permission to use this command.");
                 return true;
             }
@@ -382,7 +382,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
         }
         if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("diaperplugin.debug") || !player.isOp()) {
+            if (!player.hasPermission("diaperplugin.debug") && !player.isOp()) {
                 player.sendMessage("You do not have permission to use this command.");
                 return true;
             }

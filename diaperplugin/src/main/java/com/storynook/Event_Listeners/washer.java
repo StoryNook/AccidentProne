@@ -14,11 +14,13 @@ import org.bukkit.block.Furnace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -26,6 +28,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.FurnaceInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -33,6 +36,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import net.md_5.bungee.api.ChatColor;
 
 public class washer implements Listener{
     private JavaPlugin plugin;
@@ -105,48 +110,107 @@ public class washer implements Listener{
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
-        BlockState state = block.getState();
-
-        if (state instanceof InventoryHolder) {
-            InventoryHolder holder = (InventoryHolder) state;
+        
+        // First check if the block is a Furnace with custom model data 626014
+        if (block.getState() instanceof Furnace) {
+            Furnace furnace = (Furnace) block.getState();
+            PersistentDataContainer data = furnace.getPersistentDataContainer();
+            NamespacedKey key = new NamespacedKey(plugin, "CustomModelData");
             
-            // Drop all contents naturally, assuming it's a furnace (or similar)
-            ItemStack[] items = holder.getInventory().getContents();
-            Arrays.stream(items).forEach(item -> {
-                if (item != null && item.getType() != Material.AIR) {
-                    block.getWorld().dropItemNaturally(block.getLocation(), item);
-                }
-            });
-            // Clear the inventory to prevent double dropping
-            holder.getInventory().clear();
-        }
-
-        // Check if the block has an attached custom item frame with specific model data
-        for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
-            if (entity instanceof ItemFrame) {
-                ItemFrame itemFrame = (ItemFrame) entity;
-                ItemStack item = itemFrame.getItem();
-
-                if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
-                    // Remove the item frame
-                    itemFrame.remove();
-
-                    // Cancel the block break event to prevent the default drop
+            if (data.has(key, PersistentDataType.INTEGER)) {
+                int customModelData = data.get(key, PersistentDataType.INTEGER);
+                if (customModelData == 626014) {
+                    // Cancel the default block break behavior
                     event.setCancelled(true);
-
-                    // Drop the custom modeled furnace item
+                    
+                    // Create and drop the custom furnace item
                     ItemStack dropItem = new ItemStack(Material.FURNACE);
                     ItemMeta meta = dropItem.getItemMeta();
-                    if (meta != null) {
-                        meta.setCustomModelData(626014);  // Configure with custom model data
-                        dropItem.setItemMeta(meta);
-
-                        block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
+                    meta.setCustomModelData(626014);
+                    meta.setDisplayName("Washing Machine");
+                    dropItem.setItemMeta(meta);
+                    
+                    block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
+                    
+                    // Clear the inventory contents (items inside the furnace)
+                    FurnaceInventory inv = furnace.getInventory();
+                    for(int i = 0; i < inv.getSize(); i++) {
+                        ItemStack item = inv.getItem(i);
+                        if(item != null && !item.getType().equals(Material.AIR)) {
+                            block.getWorld().dropItemNaturally(block.getLocation(), item);
+                        }
                     }
+                    
+                    for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
+                        if (entity instanceof ItemFrame) {
+                            ItemFrame itemFrame = (ItemFrame) entity;
+                            ItemStack item = itemFrame.getItem();
+            
+                            if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
+                                // Remove the item frame
+                                itemFrame.remove();
+                            }
+                        }
+                    }
+                    // Remove the furnace
+                    block.setType(Material.AIR);
+                    return;
                 }
             }
         }
     }
+
+
+
+
+
+    // @EventHandler
+    // public void onBlockBreak(BlockBreakEvent event) {
+    //     Block block = event.getBlock();
+
+    //     // Check if the block has an attached custom item frame with specific model data
+    //     for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
+    //         if (entity instanceof ItemFrame) {
+    //             ItemFrame itemFrame = (ItemFrame) entity;
+    //             ItemStack item = itemFrame.getItem();
+
+    //             if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
+    //                 // Remove the item frame
+    //                 itemFrame.remove();
+
+    //                 // Cancel the block break event to prevent the default drop
+    //                 // event.setCancelled(true);
+
+    //                 // Drop the custom modeled furnace item
+    //                 ItemStack dropItem = new ItemStack(Material.FURNACE);
+    //                 ItemMeta meta = dropItem.getItemMeta();
+    //                 if (meta != null) {
+    //                     meta.setCustomModelData(626014);
+    //                     meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
+    //                     dropItem.setItemMeta(meta);
+
+    //                     block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    // @EventHandler
+    // public void onItemDrop(ItemSpawnEvent event) {
+    //     Item item = event.getEntity();
+    //     item.getType();
+    //     ItemStack itemstack = item.getItemStack();
+    //     Material matreialtype = itemstack.getType();
+    //     Bukkit.getLogger().info(String.format("Display Name " + itemstack.getItemMeta().getDisplayName() + "Custom Modeldata: " + itemstack.getItemMeta().hasCustomModelData()));
+    //     // Check if the item has custom model data 626014
+    //     if (item != null && matreialtype == Material.FURNACE && itemstack.hasItemMeta() && !itemstack.getItemMeta().hasCustomModelData() && 
+    //     itemstack.getItemMeta().getDisplayName().equals("Washing Machine")) {
+    //         Bukkit.getLogger().info(String.format("Found the item"));
+    //         // Cancel the drop of this specific item
+    //         event.setCancelled(true);
+    //     }
+    // }
 
     @EventHandler
     public void onFurnaceBurn(FurnaceBurnEvent event) {
