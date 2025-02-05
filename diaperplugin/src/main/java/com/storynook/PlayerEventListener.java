@@ -89,16 +89,23 @@ public class PlayerEventListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event) {
         plugin.loadPlayerStats(event.getPlayer()); //Uses the plugin instance to load player stats
         //Discover all of the custom crafting recipes
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diaper"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "ThickDiaper"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Pullup"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Underwear"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Tape"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "CleanPants"));
+
+        String[] recipes = {
+            "Diaper",
+            "ThickDiaper", 
+            "Pullup",
+            "Underwear",
+            "Tape",
+            "CleanPants",
+            "Toilet",
+            "DiaperStuffer",
+            "Washer"
+        };
+        
+        for (String recipe : recipes) {
+            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, recipe));
+        }
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperPail"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Toilet"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperStuffer"));
-        event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Washer"));
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diuretic"));
 
@@ -133,17 +140,8 @@ public class PlayerEventListener implements Listener {
 
         // Check for jumping specifically
         if (player.isOnGround() && player.getLocation().getY() > event.getFrom().getY()) {
-            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             // The player location is ascending from the last event call and they were on the ground
             Double currentMultiplier = plugin.activityMultiplier.getOrDefault(playerUUID, 1.0);
-            // double diaperFullness = stats.getDiaperFullness();
-    
-            // // Check if diaper is at a threshold level
-            // if (diaperFullness == 25 || diaperFullness == 50 || diaperFullness == 75 || diaperFullness == 100) {
-            //     // Reduce jump height by halving the vertical movement delta
-            //     double reducedJumpHeight = event.getDelta().y() * 0.5;
-            //     event.setDelta(new Vector(event.getDelta().x(), (float)reducedJumpHeight, event.getDelta().z()));
-            // }
             plugin.activityMultiplier.put(playerUUID, currentMultiplier + 0.5);
         }
     }
@@ -567,10 +565,6 @@ public class PlayerEventListener implements Listener {
                 if(leggingsmeta != null && leggingsmeta.hasCustomModelData()){
                     if (isDiaper(leggings)) {
                         inventory.setLeggings(null);
-                        // if (!isCustomPants(itemInHand)) {
-                        //     inventory.setLeggings(itemInHand);
-                        //     inventory.removeItem(itemInHand);
-                        // }
                     }
                 }
             }
@@ -662,44 +656,25 @@ public class PlayerEventListener implements Listener {
                     626030, 626031, 626032, 626033));
             return diaperModels.contains(modelData);
         }
-        // ItemMeta meta = item.getItemMeta();
-        // if(meta.hasCustomModelData() && (
-        //        meta.getCustomModelData() == 626001 ||  // Thick Diaper
-        //        meta.getCustomModelData() == 626002 ||  // Underwear
-        //        meta.getCustomModelData() == 626003 ||  // Pullup
-        //        meta.getCustomModelData() == 626009 ||  // Diaper
-        //        meta.getCustomModelData() == 626022 ||
-        //        meta.getCustomModelData() == 626023 ||
-        //        meta.getCustomModelData() == 626024 ||
-        //        meta.getCustomModelData() == 626025 ||
-        //        meta.getCustomModelData() == 626026 ||
-        //        meta.getCustomModelData() == 626027 ||
-        //        meta.getCustomModelData() == 626028 ||
-        //        meta.getCustomModelData() == 626029 ||
-        //        meta.getCustomModelData() == 626030 ||
-        //        meta.getCustomModelData() == 626031 ||
-        //        meta.getCustomModelData() == 626032 ||
-        //        meta.getCustomModelData() == 626033
-        // )) return true;
         return false;
     }
             
-    private static boolean isCustomPants(ItemStack item) {
-        if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
-            return false;
-        }
-        if (!item.hasItemMeta()) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if(meta.hasCustomModelData() && (
-               meta.getCustomModelData() == 626015 ||  // Pants
-               meta.getCustomModelData() == 626016 ||  // Pants Wet
-               meta.getCustomModelData() == 626017 ||  // Pants Dirt
-               meta.getCustomModelData() == 626018     // Pants Wet & Dirty
-        )) return true;
-        return false;
-    }
+    // private static boolean isCustomPants(ItemStack item) {
+    //     if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
+    //         return false;
+    //     }
+    //     if (!item.hasItemMeta()) {
+    //         return false;
+    //     }
+    //     ItemMeta meta = item.getItemMeta();
+    //     if(meta.hasCustomModelData() && (
+    //            meta.getCustomModelData() == 626015 ||  // Pants
+    //            meta.getCustomModelData() == 626016 ||  // Pants Wet
+    //            meta.getCustomModelData() == 626017 ||  // Pants Dirt
+    //            meta.getCustomModelData() == 626018     // Pants Wet & Dirty
+    //     )) return true;
+    //     return false;
+    // }
     
 
     private boolean isLeggings(ItemStack item) {
@@ -750,7 +725,7 @@ public class PlayerEventListener implements Listener {
             double chance = Math.min(4, Math.max(0, maxIncontinence / 2));// 1 in 4 chance of having an accident
             if (random.nextInt(4) < chance) {
                 boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                if (bladderAccident ? stats.getBladder() > 0 : stats.getBowels() > 0) {
+                if (bladderAccident ? stats.getBladder() > 10 : stats.getBowels() > 10) {
                     stats.handleAccident(bladderAccident, player, false);
                     player.sendMessage("You got so scared by the lightening that you had an accident!");
                 }
@@ -792,7 +767,7 @@ public class PlayerEventListener implements Listener {
             double chance = Math.min(4, Math.max(0, maxIncontinence / 2));
 
             if (random.nextInt(4) < chance) {
-                if (stats.getBladder() >= 10 || stats.getBowels() >= 10) {
+                if (stats.getBladder() > 10 || stats.getBowels() > 10) {
                     boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
                     stats.handleAccident(bladderAccident, player, false);
                     player.sendMessage("You got so scared by the attack that you had an accident!");

@@ -38,6 +38,7 @@ import com.storynook.items.ItemManager;
 import com.storynook.items.pants;
 import com.storynook.items.underwear;
 import com.storynook.menus.Caregivermenu;
+import com.storynook.menus.HUDMenu;
 import com.storynook.menus.IncontinenceMenu;
 import com.storynook.menus.SettingsMenu;
 
@@ -58,7 +59,11 @@ public class Plugin extends JavaPlugin
   HashMap<UUID, Integer> rightclickCount = new HashMap<>();
   HashMap<UUID, Integer> HydrationSpike = new HashMap<>();
   HashMap<UUID, Double> activityMultiplier = new HashMap<>();
+  HashMap<UUID, Boolean> wasJumping = new HashMap<>();
+  HashMap<UUID, Boolean> wasSprinting = new HashMap<>();
   HashMap<UUID, Boolean> firstimeran = new HashMap<>();
+  HashMap<UUID, Double> bladderfill = new HashMap<>();
+  HashMap<UUID, Double> bowelfill = new HashMap<>();
   private Map<UUID, BukkitTask> ParticleEffects = new HashMap<>();
   // private Map<UUID, Boolean> playerSneakStatus = new HashMap<>();
 
@@ -72,7 +77,6 @@ public class Plugin extends JavaPlugin
   @Override
   public void onEnable()
   {
-    
     getLogger().info("Plugin started, onEnable");
     //Creates DataFoler if it doesn't exist.
     if (!getDataFolder().exists()) {
@@ -90,6 +94,7 @@ public class Plugin extends JavaPlugin
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
     SettingsMenu SettingsMenu = new SettingsMenu(this);
     Caregivermenu caregivermenu = new Caregivermenu(this);
+    HUDMenu hudmenu = new HUDMenu(this);
     IncontinenceMenu incontinencemenu = new IncontinenceMenu(this);
     PantsCrafting pantsCrafting = new PantsCrafting(this);
     washer washer = new washer(this);
@@ -108,7 +113,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, pantsCrafting, washer};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
@@ -116,13 +121,6 @@ public class Plugin extends JavaPlugin
             getServer().getPluginManager().registerEvents((Listener) listener, this);
         }
     }
-
-    // getServer().getPluginManager().registerEvents(playerEventListener, this);
-    // getServer().getPluginManager().registerEvents(SettingsMenu, this);
-    // getServer().getPluginManager().registerEvents(caregivermenu, this);
-    // getServer().getPluginManager().registerEvents(incontinencemenu, this);
-    // getServer().getPluginManager().registerEvents(pantsCrafting, this);
-    // getServer().getPluginManager().registerEvents((Listener) washer, this);
     UpdateStats();
 
     playerStatsMap = new HashMap<UUID, PlayerStats>();
@@ -194,6 +192,8 @@ public class Plugin extends JavaPlugin
       stats.setvisableUnderwear(config.getBoolean("visableUnderwear", false));
       stats.setBladderLockIncon(config.getBoolean("BladderLockIncon"));
       stats.setBowelLockIncon(config.getBoolean("BowelLockIncon"));
+      stats.setfillbar(config.getBoolean("FillBar", false));
+      stats.setshowfill(config.getBoolean("ShowFill",false));
       if (config.contains("Caregivers")) {
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
@@ -233,6 +233,8 @@ public class Plugin extends JavaPlugin
       stats.setvisableUnderwear(false);
       stats.setBladderLockIncon(false);
       stats.setBowelLockIncon(false);
+      stats.setfillbar(false);
+      stats.setshowfill(false);
       stats.setUI(1);
       stats.setBedwetting(0);
       
@@ -279,6 +281,8 @@ public class Plugin extends JavaPlugin
             config.set("visableUnderwear", stats.getvisableUnderwear());
             config.set("BladderLockIncon", stats.getBladderLockIncon());
             config.set("BowelLockIncon", stats.getBowelLockIncon());
+            config.set("ShowFill", stats.getshowfill());
+            config.set("FillBar", stats.getfillbar());
             List<String> uuidStrings = stats.getCaregivers().stream()
             .map(UUID::toString) // Convert UUID to string
             .collect(Collectors.toList());
@@ -384,9 +388,12 @@ public class Plugin extends JavaPlugin
               }
               if (HydrationSpike.getOrDefault(player.getUniqueId(), 0) > 0 || isNearRunningWater(player) || isOutsideInRain(player)) {
                 stats.increaseBladder(stats.getBladderFillRate() * 2);
+                bladderfill.put(player.getUniqueId(), stats.getBladderFillRate() * 2);
+                if(HydrationSpike.getOrDefault(player.getUniqueId(), 0) > 0){HydrationSpike.put(player.getUniqueId(), (HydrationSpike.get(player.getUniqueId()) - 1));}
               }
               else {
                 stats.increaseBladder(stats.getBladderFillRate());
+                bladderfill.put(player.getUniqueId(), stats.getBladderFillRate());
               }
 
               if (stats.getMessing()) {
@@ -406,6 +413,7 @@ public class Plugin extends JavaPlugin
                 }
 
                 stats.increaseBowels(adjustedRate);
+                bowelfill.put(player.getUniqueId(), Math.round((adjustedRate * 100)) / 100.0);
               }
               stats.decreaseEffectDuration(1);
               if (stats.getDiaperFullness() >= 100 || stats.getDiaperWetness() >= 100) {
@@ -550,7 +558,13 @@ public class Plugin extends JavaPlugin
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();
-    int fullCount = (int) Math.ceil(value / 10.0);
+    int fullCount;
+    if (isWater) {
+      fullCount = (int) Math.ceil(value / 10.0);
+    }
+    else{
+      fullCount = value/10;
+    }
     int emptyCount = 10 - fullCount;
     if (isWater) {
       for (int i = 0; i < emptyCount; i++) {
@@ -583,7 +597,7 @@ public class Plugin extends JavaPlugin
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerStats stats = getPlayerStats(player.getUniqueId());
             if (stats != null && stats.getOptin() && stats.getUI() == 1) {
-                ScoreBoard.updateSidebar(player, stats);
+                ScoreBoard.updateSidebar(player, stats, bladderfill.getOrDefault(player.getUniqueId(), 0.0), bowelfill.getOrDefault(player.getUniqueId(), 0.0));
                 if(player.getRemainingAir() == player.getMaximumAir()){
                   String hydrationBar = buildStatusBar((int)stats.getHydration(), hydrationFull, hydrationEmpty, true);
                   player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent("\uF82B\uF82A\uF825"+hydrationBar));
@@ -630,7 +644,6 @@ public class Plugin extends JavaPlugin
             player.sendTitle(image, state, 10, 20, 10);
             if (player != target) {
               target.sendTitle(ChatColor.GOLD + player.getName(), ChatColor.AQUA +" Just checked you.", 10, 20, 10);
-              // target.sendMessage(ChatColor.GOLD + player.getName() + ChatColor.AQUA +" just checked you.");
             }
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
             scheduler.schedule(() -> rightclickCount.put(player.getUniqueId(), 0), 4, TimeUnit.SECONDS);
@@ -685,12 +698,12 @@ public class Plugin extends JavaPlugin
   public void clearAwaitingInput(UUID uuid) {
       playerInputAwaiting.remove(uuid);
   }
-  public void activityMultiplier(UUID uniqueId, double d) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'activityMultiplier'");
-  }
-  public void HydrationSpike(UUID uniqueId, int i) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'HydrationSpike'");
-  }
+  // public void activityMultiplier(UUID uniqueId, double d) {
+  //   // TODO Auto-generated method stub
+  //   throw new UnsupportedOperationException("Unimplemented method 'activityMultiplier'");
+  // }
+  // public void HydrationSpike(UUID uniqueId, int i) {
+  //   // TODO Auto-generated method stub
+  //   throw new UnsupportedOperationException("Unimplemented method 'HydrationSpike'");
+  // }
 }

@@ -77,12 +77,12 @@ public class SettingsMenu implements Listener {
                 else if(stats.getUI() == 2){UISetting = "HotBar";}
                 else{UISetting = "Error";}
                 List<String> lore = Arrays.asList(
-                    "Current UI Selected " + ChatColor.YELLOW + UISetting,
-                    "Different styles for you to pick from.",
+                    "Current HUD Selected " + ChatColor.YELLOW + UISetting,
+                    "Update your options in here.",
                     "Scoreboard style is defualt."
                 );
                 ScoreobardMeta.setLore(lore);
-                ScoreobardMeta.setDisplayName("Stats Visable");
+                ScoreobardMeta.setDisplayName("HUD for your Stats");
                 ScoreBoard.setItemMeta(ScoreobardMeta);   
             }
     
@@ -247,19 +247,7 @@ public class SettingsMenu implements Listener {
                 player.sendMessage(stats.getMessing() ? "Messing has been enabled." : "Messing has been disabled.");
                 OpenSettings(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.PAINTING) {
-                if(stats.getOptin()){
-                    int newUI = stats.getUI();
-                    newUI++;
-                    if (newUI > 2) {
-                        newUI = 0;
-                    }
-                    stats.setUI(newUI);
-                    if (stats.getUI() == 1){updateScoreboard(player, stats); player.sendMessage("Scoreboard Style Selected");}
-                    if (stats.getUI() == 0){updateScoreboard(player, stats); player.sendMessage("Stats Hidden");}
-                    if (stats.getUI() == 2){updateScoreboard(player, stats); player.sendMessage("Hotbar Style Selected");}
-                    plugin.savePlayerStats(player); // Save the updated stats
-                }
-                OpenSettings(player, plugin);
+                HUDMenu.HUDMenu(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.FIRE_CHARGE) {
                 stats.setHardcore(!stats.getHardcore());
                 player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");

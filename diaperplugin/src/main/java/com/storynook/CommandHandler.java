@@ -400,6 +400,19 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             }
 
             String type = args[0].toLowerCase();
+            // if (type.equals("showfill")) {
+            //     // Toggle showfill for the sender
+            //     boolean currentState = plugin.showfill.getOrDefault(player.getUniqueId(), false);
+            //     plugin.showfill.put(player.getUniqueId(), !currentState);
+            //     player.sendMessage("Live feed of fill: " + (plugin.showfill.get(player.getUniqueId()) ? ChatColor.GREEN + "Enabled" : ChatColor.RED + "Disabled"));
+            //     return true;
+            // }
+
+            if (args.length < 2) {
+                player.sendMessage("Usage: /debug " + type + " <number> [playername]");
+                return true;
+            }
+            
             double value;
             try {
                 value = Double.parseDouble(args[1]);
@@ -418,6 +431,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             } else {
                 target = player; // Default to the sender if no target is specified
             }
+
             PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
             if (targetStats == null) {
                 player.sendMessage("Target player stats not available.");
@@ -480,6 +494,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 completions.add("fullness");
                 completions.add("effectduration");
                 completions.add("timeworn");
+                // completions.add("showfill");
                 return completions; // Filter based on arguments (optional)
             } else if (args.length == 2 && args[0].equalsIgnoreCase("type")) {
                 completions.add("0");

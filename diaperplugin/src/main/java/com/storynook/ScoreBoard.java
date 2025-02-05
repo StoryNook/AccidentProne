@@ -6,11 +6,63 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
+
+import net.md_5.bungee.api.ChatColor;
+
+import java.awt.Color;
+
 import org.bukkit.Bukkit;
 
 public class ScoreBoard {
-    
+
     private static ScoreboardManager manager = Bukkit.getScoreboardManager();
+
+
+    private static String getUnderwearStateString(int wetness, int fullness) {
+        int barLength = 40;
+        double wetBars = Math.min(wetness/2.5, 40);
+        double messBars = Math.min(fullness/2.5, 50);
+
+        int filledBars = (int) Math.max(wetBars, Math.min(messBars, 50));
+        int lowerBars = (int) Math.min(wetBars, Math.min(messBars, 50));
+
+        StringBuilder UnderwearState = new StringBuilder();
+        if (wetBars > messBars) {
+            for (int i = 0; i < lowerBars; i++) {
+                UnderwearState.append(ChatColor.GREEN);
+                UnderwearState.append("|");
+                    
+            }
+            for (int i = lowerBars; i < filledBars; i++) {
+                UnderwearState.append(ChatColor.YELLOW);
+                UnderwearState.append("|");
+                    
+            }
+        }
+        else if (messBars > wetBars) {
+            for (int i = 0; i < lowerBars; i++) {
+                    UnderwearState.append(ChatColor.YELLOW);
+                    UnderwearState.append("|");
+                }
+                for (int i = lowerBars; i < filledBars; i++) {
+                    UnderwearState.append(ChatColor.GREEN);
+                    UnderwearState.append("|");
+                }
+        }
+        else if (messBars == wetBars) {
+            for (int i = 0; i < filledBars; i++) {
+                UnderwearState.append(ChatColor.GREEN);
+                UnderwearState.append("|");
+            }
+        }
+
+        for (int i = filledBars; i < barLength; i++) {
+            UnderwearState.append(ChatColor.RESET);
+            UnderwearState.append("|");
+        }
+
+        return UnderwearState.toString();
+    }
 
     private static String getBladderBarString(int bladderLevel) {
         int barLength = 10;
@@ -45,111 +97,111 @@ public class ScoreBoard {
         return bowelBar.toString();
     }
 
-static String getUnderwearStatus(int wetness, int fullness, int type, int size) {
-    // Define character mappings for each underwear type
-    char[][] smallStages = { //DONE
-        {'\uE134', '\uE136', '\uE135', '\uE137'}, // Underwear DONE
-        {'\uE11c', '\uE124', '\uE12c', '\uE130', '\uE11f', '\uE127', '\uE12f', '\uE133'}, // Pull-up DONE
-        {'\uE11c', '\uE120', '\uE124', '\uE12c', '\uE130', '\uE11d', '\uE11f', '\uE121', '\uE125', '\uE12d', '\uE131', '\uE123', '\uE127', '\uE12f', '\uE133'}, // Diaper DONE
-        {'\uE11c', '\uE120', '\uE124', '\uE128', '\uE12c', '\uE130', '\uE11d', '\uE11e', '\uE11f', '\uE121', '\uE125', '\uE129', '\uE12d', '\uE131', '\uE122', '\uE126', '\uE12a', '\uE12e', '\uE132', '\uE123', '\uE127', '\uE12b', '\uE12f', '\uE133'} //Thick Diaper DONE
-    };//DONE
-    
-    char[][] normalStages = {//DONE
-        {'\uE018', '\uE01a', '\uE019', '\uE01b'}, //Underwear DONE
-        {'\uE000', '\uE008', '\uE010', '\uE014', '\uE003', '\uE00b', '\uE013', '\uE017'}, // Pull-up DONE
-        {'\uE000', '\uE004', '\uE008', '\uE010', '\uE014', '\uE001', '\uE003', '\uE005', '\uE009', '\uE011', '\uE015', '\uE007', '\uE00b', '\uE013', '\uE017'}, // Diaper DONE
-        {'\uE000', '\uE004', '\uE008', '\uE00c', '\uE010', '\uE014', '\uE001', '\uE002', '\uE003', '\uE005', '\uE009', '\uE00d', '\uE011', '\uE015', '\uE006', '\uE00a', '\uE00e', '\uE012', '\uE016', '\uE007', '\uE00b', '\uE00f', '\uE013', '\uE017'} //Thick Diaper DONE
-    };//DONE
-    char[][] bigStages = {//DONE
-        {'\uE034', '\uE036', '\uE035', '\uE037'}, //Underwear DONE
-        {'\uE01c', '\uE024', '\uE02c', '\uE030', '\uE01f', '\uE027', '\uE02f', '\uE033'}, // Pull-up DONE
-        {'\uE01c', '\uE020', '\uE024', '\uE02c', '\uE030', '\uE01d', '\uE01f', '\uE021', '\uE025', '\uE02d', '\uE031', '\uE023', '\uE027', '\uE02f', '\uE033'}, // Diaper DONE
-        {'\uE01c', '\uE020', '\uE024', '\uE028', '\uE02c', '\uE030', '\uE01d', '\uE01e', '\uE01f', '\uE021', '\uE025', '\uE029', '\uE02d', '\uE031', '\uE022', '\uE026', '\uE02a', '\uE02e', '\uE032', '\uE023', '\uE027', '\uE02b', '\uE02f', '\uE033'} //Thick Diaper DONE
-    };//DONE
-    char[] stages;
-    // Select the appropriate stage array
-    switch (size) {
-        case 0:
-            stages = smallStages[type];
-            break;
-        case 1:
-            stages = normalStages[type];
-            break;
-        case 2:
-            stages = bigStages[type];
-            break;
-        default:
-            stages = null;
-            break;
+    static String getUnderwearStatus(int wetness, int fullness, int type, int size) {
+        // Define character mappings for each underwear type
+        char[][] smallStages = { //DONE
+            {'\uE134', '\uE136', '\uE135', '\uE137'}, // Underwear DONE
+            {'\uE11c', '\uE124', '\uE12c', '\uE130', '\uE11f', '\uE127', '\uE12f', '\uE133'}, // Pull-up DONE
+            {'\uE11c', '\uE120', '\uE124', '\uE12c', '\uE130', '\uE11d', '\uE11f', '\uE121', '\uE125', '\uE12d', '\uE131', '\uE123', '\uE127', '\uE12f', '\uE133'}, // Diaper DONE
+            {'\uE11c', '\uE120', '\uE124', '\uE128', '\uE12c', '\uE130', '\uE11d', '\uE11e', '\uE11f', '\uE121', '\uE125', '\uE129', '\uE12d', '\uE131', '\uE122', '\uE126', '\uE12a', '\uE12e', '\uE132', '\uE123', '\uE127', '\uE12b', '\uE12f', '\uE133'} //Thick Diaper DONE
+        };//DONE
+        
+        char[][] normalStages = {//DONE
+            {'\uE018', '\uE01a', '\uE019', '\uE01b'}, //Underwear DONE
+            {'\uE000', '\uE008', '\uE010', '\uE014', '\uE003', '\uE00b', '\uE013', '\uE017'}, // Pull-up DONE
+            {'\uE000', '\uE004', '\uE008', '\uE010', '\uE014', '\uE001', '\uE003', '\uE005', '\uE009', '\uE011', '\uE015', '\uE007', '\uE00b', '\uE013', '\uE017'}, // Diaper DONE
+            {'\uE000', '\uE004', '\uE008', '\uE00c', '\uE010', '\uE014', '\uE001', '\uE002', '\uE003', '\uE005', '\uE009', '\uE00d', '\uE011', '\uE015', '\uE006', '\uE00a', '\uE00e', '\uE012', '\uE016', '\uE007', '\uE00b', '\uE00f', '\uE013', '\uE017'} //Thick Diaper DONE
+        };//DONE
+        char[][] bigStages = {//DONE
+            {'\uE034', '\uE036', '\uE035', '\uE037'}, //Underwear DONE
+            {'\uE01c', '\uE024', '\uE02c', '\uE030', '\uE01f', '\uE027', '\uE02f', '\uE033'}, // Pull-up DONE
+            {'\uE01c', '\uE020', '\uE024', '\uE02c', '\uE030', '\uE01d', '\uE01f', '\uE021', '\uE025', '\uE02d', '\uE031', '\uE023', '\uE027', '\uE02f', '\uE033'}, // Diaper DONE
+            {'\uE01c', '\uE020', '\uE024', '\uE028', '\uE02c', '\uE030', '\uE01d', '\uE01e', '\uE01f', '\uE021', '\uE025', '\uE029', '\uE02d', '\uE031', '\uE022', '\uE026', '\uE02a', '\uE02e', '\uE032', '\uE023', '\uE027', '\uE02b', '\uE02f', '\uE033'} //Thick Diaper DONE
+        };//DONE
+        char[] stages;
+        // Select the appropriate stage array
+        switch (size) {
+            case 0:
+                stages = smallStages[type];
+                break;
+            case 1:
+                stages = normalStages[type];
+                break;
+            case 2:
+                stages = bigStages[type];
+                break;
+            default:
+                stages = null;
+                break;
+        }
+        int[][] stageMapping = {
+            {2, 1}, // Type 0: Underwear
+            {3, 1}, // Type 1: Pull-up
+            {4, 2}, // Type 2: Diaper
+            {5, 3}  // Type 3: Thick Diaper
+        };
+        // Define maximum stages for wetness and fullness
+        int maxWetnessLevels = stageMapping[type][0];
+        int maxFullnessLevels = stageMapping[type][1];
+
+        // Normalize wetness and fullness values to stages
+        int wetStage = Math.min(wetness / (100 / maxWetnessLevels), maxWetnessLevels-1);
+        int messStage = Math.min(fullness / (100 / maxFullnessLevels), maxFullnessLevels-1);
+
+        int stageIndex;
+
+        // Check the specific scenarios of wetting and messing
+        if(wetness > 0 && fullness > 0) {
+            // When both wetness and fullness are present
+            int startingIndex = 0;
+            messStage++;
+            if(type == 3){
+                if (messStage == 1){startingIndex = 9;}
+                if (messStage == 2) {startingIndex = 14;}
+                if(messStage == 3){startingIndex = 19;}
+                stageIndex = startingIndex + wetStage;
+            }
+            else if(type == 2){
+                if (messStage == 1){startingIndex = 7;}
+                if (messStage == 2) {startingIndex = 11;}
+                stageIndex = startingIndex + wetStage;
+            }
+            else if(type == 1){
+                startingIndex = 5;
+                stageIndex = startingIndex + wetStage;
+            }
+            else if (type == 0) {
+                stageIndex = 3;
+            }
+            else{stageIndex = 0;}
+        } else if(wetness > 0) {
+            // Wetness only
+            if (type == 0) {stageIndex = 1;}
+            else{stageIndex = wetStage;}
+        } else if (fullness > 0) {
+            // Fullness only
+            if(type == 0){stageIndex = 2;}
+            else{stageIndex = maxWetnessLevels + 1 + messStage;}
+            // stageIndex = messStage;
+        } else {
+            // Handle the case where there is neither wetness nor fullness (default state)
+            stageIndex = 0;
+        }
+
+        // Ensure the index does not exceed the bounds of the stages array
+        stageIndex = Math.min(stageIndex, stages.length - 1);
+        
+        // Return the corresponding character
+        return String.valueOf(stages[stageIndex]);
     }
-    int[][] stageMapping = {
-        {2, 1}, // Type 0: Underwear
-        {3, 1}, // Type 1: Pull-up
-        {4, 2}, // Type 2: Diaper
-        {5, 3}  // Type 3: Thick Diaper
-    };
-    // Define maximum stages for wetness and fullness
-    int maxWetnessLevels = stageMapping[type][0];
-    int maxFullnessLevels = stageMapping[type][1];
-
-    // Normalize wetness and fullness values to stages
-    int wetStage = Math.min(wetness / (100 / maxWetnessLevels), maxWetnessLevels-1);
-    int messStage = Math.min(fullness / (100 / maxFullnessLevels), maxFullnessLevels-1);
-
-    int stageIndex;
-
-    // Check the specific scenarios of wetting and messing
-    if(wetness > 0 && fullness > 0) {
-        // When both wetness and fullness are present
-        int startingIndex = 0;
-        messStage++;
-        if(type == 3){
-            if (messStage == 1){startingIndex = 9;}
-            if (messStage == 2) {startingIndex = 14;}
-            if(messStage == 3){startingIndex = 19;}
-            stageIndex = startingIndex + wetStage;
-        }
-        else if(type == 2){
-            if (messStage == 1){startingIndex = 7;}
-            if (messStage == 2) {startingIndex = 11;}
-            stageIndex = startingIndex + wetStage;
-        }
-        else if(type == 1){
-            startingIndex = 5;
-            stageIndex = startingIndex + wetStage;
-        }
-        else if (type == 0) {
-            stageIndex = 3;
-        }
-        else{stageIndex = 0;}
-    } else if(wetness > 0) {
-        // Wetness only
-        if (type == 0) {stageIndex = 1;}
-        else{stageIndex = wetStage;}
-    } else if (fullness > 0) {
-        // Fullness only
-        if(type == 0){stageIndex = 2;}
-        else{stageIndex = maxWetnessLevels + 1 + messStage;}
-        // stageIndex = messStage;
-    } else {
-        // Handle the case where there is neither wetness nor fullness (default state)
-        stageIndex = 0;
-    }
-
-    // Ensure the index does not exceed the bounds of the stages array
-    stageIndex = Math.min(stageIndex, stages.length - 1);
-    
-    // Return the corresponding character
-    return String.valueOf(stages[stageIndex]);
-}
     public static void createSidebar(Player player) {
-            Scoreboard board = manager.getNewScoreboard();
-            Objective objective = board.registerNewObjective("stats", "dummy", " ");
-            objective.setDisplaySlot(DisplaySlot.SIDEBAR);  // Show on the right side of the screen
+        Scoreboard board = manager.getNewScoreboard();
+        Objective objective = board.registerNewObjective("stats", "dummy", " ");
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);  // Show on the right side of the screen
 
-            player.setScoreboard(board);
-        }
-    public static void updateSidebar(Player player, PlayerStats stats) {
+        player.setScoreboard(board);
+    }
+    public static void updateSidebar(Player player, PlayerStats stats, Double bladderFill, Double bowelFill) {
         Scoreboard board = player.getScoreboard();
         Objective objective = board.getObjective("stats");
 
@@ -157,19 +209,30 @@ static String getUnderwearStatus(int wetness, int fullness, int type, int size) 
             board.getEntries().forEach(board::resetScores);
 
             String bladderBar = getBladderBarString((int)stats.getBladder());
+            String underwearstate = getUnderwearStateString((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness());
             String underwearImgage = getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 1);
+            String fill = "\uE050 " + bladderFill + " | \uE052 " + bowelFill;
 
             Score UnderwearStatus = objective.getScore(underwearImgage);
-            UnderwearStatus.setScore(2);
+            UnderwearStatus.setScore(4);
+            if (stats.getfillbar()) {
+                Score UnderwearStatusBar = objective.getScore(underwearstate);
+                UnderwearStatusBar.setScore(3);
+            }
 
-            Score bladderScore = objective.getScore(bladderBar);
-            bladderScore.setScore(0); 
-            
+            if (stats.getshowfill()) {
+                Score fillsScore = objective.getScore(fill);
+                fillsScore.setScore(2);
+            }
+
             if(stats.getMessing()){
                 String bowelsBar = getBowelBarString((int)stats.getBowels());
                 Score bowelScore = objective.getScore(bowelsBar);
                 bowelScore.setScore(1); 
             }
+
+            Score bladderScore = objective.getScore(bladderBar);
+            bladderScore.setScore(0); 
             
             // Score Overlay = objective.getScore("\uF001");
             // Overlay.setScore(8);

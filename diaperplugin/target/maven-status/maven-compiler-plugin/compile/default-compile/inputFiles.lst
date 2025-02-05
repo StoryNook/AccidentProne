@@ -1,4 +1,5 @@
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/Event_Listeners/washer.java
+/home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/menus/SoundEffectsMenu.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/items/ItemManager.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/ScoreBoard.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/PlayerStats.java
@@ -8,6 +9,7 @@
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/items/underwear.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/items/pants.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/CommandHandler.java
+/home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/menus/HUDMenu.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/ParticleEffect.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/Event_Listeners/PantsCrafting.java
 /home/dudepher/MinecraftDiaperPlugin/diaperplugin/src/main/java/com/storynook/Plugin.java

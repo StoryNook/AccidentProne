@@ -24,20 +24,25 @@ public class PlayerStats {
     private int urgeToGo = 1;
     private int UnderwearType = 0;
     private int layers = 0;
-    private boolean optin;
-    private boolean messing;
     private int ParticleEffects;
     private int UI;
     private int Bedwetting;
     private int EffectDuration = 0;
+    private int timeworn = 0;
+    private int minFill = 30;
+    private boolean optin;
+    private boolean messing;
     private boolean hardcore;
     private boolean BladderLockIncon;
     private boolean BowelLockIncon;
     private boolean AllCaregiver;
     private boolean specialCG;
     private boolean visableUnderwear;
-    private int timeworn = 0;
-    private int minFill = 30;
+    private boolean fillbar;
+    private boolean showfill;
+    private boolean canhear;
+    private boolean lethear;
+    private List<String> sounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
     private static final int MAX_VALUE = 100;
@@ -63,6 +68,12 @@ public class PlayerStats {
 
     public boolean getOptin() {return optin;}
     public void setOptin(boolean bool) {optin = bool;}
+
+    public boolean getshowfill() {return showfill;}
+    public void setshowfill(boolean bool) {showfill = bool;}
+
+    public boolean getfillbar() {return fillbar;}
+    public void setfillbar(boolean bool) {fillbar = bool;}
 
     public boolean getvisableUnderwear() {return visableUnderwear;}
     public void setvisableUnderwear(boolean bool) {visableUnderwear = bool;}
