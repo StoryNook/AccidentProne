@@ -1,9 +1,5 @@
 package com.storynook.Event_Listeners;
 
-import java.util.Arrays;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -14,30 +10,21 @@ import org.bukkit.block.Furnace;
 import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.FurnaceInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import net.md_5.bungee.api.ChatColor;
 
 public class washer implements Listener{
     private JavaPlugin plugin;
@@ -76,36 +63,7 @@ public class washer implements Listener{
             itemFrame.setItem(furnaceItem);
             
         }
-    }
-
-    @EventHandler
-    public void onItemFrameUse(PlayerInteractEntityEvent  event) {
-        Entity entity = event.getRightClicked();
-
-        if (entity instanceof ItemFrame) {
-            ItemFrame itemFrame = (ItemFrame) entity;
-            ItemStack item = itemFrame.getItem();
-
-            if (item != null && item.getType() != Material.AIR && item.hasItemMeta()) {
-                if (item.getItemMeta().hasCustomModelData()) {
-                    int modelData = item.getItemMeta().getCustomModelData();
-                    
-                    // Check if the model data matches the locked item
-                    if (modelData == 626014) {
-                        event.setCancelled(true);  // Prevent rotation
-                         Block attachedBlock = itemFrame.getLocation().getBlock().getRelative(itemFrame.getAttachedFace());
-
-                        // Check if the block has an inventory (furnace, chest, etc.)
-                        BlockState state = attachedBlock.getState();
-                        if (state instanceof InventoryHolder) {
-                            InventoryHolder container = (InventoryHolder) state;
-                            event.getPlayer().openInventory(container.getInventory());
-                        }
-                    }
-                }
-            }
-        }
-    }
+    }  
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
@@ -159,58 +117,34 @@ public class washer implements Listener{
             }
         }
     }
+    @EventHandler
+    public void onItemFrameUse(PlayerInteractEntityEvent event) {
+        Entity entity = event.getRightClicked();
 
+        if (entity instanceof ItemFrame) {
+            ItemFrame itemFrame = (ItemFrame) entity;
+            ItemStack item = itemFrame.getItem();
 
+            if (item != null && item.getType() != Material.AIR && item.hasItemMeta()) {
+                if (item.getItemMeta().hasCustomModelData()) {
+                    int modelData = item.getItemMeta().getCustomModelData();
+                    
+                    // Check if the model data matches the locked item
+                    if (modelData == 626014) {
+                        event.setCancelled(true);  // Prevent rotation
+                         Block attachedBlock = itemFrame.getLocation().getBlock().getRelative(itemFrame.getAttachedFace());
 
-
-
-    // @EventHandler
-    // public void onBlockBreak(BlockBreakEvent event) {
-    //     Block block = event.getBlock();
-
-    //     // Check if the block has an attached custom item frame with specific model data
-    //     for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
-    //         if (entity instanceof ItemFrame) {
-    //             ItemFrame itemFrame = (ItemFrame) entity;
-    //             ItemStack item = itemFrame.getItem();
-
-    //             if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
-    //                 // Remove the item frame
-    //                 itemFrame.remove();
-
-    //                 // Cancel the block break event to prevent the default drop
-    //                 // event.setCancelled(true);
-
-    //                 // Drop the custom modeled furnace item
-    //                 ItemStack dropItem = new ItemStack(Material.FURNACE);
-    //                 ItemMeta meta = dropItem.getItemMeta();
-    //                 if (meta != null) {
-    //                     meta.setCustomModelData(626014);
-    //                     meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
-    //                     dropItem.setItemMeta(meta);
-
-    //                     block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // @EventHandler
-    // public void onItemDrop(ItemSpawnEvent event) {
-    //     Item item = event.getEntity();
-    //     item.getType();
-    //     ItemStack itemstack = item.getItemStack();
-    //     Material matreialtype = itemstack.getType();
-    //     Bukkit.getLogger().info(String.format("Display Name " + itemstack.getItemMeta().getDisplayName() + "Custom Modeldata: " + itemstack.getItemMeta().hasCustomModelData()));
-    //     // Check if the item has custom model data 626014
-    //     if (item != null && matreialtype == Material.FURNACE && itemstack.hasItemMeta() && !itemstack.getItemMeta().hasCustomModelData() && 
-    //     itemstack.getItemMeta().getDisplayName().equals("Washing Machine")) {
-    //         Bukkit.getLogger().info(String.format("Found the item"));
-    //         // Cancel the drop of this specific item
-    //         event.setCancelled(true);
-    //     }
-    // }
+                        // Check if the block has an inventory (furnace, chest, etc.)
+                        BlockState state = attachedBlock.getState();
+                        if (state instanceof InventoryHolder) {
+                            InventoryHolder container = (InventoryHolder) state;
+                            event.getPlayer().openInventory(container.getInventory());
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     @EventHandler
     public void onFurnaceBurn(FurnaceBurnEvent event) {
@@ -235,7 +169,6 @@ public class washer implements Listener{
             }
         }
     }
-
 
     @EventHandler
     public void onFurnaceSmelt(FurnaceSmeltEvent event) {
@@ -282,42 +215,6 @@ public class washer implements Listener{
         }
     }
 
-    // @EventHandler
-    // public void onInventoryClick(InventoryClickEvent event) {
-    //     Inventory inventory = event.getClickedInventory();
-        
-    //     if (inventory != null && inventory.getType() == InventoryType.FURNACE && event.getView().getTitle() == "Washing Machine") {
-    //         ItemStack item = event.getCursor();
-            
-            
-    //         // Check if the item is valid before placing it into the furnace
-    //         if (!isValidSmeltingItem(item)) {
-    //             event.setCancelled(true);
-    //         }
-    //     }
-    //     else if (inventory != null && inventory.getType() == InventoryType.FURNACE) {
-    //         ItemStack item = event.getCursor();
-            
-    //         // Check if the item is valid before placing it into the furnace
-    //         if (!isValidSmeltingItem(item)) {
-    //             event.setCancelled(true);
-    //         }
-    //     }
-    // }
-
-    // @EventHandler
-    // public void onInventoryMoveItem(InventoryMoveItemEvent event) {
-    //     // Check if a hopper is moving items into a furnace
-    //     if (event.getDestination().getType() == InventoryType.FURNACE) {
-    //         ItemStack item = event.getItem();
-
-    //         // Block invalid items from entering the furnace via hoppers
-    //         if (!isValidSmeltingItem(item)) {
-    //             event.setCancelled(true);
-    //         }
-    //     }
-    // }
-
     // Helper method to check if an item is valid for smelting
     private boolean isValidSmeltingItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
@@ -341,38 +238,4 @@ public class washer implements Listener{
         // Check if the item is leather leggings with any custom model data
         return item.getType() == Material.LEATHER_LEGGINGS;
     }
-
-    // @EventHandler
-    // public void onBlockBreak(BlockBreakEvent event) {
-    //     Block block = event.getBlock();
-    //     Location blockLocation = block.getLocation();
-
-    //     // Check each face of block directly for item frames
-    //     for (BlockFace face : BlockFace.values()) {
-    //         // Calculate the location based on the face directly instead of a scanning radius
-    //         Location checkLocation = blockLocation.clone().add(face.getModX(), face.getModY(), face.getModZ());
-    //         Block faceBlock = block.getWorld().getBlockAt(checkLocation);
-
-    //         // Specifically check for an item frame entity at this location
-    //         for (Entity entity : faceBlock.getWorld().getNearbyEntities(checkLocation, 0.1, 0.1, 0.1)) {
-    //             if (entity instanceof ItemFrame) {
-    //                 ItemFrame itemFrame = (ItemFrame) entity;
-
-    //                 // Check if the item frame is exactly at the calculated location and facing correctly
-    //                 if (itemFrame.getLocation().getBlock().equals(faceBlock) && itemFrame.getAttachedFace() == face) {
-    //                     ItemStack itemStack = itemFrame.getItem();
-
-    //                     // Check if the item inside has the specific customModelData
-    //                     if (itemStack != null && itemStack.hasItemMeta() && itemStack.getItemMeta().hasCustomModelData()) {
-    //                         int customModelData = itemStack.getItemMeta().getCustomModelData();
-    //                         if (customModelData == 626014) {
-    //                             // Remove the item frame
-    //                             itemFrame.remove();
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }

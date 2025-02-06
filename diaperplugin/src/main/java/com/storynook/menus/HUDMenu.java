@@ -55,8 +55,9 @@ public class HUDMenu implements Listener{
             ScoreobardMeta.setDisplayName("Stats Visable");
             ScoreBoard.setItemMeta(ScoreobardMeta);   
         }
-        ItemStack toggleBar = new ItemStack(Material.BREAD); // Custom button
+        ItemStack toggleBar = new ItemStack(Material.SLIME_BALL); // Custom button
         ItemMeta toggleBarMeta = toggleBar.getItemMeta();
+        toggleBarMeta.setCustomModelData(626005);
         if (toggleBarMeta != null) {
             
             List<String> lore = Arrays.asList(
@@ -66,7 +67,7 @@ public class HUDMenu implements Listener{
                 "Green is messiness if enabled."
             );
             toggleBarMeta.setLore(lore);
-            toggleBarMeta.setDisplayName("Underwear State Bar");
+            toggleBarMeta.setDisplayName("Underwear Status Bar");
             toggleBar.setItemMeta(toggleBarMeta);   
         }
         ItemStack toggleFill = new ItemStack(Material.WATER_BUCKET); // Custom button
@@ -89,7 +90,7 @@ public class HUDMenu implements Listener{
         showunderwearmeta.setCustomModelData(626001);
         if (toggleFillmeta != null) {
             List<String> lore = Arrays.asList(
-                "Currently: " + (stats.getshowfill() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
+                "Currently: " + (stats.getshowunderwear() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
                 "Show you your underwear on your HUD"
             );
             showunderwearmeta.setLore(lore);
@@ -124,6 +125,7 @@ public class HUDMenu implements Listener{
             return;
         }
         else if (event.getView().getTitle().equals("HUD Settings")) {
+            ItemMeta meta = event.getCurrentItem().getItemMeta();
             if (event.getCurrentItem().getType() == Material.RED_STAINED_GLASS_PANE) {
                 SettingsMenu.OpenSettings(player, plugin);
             }
@@ -142,7 +144,7 @@ public class HUDMenu implements Listener{
                 }
                 HUDMenu(player, plugin);
             }
-            else if (event.getCurrentItem().getType() == Material.BREAD) {
+            else if (event.getCurrentItem().hasItemMeta() && meta.getCustomModelData() == 626005) {
                 if(stats.getOptin()){
                     stats.setfillbar(!stats.getfillbar());
                     player.sendMessage(stats.getfillbar() ? "You have enabled the status bar." : "You have removed the status bar.");
@@ -158,16 +160,12 @@ public class HUDMenu implements Listener{
                     HUDMenu(player, plugin);
                 }
             }
-            else if (event.getCurrentItem().getType() == Material.SLIME_BALL && event.getCurrentItem().hasItemMeta()) {
-                ItemMeta meta = event.getCurrentItem().getItemMeta();
-
-                if (meta.hasCustomModelData() && meta.getCustomModelData() == 626001) {
-                    if(stats.getOptin()){
-                        stats.setshowunderwear(!stats.getshowunderwear());
-                        player.sendMessage(stats.getshowunderwear() ? "Your underwear is showing on your stats." : "Your underwear is now hidden from you.");
-                        updateScoreboard(player, stats);
-                        HUDMenu(player, plugin);
-                    }
+            else if (event.getCurrentItem().hasItemMeta() && meta.getCustomModelData() == 626001) {
+                if(stats.getOptin()){
+                    stats.setshowunderwear(!stats.getshowunderwear());
+                    player.sendMessage(stats.getshowunderwear() ? "Your underwear is showing on your stats." : "Your underwear is now hidden from you.");
+                    updateScoreboard(player, stats);
+                    HUDMenu(player, plugin);
                 }
             }
         }

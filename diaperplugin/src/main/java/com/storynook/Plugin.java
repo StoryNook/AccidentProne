@@ -613,11 +613,11 @@ public class Plugin extends JavaPlugin
                 String underwearImage = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 0);
                 if (stats.getMessing()){
                   String bowelBar = buildStatusBar((int)stats.getBowels(), bowelsFull, bowelsEmpty, false);
-                  String withBowels = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + "\uF80B\uF809" + bowelBar + underwearImage;
+                  String withBowels = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + "\uF80B\uF809" + bowelBar + (stats.getshowunderwear() ? underwearImage : "");
                   player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(withBowels));
                 }
                 else{
-                  String basicBar = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + underwearImage;
+                  String basicBar = "\uF82B\uF82A\uF825\uF829\uF828" + hydrationBar + "\uF82A\uF80C\uF829" + bladderBar + (stats.getshowunderwear() ? underwearImage : "");
                   player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(basicBar));
                 }
               }
