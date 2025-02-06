@@ -84,10 +84,23 @@ public class HUDMenu implements Listener{
             toggleFillmeta.setDisplayName("Fill Rates Visible");
             toggleFill.setItemMeta(toggleFillmeta);   
         }
+        ItemStack showunderwear = new ItemStack(Material.SLIME_BALL); // Custom button
+        ItemMeta showunderwearmeta = showunderwear.getItemMeta();
+        showunderwearmeta.setCustomModelData(626001);
+        if (toggleFillmeta != null) {
+            List<String> lore = Arrays.asList(
+                "Currently: " + (stats.getshowfill() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
+                "Show you your underwear on your HUD"
+            );
+            showunderwearmeta.setLore(lore);
+            showunderwearmeta.setDisplayName("View Underwear");
+            showunderwear.setItemMeta(showunderwearmeta);   
+        }
         menu.setItem(0, Back);
         menu.setItem(1, ScoreBoard);
         menu.setItem(2, toggleBar);
         menu.setItem(3, toggleFill);
+        menu.setItem(4, showunderwear);
         player.openInventory(menu);
     }
 
@@ -143,6 +156,18 @@ public class HUDMenu implements Listener{
                     player.sendMessage(stats.getshowfill() ? "You are now seeing the fill rates." : "You no longer are seeing the fill rates.");
                     updateScoreboard(player, stats);
                     HUDMenu(player, plugin);
+                }
+            }
+            else if (event.getCurrentItem().getType() == Material.SLIME_BALL && event.getCurrentItem().hasItemMeta()) {
+                ItemMeta meta = event.getCurrentItem().getItemMeta();
+
+                if (meta.hasCustomModelData() && meta.getCustomModelData() == 626001) {
+                    if(stats.getOptin()){
+                        stats.setshowunderwear(!stats.getshowunderwear());
+                        player.sendMessage(stats.getshowunderwear() ? "Your underwear is showing on your stats." : "Your underwear is now hidden from you.");
+                        updateScoreboard(player, stats);
+                        HUDMenu(player, plugin);
+                    }
                 }
             }
         }

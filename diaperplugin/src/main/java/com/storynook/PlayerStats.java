@@ -30,18 +30,7 @@ public class PlayerStats {
     private int EffectDuration = 0;
     private int timeworn = 0;
     private int minFill = 30;
-    private boolean optin;
-    private boolean messing;
-    private boolean hardcore;
-    private boolean BladderLockIncon;
-    private boolean BowelLockIncon;
-    private boolean AllCaregiver;
-    private boolean specialCG;
-    private boolean visableUnderwear;
-    private boolean fillbar;
-    private boolean showfill;
-    private boolean canhear;
-    private boolean lethear;
+    private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
     private List<String> sounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
@@ -71,6 +60,9 @@ public class PlayerStats {
 
     public boolean getshowfill() {return showfill;}
     public void setshowfill(boolean bool) {showfill = bool;}
+
+    public boolean getshowunderwear() {return showunderwear;}
+    public void setshowunderwear(boolean bool) {showunderwear = bool;}
 
     public boolean getfillbar() {return fillbar;}
     public void setfillbar(boolean bool) {fillbar = bool;}

@@ -134,64 +134,51 @@ public class ScoreBoard {
                 stages = null;
                 break;
         }
-        int[][] stageMapping = {
-            {2, 1}, // Type 0: Underwear
-            {3, 1}, // Type 1: Pull-up
-            {4, 2}, // Type 2: Diaper
-            {5, 3}  // Type 3: Thick Diaper
-        };
-        // Define maximum stages for wetness and fullness
-        int maxWetnessLevels = stageMapping[type][0];
-        int maxFullnessLevels = stageMapping[type][1];
-
-        // Normalize wetness and fullness values to stages
-        int wetStage = Math.min(wetness / (100 / maxWetnessLevels), maxWetnessLevels-1);
-        int messStage = Math.min(fullness / (100 / maxFullnessLevels), maxFullnessLevels-1);
+        int maxWetStages, maxMessStages;
+        switch(type) {
+        case 0: // Underwear
+            maxWetStages = 1;
+            maxMessStages = 1;
+            break;
+        case 1: // Pull-up
+            maxWetStages = 3;
+            maxMessStages = 1;
+            break;
+        case 2: // Diaper
+            maxWetStages = 4;
+            maxMessStages = 2;
+            break;
+        case 3: // Thick Diaper
+            maxWetStages = 5;
+            maxMessStages = 3;
+            break;
+        default:
+            maxWetStages = 0;
+            maxMessStages = 0;
+            break;
+        }
+        int wetStage = Math.min((int) Math.floor(wetness / (100.0 / maxWetStages)), maxWetStages);
+        int messStage = Math.min((int) Math.floor(fullness / (100.0 / maxMessStages)), maxMessStages);
 
         int stageIndex;
 
-        // Check the specific scenarios of wetting and messing
-        if(wetness > 0 && fullness > 0) {
-            // When both wetness and fullness are present
-            int startingIndex = 0;
-            messStage++;
-            if(type == 3){
-                if (messStage == 1){startingIndex = 9;}
-                if (messStage == 2) {startingIndex = 14;}
-                if(messStage == 3){startingIndex = 19;}
-                stageIndex = startingIndex + wetStage;
-            }
-            else if(type == 2){
-                if (messStage == 1){startingIndex = 7;}
-                if (messStage == 2) {startingIndex = 11;}
-                stageIndex = startingIndex + wetStage;
-            }
-            else if(type == 1){
-                startingIndex = 5;
-                stageIndex = startingIndex + wetStage;
-            }
-            else if (type == 0) {
-                stageIndex = 3;
-            }
-            else{stageIndex = 0;}
-        } else if(wetness > 0) {
-            // Wetness only
-            if (type == 0) {stageIndex = 1;}
-            else{stageIndex = wetStage;}
-        } else if (fullness > 0) {
-            // Fullness only
-            if(type == 0){stageIndex = 2;}
-            else{stageIndex = maxWetnessLevels + 1 + messStage;}
-            // stageIndex = messStage;
+        if (wetStage > 0 && messStage > 0) {
+            // Both wet and mess present - calculate combined state
+            stageIndex = wetStage + (messStage * maxWetStages) + messStage + (maxMessStages - messStage);
+        } else if (wetStage > 0) {
+            // Only wet present
+            stageIndex = wetStage;
+        } else if (messStage > 0) {
+            // Only mess present
+            stageIndex = maxWetStages + messStage;
         } else {
-            // Handle the case where there is neither wetness nor fullness (default state)
+            // Clean state
             stageIndex = 0;
         }
 
-        // Ensure the index does not exceed the bounds of the stages array
+        // Ensure index doesn't exceed array bounds
         stageIndex = Math.min(stageIndex, stages.length - 1);
         
-        // Return the corresponding character
         return String.valueOf(stages[stageIndex]);
     }
     public static void createSidebar(Player player) {
@@ -213,8 +200,10 @@ public class ScoreBoard {
             String underwearImgage = getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 1);
             String fill = "\uE050 " + bladderFill + " | \uE052 " + bowelFill;
 
-            Score UnderwearStatus = objective.getScore(underwearImgage);
-            UnderwearStatus.setScore(4);
+            if (stats.getshowunderwear()) {
+                Score UnderwearStatus = objective.getScore(underwearImgage);
+                UnderwearStatus.setScore(4);
+            }
             if (stats.getfillbar()) {
                 Score UnderwearStatusBar = objective.getScore(underwearstate);
                 UnderwearStatusBar.setScore(3);

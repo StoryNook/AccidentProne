@@ -194,6 +194,7 @@ public class Plugin extends JavaPlugin
       stats.setBowelLockIncon(config.getBoolean("BowelLockIncon"));
       stats.setfillbar(config.getBoolean("FillBar", false));
       stats.setshowfill(config.getBoolean("ShowFill",false));
+      stats.setshowunderwear(config.getBoolean("showunderwear", true));
       if (config.contains("Caregivers")) {
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
@@ -235,6 +236,7 @@ public class Plugin extends JavaPlugin
       stats.setBowelLockIncon(false);
       stats.setfillbar(false);
       stats.setshowfill(false);
+      stats.setshowunderwear(true);
       stats.setUI(1);
       stats.setBedwetting(0);
       
@@ -283,6 +285,7 @@ public class Plugin extends JavaPlugin
             config.set("BowelLockIncon", stats.getBowelLockIncon());
             config.set("ShowFill", stats.getshowfill());
             config.set("FillBar", stats.getfillbar());
+            config.set("showunderwear", stats.getshowunderwear());
             List<String> uuidStrings = stats.getCaregivers().stream()
             .map(UUID::toString) // Convert UUID to string
             .collect(Collectors.toList());
