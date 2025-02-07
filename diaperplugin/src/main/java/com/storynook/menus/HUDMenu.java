@@ -27,7 +27,7 @@ public class HUDMenu implements Listener{
     public HUDMenu (Plugin plugin) {
         this.plugin = plugin;
     }
-    public static void HUDMenu(Player player, Plugin plugin) {
+    public static void HUDMenuUI(Player player, Plugin plugin) {
         UUID playerUUID = player.getUniqueId();
         PlayerStats stats = plugin.getPlayerStats(playerUUID);
         Inventory menu = Bukkit.createInventory(player, 9, "HUD Settings");
@@ -142,14 +142,14 @@ public class HUDMenu implements Listener{
                     if (stats.getUI() == 2){updateScoreboard(player, stats); player.sendMessage("Hotbar Style Selected");}
                     plugin.savePlayerStats(player); // Save the updated stats
                 }
-                HUDMenu(player, plugin);
+                HUDMenuUI(player, plugin);
             }
-            else if (event.getCurrentItem().hasItemMeta() && meta.getCustomModelData() == 626005) {
+            else if (meta.hasCustomModelData() && meta.getCustomModelData() == 626005) {
                 if(stats.getOptin()){
                     stats.setfillbar(!stats.getfillbar());
                     player.sendMessage(stats.getfillbar() ? "You have enabled the status bar." : "You have removed the status bar.");
                     updateScoreboard(player, stats);
-                    HUDMenu(player, plugin);
+                    HUDMenuUI(player, plugin);
                 }
             }
             else if (event.getCurrentItem().getType() == Material.WATER_BUCKET) {
@@ -157,15 +157,15 @@ public class HUDMenu implements Listener{
                     stats.setshowfill(!stats.getshowfill());
                     player.sendMessage(stats.getshowfill() ? "You are now seeing the fill rates." : "You no longer are seeing the fill rates.");
                     updateScoreboard(player, stats);
-                    HUDMenu(player, plugin);
+                    HUDMenuUI(player, plugin);
                 }
             }
-            else if (event.getCurrentItem().hasItemMeta() && meta.getCustomModelData() == 626001) {
+            else if (meta.hasCustomModelData() && meta.getCustomModelData() == 626001) {
                 if(stats.getOptin()){
                     stats.setshowunderwear(!stats.getshowunderwear());
                     player.sendMessage(stats.getshowunderwear() ? "Your underwear is showing on your stats." : "Your underwear is now hidden from you.");
                     updateScoreboard(player, stats);
-                    HUDMenu(player, plugin);
+                    HUDMenuUI(player, plugin);
                 }
             }
         }

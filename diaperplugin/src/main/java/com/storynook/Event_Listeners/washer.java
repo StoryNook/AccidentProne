@@ -1,5 +1,8 @@
 package com.storynook.Event_Listeners;
 
+import java.util.List;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -38,15 +41,23 @@ public class washer implements Listener{
             Furnace furnace = (Furnace) event.getBlockPlaced().getState();
             PersistentDataContainer data = furnace.getPersistentDataContainer();
             NamespacedKey key = new NamespacedKey(plugin, "CustomModelData");
+            NamespacedKey xKey = new NamespacedKey(plugin, "ItemFrameX");
+            NamespacedKey yKey = new NamespacedKey(plugin, "ItemFrameY");
+            NamespacedKey zKey = new NamespacedKey(plugin, "ItemFrameZ");
 
             data.set(key, PersistentDataType.INTEGER, 626014);
-            furnace.update();
+            // furnace.update();
             Block block = event.getBlockPlaced();
             Location loc = block.getLocation();
             
             BlockState state = block.getState();
             BlockFace furnaceFacing = ((Directional) state.getBlockData()).getFacing();
             Location frameLocation = loc.clone().add(furnaceFacing.getModX(), furnaceFacing.getModY(), furnaceFacing.getModZ());
+
+            data.set(xKey, PersistentDataType.INTEGER, (int) frameLocation.getX());
+            data.set(yKey, PersistentDataType.INTEGER, (int) frameLocation.getY());
+            data.set(zKey, PersistentDataType.INTEGER, (int) frameLocation.getZ());
+            furnace.update();
             ItemFrame itemFrame = (ItemFrame) loc.getWorld().spawnEntity(frameLocation, EntityType.ITEM_FRAME);
             itemFrame.setFacingDirection(furnaceFacing, true);
             
@@ -64,12 +75,10 @@ public class washer implements Listener{
             
         }
     }  
-
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         
-        // First check if the block is a Furnace with custom model data 626014
         if (block.getState() instanceof Furnace) {
             Furnace furnace = (Furnace) block.getState();
             PersistentDataContainer data = furnace.getPersistentDataContainer();
@@ -78,10 +87,9 @@ public class washer implements Listener{
             if (data.has(key, PersistentDataType.INTEGER)) {
                 int customModelData = data.get(key, PersistentDataType.INTEGER);
                 if (customModelData == 626014) {
-                    // Cancel the default block break behavior
                     event.setCancelled(true);
-                    
-                    // Create and drop the custom furnace item
+    
+                    // Drop the custom furnace item
                     ItemStack dropItem = new ItemStack(Material.FURNACE);
                     ItemMeta meta = dropItem.getItemMeta();
                     meta.setCustomModelData(626014);
@@ -89,27 +97,57 @@ public class washer implements Listener{
                     dropItem.setItemMeta(meta);
                     
                     block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
-                    
-                    // Clear the inventory contents (items inside the furnace)
+    
+                    // Clear furnace inventory
                     FurnaceInventory inv = furnace.getInventory();
-                    for(int i = 0; i < inv.getSize(); i++) {
+                    for (int i = 0; i < inv.getSize(); i++) {
                         ItemStack item = inv.getItem(i);
-                        if(item != null && !item.getType().equals(Material.AIR)) {
+                        if (item != null && !item.getType().equals(Material.AIR)) {
                             block.getWorld().dropItemNaturally(block.getLocation(), item);
                         }
                     }
-                    
-                    for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
-                        if (entity instanceof ItemFrame) {
-                            ItemFrame itemFrame = (ItemFrame) entity;
-                            ItemStack item = itemFrame.getItem();
-            
-                            if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
-                                // Remove the item frame
-                                itemFrame.remove();
+    
+                    // Remove ItemFrame using stored location
+                    NamespacedKey xKey = new NamespacedKey(plugin, "ItemFrameX");
+                    NamespacedKey yKey = new NamespacedKey(plugin, "ItemFrameY");
+                    NamespacedKey zKey = new NamespacedKey(plugin, "ItemFrameZ");
+
+    
+                    if (data.has(xKey, PersistentDataType.INTEGER) && data.has(yKey, PersistentDataType.INTEGER) && data.has(zKey, PersistentDataType.INTEGER)) {
+                        int x = data.get(xKey, PersistentDataType.INTEGER);
+                        int y = data.get(yKey, PersistentDataType.INTEGER);
+                        int z = data.get(zKey, PersistentDataType.INTEGER);
+    
+                        Location frameLocation = new Location(block.getWorld(), x, y, z);
+    
+                        // Remove the ItemFrame at stored location
+                        List<Entity> nearbyEntities = (List<Entity>) block.getWorld().getNearbyEntities(frameLocation, 1.0, 1.0, 1.0);
+                        
+                        for (Entity entity : nearbyEntities) {
+                            if (entity instanceof ItemFrame){
+                                ItemFrame itemframe = (ItemFrame) entity;
+                                Location frameLoc = itemframe.getLocation();
+                                if (Math.floor(frameLoc.getX()) == Math.floor(frameLocation.getX()) &&
+                                    Math.floor(frameLoc.getY()) == Math.floor(frameLocation.getY()) &&
+                                    Math.floor(frameLoc.getZ()) == Math.floor(frameLocation.getZ())) {
+
+                                    try {
+                                        itemframe.remove();
+                                        break;
+                                    } catch (Exception e) {
+                                        // Log any exceptions to understand potential issues
+                                        Bukkit.getLogger().warning("Error removing ItemFrame: " + e.getMessage());
+                                    }
+                                }
                             }
                         }
+    
+                        // Remove stored location data
+                        data.remove(xKey);
+                        data.remove(yKey);
+                        data.remove(zKey);
                     }
+    
                     // Remove the furnace
                     block.setType(Material.AIR);
                     return;
@@ -117,6 +155,87 @@ public class washer implements Listener{
             }
         }
     }
+
+    // @EventHandler
+    // public void onBlockBreak(BlockBreakEvent event) {
+    //     Block block = event.getBlock();
+        
+    //     // First check if the block is a Furnace with custom model data 626014
+    //     if (block.getState() instanceof Furnace) {
+    //         Furnace furnace = (Furnace) block.getState();
+    //         PersistentDataContainer data = furnace.getPersistentDataContainer();
+    //         NamespacedKey key = new NamespacedKey(plugin, "CustomModelData");
+            
+    //         if (data.has(key, PersistentDataType.INTEGER)) {
+    //             int customModelData = data.get(key, PersistentDataType.INTEGER);
+    //             if (customModelData == 626014) {
+    //                 // Cancel the default block break behavior
+    //                 event.setCancelled(true);
+
+    //                 NamespacedKey xKey = new NamespacedKey(plugin, "ItemFrameX");
+    //                 NamespacedKey yKey = new NamespacedKey(plugin, "ItemFrameY");
+    //                 NamespacedKey zKey = new NamespacedKey(plugin, "ItemFrameZ");
+                    
+    //                 // Create and drop the custom furnace item
+    //                 ItemStack dropItem = new ItemStack(Material.FURNACE);
+    //                 ItemMeta meta = dropItem.getItemMeta();
+    //                 meta.setCustomModelData(626014);
+    //                 meta.setDisplayName("Washing Machine");
+    //                 dropItem.setItemMeta(meta);
+                    
+    //                 block.getWorld().dropItemNaturally(block.getLocation(), dropItem);
+                    
+    //                 // Clear the inventory contents (items inside the furnace)
+    //                 FurnaceInventory inv = furnace.getInventory();
+    //                 for(int i = 0; i < inv.getSize(); i++) {
+    //                     ItemStack item = inv.getItem(i);
+    //                     if(item != null && !item.getType().equals(Material.AIR)) {
+    //                         block.getWorld().dropItemNaturally(block.getLocation(), item);
+    //                     }
+    //                 }
+                    
+    //                 if (data.has(xKey, PersistentDataType.INTEGER) && data.has(yKey, PersistentDataType.INTEGER) && data.has(zKey, PersistentDataType.INTEGER)) {
+    //                     int x = data.get(xKey, PersistentDataType.INTEGER);
+    //                     int y = data.get(yKey, PersistentDataType.INTEGER);
+    //                     int z = data.get(zKey, PersistentDataType.INTEGER);
+    
+    //                     Location frameLocation = new Location(block.getWorld(), x, y, z);
+    
+    //                     // Remove the ItemFrame
+    //                     List<Entity> nearbyEntities = (List<Entity>) block.getWorld().getNearbyEntities(frameLocation, 1.0, 1.0, 1.0);
+                    
+    //                     for (Entity entity : nearbyEntities) {
+    //                         if (entity instanceof ItemFrame && entity.getLocation().equals(frameLocation)) {
+    //                             ((ItemFrame) entity).remove();
+    //                             break;
+    //                         }
+    //                     }
+    
+    //                     // Remove the stored location data
+    //                     data.remove(xKey);
+    //                     data.remove(yKey);
+    //                     data.remove(zKey);
+    //                 }
+
+
+    //                 // for (Entity entity : block.getWorld().getNearbyEntities(block.getLocation(), 1, 1, 1)) {
+    //                 //     if (entity instanceof ItemFrame) {
+    //                 //         ItemFrame itemFrame = (ItemFrame) entity;
+    //                 //         ItemStack item = itemFrame.getItem();
+            
+    //                 //         if (item != null && item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626014) {
+    //                 //             // Remove the item frame
+    //                 //             itemFrame.remove();
+    //                 //         }
+    //                 //     }
+    //                 // }
+    //                 // Remove the furnace
+    //                 block.setType(Material.AIR);
+    //                 return;
+    //             }
+    //         }
+    //     }
+    // }
     @EventHandler
     public void onItemFrameUse(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();

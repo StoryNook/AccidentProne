@@ -1,10 +1,6 @@
 package com.storynook.menus;
-// import java.util.ArrayList;
 import java.util.Arrays;
-// import java.util.Collection;
-// import java.util.HashMap;
 import java.util.List;
-// import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -13,27 +9,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-// import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-// import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import com.storynook.PlayerEventListener;
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.ScoreBoard;
-// import com.storynook.menus.Caregivermenue;
-// import com.storynook.menus.IncontinenceMenu;
 
 import net.md_5.bungee.api.ChatColor;
 
 
 public class SettingsMenu implements Listener {
     private Plugin plugin;
-    //private static Map<String, UUID> playerHeadMap = new HashMap<>();
-    //private static Map<UUID, Integer> currentPage = new HashMap<>();
     
         public SettingsMenu(Plugin plugin) {
             this.plugin = plugin;
@@ -247,7 +237,7 @@ public class SettingsMenu implements Listener {
                 player.sendMessage(stats.getMessing() ? "Messing has been enabled." : "Messing has been disabled.");
                 OpenSettings(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.PAINTING) {
-                HUDMenu.HUDMenu(player, plugin);
+                HUDMenu.HUDMenuUI(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.FIRE_CHARGE) {
                 stats.setHardcore(!stats.getHardcore());
                 player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
