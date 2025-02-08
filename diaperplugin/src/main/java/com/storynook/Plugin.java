@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -20,7 +19,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Levelled;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
@@ -33,6 +31,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import com.storynook.Event_Listeners.PantsCrafting;
+import com.storynook.Event_Listeners.Sit;
 import com.storynook.Event_Listeners.washer;
 import com.storynook.items.ItemManager;
 import com.storynook.items.pants;
@@ -92,6 +91,7 @@ public class Plugin extends JavaPlugin
       }
     }
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
+    Sit sit = new Sit(this);
     SettingsMenu SettingsMenu = new SettingsMenu(this);
     Caregivermenu caregivermenu = new Caregivermenu(this);
     HUDMenu hudmenu = new HUDMenu(this);
@@ -113,7 +113,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
