@@ -9,8 +9,6 @@ import org.bukkit.scoreboard.ScoreboardManager;
 
 import net.md_5.bungee.api.ChatColor;
 
-import java.awt.Color;
-
 import org.bukkit.Bukkit;
 
 public class ScoreBoard {

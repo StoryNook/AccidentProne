@@ -10,6 +10,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import com.storynook.Event_Listeners.PantsCrafting;
+
 public class PlayerStats {
     private UUID playerUUID;
     private double bladder = 0;
@@ -31,7 +33,8 @@ public class PlayerStats {
     private int timeworn = 0;
     private int minFill = 30;
     private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
-    private List<String> sounds = new ArrayList<>();
+    private List<String> allowedsounds = new ArrayList<>();
+    private List<String> blockedsounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
     private static final int MAX_VALUE = 100;
@@ -155,67 +158,81 @@ public class PlayerStats {
 
     public int getLayers() { return layers; }
     public void setLayers(int type) { layers = type; }
-    public void increaseLayers(int type) { layers = Math.min(layers + type, 2); }
+    public void increaseLayers(int type) { layers = Math.min(layers + type, 4); }
     public void decreaseLayers(int type) { layers = Math.max(layers - type, 0);}
 
 
     // Method to handle an accident
-    public void handleAccident(boolean isBladder, Player player, Boolean FromWarning) {
+    public void handleAccident(boolean isBladder, Player player, Boolean PlaySound, Boolean MessageSent) {
         if (isBladder) {
-            if (UnderwearType == 0) {diaperWetness += 100;}
-            if (UnderwearType == 1) {diaperWetness = diaperWetness + bladder;}
-            if (UnderwearType == 2) {
-                if (layers == 0) {diaperWetness = diaperWetness + bladder/2;}
-                if (layers == 1) {diaperWetness = diaperWetness + bladder/4;}
-                if (layers == 2) {diaperWetness = diaperWetness + bladder/8;}
+            int wetbyamount;
+            switch (layers) {
+                case 0: wetbyamount = (int) bladder; break;
+                case 1: wetbyamount = (int) bladder/2; break;
+                case 2: wetbyamount = (int) bladder/4; break;
+                case 3: wetbyamount = (int) bladder/8; break;
+                case 4: wetbyamount = (int) bladder/16; break;
+                default: wetbyamount = (int) bladder; break;
             }
-            if (UnderwearType == 3) {
-                if (layers == 0) {diaperWetness = diaperWetness + bladder/4;}
-                if (layers == 1) {diaperWetness = diaperWetness + bladder/8;}
-                if (layers == 2) {diaperWetness = diaperWetness + bladder/16;}
+            switch (UnderwearType) {
+                case 0:
+                    if (layers > 0) {diaperWetness += 50;}
+                    else {diaperWetness += 100;}
+                    break;
+                case 1: diaperWetness = wetbyamount; break;
+                case 2: diaperWetness = wetbyamount/2; break;
+                case 3: diaperWetness = wetbyamount/4; break;
+                default: break;
             }
+            // if (UnderwearType == 0) {diaperWetness += 100;}
+            // if (UnderwearType == 1) {diaperWetness = diaperWetness + bladder;}
+            // if (UnderwearType == 2) {
+            //     if (layers == 0) {diaperWetness = diaperWetness + bladder/2;}
+            //     if (layers == 1) {diaperWetness = diaperWetness + bladder/4;}
+            //     if (layers == 2) {diaperWetness = diaperWetness + bladder/8;}
+            // }
+            // if (UnderwearType == 3) {
+            //     if (layers == 0) {diaperWetness = diaperWetness + bladder/4;}
+            //     if (layers == 1) {diaperWetness = diaperWetness + bladder/8;}
+            //     if (layers == 2) {diaperWetness = diaperWetness + bladder/16;}
+            // }
             bladder = 0;
             if (!getBladderLockIncon()) {increaseBladderIncontinence(0.5);}
             urgeToGo = 0;
-            if (FromWarning) {
+            if (PlaySound) {
                 player.playSound(player.getLocation(), "minecraft:pee1", SoundCategory.PLAYERS, 1.0f, 1.0f);
             }
         } else {
             if (UnderwearType == 0) {diaperFullness += 100;}
-            if (UnderwearType == 1) {diaperFullness = diaperFullness + bowels;}
-            if (UnderwearType == 2) {
-                if (layers == 0) {diaperFullness = diaperFullness + bowels/2;}
-                if (layers == 1) {diaperFullness = diaperFullness + bowels/4;}
-                if (layers == 2) {diaperFullness = diaperFullness + bowels/8;}
-            }
-            if (UnderwearType == 3) {
-                if (layers == 0) {diaperFullness = diaperFullness + bowels/4;}
-                if (layers == 1) {diaperFullness = diaperFullness + bowels/8;}
-                if (layers == 2) {diaperFullness = diaperFullness + bowels/16;}
-            }
+            else if (UnderwearType == 1) {diaperFullness = diaperFullness + bowels;}
+            else if (UnderwearType == 2) {diaperFullness = diaperFullness + bowels/2;}
+            else if (UnderwearType == 3) {diaperFullness = diaperFullness + bowels/4;}
             bowels = 0;
             if(!getBowelLockIncon()){increaseBowelIncontinence(0.5);}
             urgeToGo = 0;
-            if (FromWarning) {
+            if (PlaySound) {
                 player.playSound(player.getLocation(), "minecraft:mess1", SoundCategory.PLAYERS, 1.0f, 1.0f);
             }
         }
-        if (isBladder ? getBladderIncontinence() == 10 && !BladderLockIncon : getBowelIncontinence() == 10 && !BowelLockIncon) {
-            player.sendMessage("Oh no! Someone has no control!");
-        }
-        else if (isBladder ? getBladderIncontinence() > 7 : getBowelIncontinence() > 7) {
-            if (isBladder ? BladderLockIncon : BowelLockIncon) {
-                player.sendMessage("Some one likes using their pants, huh?");
+        if (!MessageSent) {
+            if (isBladder ? getBladderIncontinence() == 10 && !BladderLockIncon : getBowelIncontinence() == 10 && !BowelLockIncon) {
+                player.sendMessage("Oh no! Someone has no control!");
             }
-            else{
-                player.sendMessage("Seems like someone is losing control");
+            else if (isBladder ? getBladderIncontinence() > 7 : getBowelIncontinence() > 7) {
+                if (isBladder ? BladderLockIncon : BowelLockIncon) {
+                    player.sendMessage("Some one likes using their pants, huh?");
+                }
+                else{
+                    player.sendMessage("Seems like someone is losing control");
+                }
+            }
+            else if (isBladder ? getBladderIncontinence() > 3 : getBowelIncontinence() > 3) {
+                player.sendMessage("You should try to make it to the potty next time.");
+            }else {
+                player.sendMessage("Oh no! You had an accident...");
             }
         }
-        else if (isBladder ? getBladderIncontinence() > 3 : getBowelIncontinence() > 3) {
-            player.sendMessage("You should try to make it to the potty next time.");
-        }else {
-            player.sendMessage("Oh no! You had an accident...");
-        }
+        
         if (diaperWetness >= 100 && diaperFullness >= 100) {
             changeLeggingsModel(player, 626018);
         }
@@ -226,7 +243,7 @@ public class PlayerStats {
             changeLeggingsModel(player, 626017);
         }
         if (visableUnderwear) {
-            PlayerEventListener.equipDiaperArmor(player, false, true);
+            PantsCrafting.equipDiaperArmor(player, false, true);
         }
         // plugin.manageParticleEffects(player);
     }

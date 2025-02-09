@@ -1,10 +1,9 @@
 package com.storynook;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
-import com.storynook.items.ItemManager;
+import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.items.pants;
 import com.storynook.items.underwear;
 import com.storynook.menus.IncontinenceMenu;
@@ -17,59 +16,25 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.SoundCategory;
-import org.bukkit.World;
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeModifier;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.data.Bisected;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.ItemFrame;
-import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.inventory.CraftingInventory;
-import org.bukkit.inventory.EquipmentSlot;
-import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-// import org.bukkit.material.Directional;
-import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
@@ -77,6 +42,7 @@ import java.util.UUID;
 
 public class PlayerEventListener implements Listener {
     private static Plugin plugin;
+    private Set<UUID> cooldown = new HashSet<>();
     HashMap<UUID, HashSet<NamespacedKey>> playerCraftedSpecialItems = new HashMap<>();
     HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
     static HashMap<UUID, Boolean> Justchanged = new HashMap<>();
@@ -259,6 +225,7 @@ public class PlayerEventListener implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player actor = event.getPlayer();
+        PlayerStats Stats = plugin.getPlayerStats(actor.getUniqueId());
         ItemStack itemInHand = actor.getInventory().getItemInMainHand();
         if (itemInHand != null && itemInHand.getType() != Material.AIR) {
             ItemMeta meta = itemInHand.getItemMeta();
@@ -267,11 +234,36 @@ public class PlayerEventListener implements Listener {
                 int customModelData = meta.getCustomModelData();
                 if (customModelData == 626007) {
                     event.setCancelled(true); // Cancel the interaction
+                    if (Stats.getOptin() && Stats.getLayers() < 4) {
+                        int maxLayers = 0;
+                        switch(Stats.getUnderwearType()) {
+                            case 0: maxLayers = 1; break;
+                            case 1: maxLayers = 2; break;
+                            case 2: maxLayers = 3; break;
+                            case 3: maxLayers = 4; break;
+                            default: return;
+                        }
+                        if (Stats.getLayers() >= maxLayers) {
+                            actor.sendMessage(ChatColor.RED + "You cannot add more layers with your current underwear.");
+                            return;
+                        }
+                        Stats.setLayers(Stats.getLayers() + 1);
+                        actor.sendMessage(ChatColor.GREEN + "Added a layer! Current layers: " + Stats.getLayers());
+
+                        if (itemInHand.getAmount() > 1) {
+                            itemInHand.setAmount(itemInHand.getAmount() - 1);
+                        } else {
+                            actor.getInventory().setItemInMainHand(null);
+                        }
+                    
+                        // Apply cooldown (5 seconds)
+                        cooldown.add(actor.getUniqueId());
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> cooldown.remove(actor.getUniqueId()), 20 * 5);
+                    }
                     return; // Exit the method to prevent further execution
                 }
                 else if(isCustomItem(itemInHand) && !NotVailidUnderwear(itemInHand)){
                     if (event.getAction().name().contains("RIGHT_CLICK")) {
-                        PlayerStats Stats = plugin.getPlayerStats(actor.getUniqueId());
                         if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasCustomModelData()) {
                             plugin.rightclickCount.put(actor.getUniqueId(), 0);
                             plugin.firstimeran.put(actor.getUniqueId(), false);
@@ -444,369 +436,14 @@ public class PlayerEventListener implements Listener {
         stats.setDiaperFullness(0);
         stats.setDiaperWetness(0);
         stats.setTimeWorn(0);
+        stats.setLayers(0);
         if (customModelData == 626002) {stats.setUnderwearType(0);} //Underwear
         if (customModelData == 626003) {stats.setUnderwearType(1);} //Pullup
         if (customModelData == 626009) {stats.setUnderwearType(2);} //Diaper
         if (customModelData == 626001) {stats.setUnderwearType(3);} //Thick Diaper
         Justchanged.put(target.getUniqueId(), true);
-        equipDiaperArmor(target, true, false);
+        PantsCrafting.equipDiaperArmor(target, true, false);
         plugin.manageParticleEffects(target);
-    }
-        
-    public static void equipDiaperArmor(Player target, boolean changed, boolean accident) {
-        PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
-        PlayerInventory inventory = target.getInventory();
-        if (inventory.getLeggings() != null) {
-            ItemStack leggings = target.getInventory().getLeggings();
-            if (isDiaper(leggings) && !stats.getvisableUnderwear()) {
-                    target.getInventory().setLeggings(null);
-                    return;
-            }
-            else if (isDiaper(leggings) && (changed || accident)) {
-                target.getInventory().setLeggings(null);
-            }
-        }
-        if (stats.getvisableUnderwear() && inventory.getLeggings() == null) {
-            ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS);
-
-            LeatherArmorMeta meta = (LeatherArmorMeta) leggings.getItemMeta();
-
-            Color color = Color.fromRGB(Integer.parseInt("F7FFF4", 16));
-            meta.setColor(color);
-            switch (stats.getUnderwearType()) {
-                case 0:
-                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
-                    meta.setCustomModelData(626031);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
-                    meta.setCustomModelData(626032);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
-                    meta.setCustomModelData(626033);
-                }
-                else{
-                    meta.setCustomModelData(626002);
-                }
-                    meta.setDisplayName("Underwear");
-                    break;
-                case 1:
-                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
-                    meta.setCustomModelData(626028);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
-                    meta.setCustomModelData(626029);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
-                    meta.setCustomModelData(626030);
-                }
-                else{
-                    meta.setCustomModelData(626003);
-                }
-                    meta.setDisplayName("Pullup");
-                    break;
-                case 2:
-                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
-                    meta.setCustomModelData(626022);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
-                    meta.setCustomModelData(626023);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
-                    meta.setCustomModelData(626024);
-                }
-                else{
-                    meta.setCustomModelData(626009);
-                }
-                meta.setDisplayName("Diaper");
-                    break;
-                case 3:
-                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
-                    meta.setCustomModelData(626025);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
-                    meta.setCustomModelData(626026);
-                }
-                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
-                    meta.setCustomModelData(626027);
-                }
-                else{
-                    meta.setCustomModelData(626001);
-                }
-                    meta.setDisplayName("Thick Diaper");
-                    break;
-                default:
-                    break;
-            }
-
-            meta.setUnbreakable(true);
-
-            meta.addEnchant(Enchantment.BINDING_CURSE, 1, true);
-            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
-            leggings.setItemMeta(meta);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS,ItemFlag.HIDE_UNBREAKABLE,ItemFlag.HIDE_ATTRIBUTES);
-            AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), "generic.armor", 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.LEGS);
-            meta.addAttributeModifier(Attribute.GENERIC_ARMOR, modifier);
-
-            leggings.setItemMeta(meta);
-            inventory.setLeggings(leggings);
-        }
-    }
-                
-    @EventHandler
-    public void EquipLeggings(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        PlayerInventory inventory = player.getInventory();
-        ItemStack itemInHand = player.getInventory().getItemInMainHand();
-        ItemStack leggings = player.getInventory().getLeggings();
-
-        if (itemInHand != null) {
-            if (isLeggings(itemInHand)) { 
-                LeatherArmorMeta leggingsmeta = (LeatherArmorMeta) leggings.getItemMeta();
-                if(leggingsmeta != null && leggingsmeta.hasCustomModelData()){
-                    if (isDiaper(leggings)) {
-                        inventory.setLeggings(null);
-                    }
-                }
-            }
-            else return;
-        }
-    }
-                    
-                
-    @EventHandler
-    public void onLeggingsBreak(PlayerItemBreakEvent event) {
-        ItemStack brokenItem = event.getBrokenItem();
-        if (isLeggings(brokenItem)) {
-            Player player = event.getPlayer();
-            Bukkit.getScheduler().runTaskLater(plugin, () -> equipDiaperArmor(player, false, false), 1L);
-        }
-    }
-                
-    @EventHandler
-    public void onLeggingsClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-
-        Player player = (Player) event.getWhoClicked();
-        InventoryType.SlotType slotType = event.getSlotType();
-        ItemStack currentItem = event.getCurrentItem();  // Item in the slot
-        ItemStack cursorItem = event.getCursor();        // Item on the cursor
-
-        // 1. Handle normal clicks on the leggings slot
-        if (slotType == InventoryType.SlotType.ARMOR && event.getSlot() == 36) {
-            // If the player is wearing the diaper leggings
-            if (isDiaper(currentItem)) {
-                // If they're trying to equip ANY other leggings
-                if (cursorItem != null && isLeggings(cursorItem) && !isDiaper(cursorItem)) {
-                    player.getInventory().setLeggings(null);  // Remove the diaper
-                }
-            }
-        }
-
-        // 2. Handle SHIFT-CLICK equipping leggings
-        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
-            ItemStack shiftItem = event.getCurrentItem();
-
-            if (shiftItem != null && isLeggings(shiftItem) && !isDiaper(shiftItem)) {
-                ItemStack equippedLeggings = player.getInventory().getLeggings();
-
-                // If the player is wearing diaper leggings, remove them
-                if (isDiaper(equippedLeggings)) {
-                    player.getInventory().setLeggings(null);
-                }
-            }
-        }
-
-        // 3. Handle number key hotbar swapping
-        if (event.getClick() == ClickType.NUMBER_KEY) {
-            int hotbarButton = event.getHotbarButton();
-            ItemStack hotbarItem = player.getInventory().getItem(hotbarButton);
-
-            if (hotbarItem != null && isLeggings(hotbarItem) && !isDiaper(hotbarItem)) {
-                ItemStack equippedLeggings = player.getInventory().getLeggings();
-
-                if (isDiaper(equippedLeggings)) {
-                    player.getInventory().setLeggings(null);
-                }
-            }
-        }
-    }
-                
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        Player player = (Player) event.getPlayer();
-        ItemStack leggings = player.getInventory().getLeggings();
-
-        // Check if the leggings are empty
-        if (leggings == null || leggings.getType().isAir()) {
-            equipDiaperArmor(player, false, false);
-        }
-    }
-    private static boolean isDiaper(ItemStack item) {
-        if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
-            return false;
-        }
-        if (!item.hasItemMeta()) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta.hasCustomModelData()) {
-            int modelData = meta.getCustomModelData();
-            Set<Integer> diaperModels = new HashSet<>(Arrays.asList(626001, 626002, 626003, 626009,
-                    626022, 626023, 626024, 626025, 626026, 626027, 626028, 626029,
-                    626030, 626031, 626032, 626033));
-            return diaperModels.contains(modelData);
-        }
-        return false;
-    }
-            
-    // private static boolean isCustomPants(ItemStack item) {
-    //     if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
-    //         return false;
-    //     }
-    //     if (!item.hasItemMeta()) {
-    //         return false;
-    //     }
-    //     ItemMeta meta = item.getItemMeta();
-    //     if(meta.hasCustomModelData() && (
-    //            meta.getCustomModelData() == 626015 ||  // Pants
-    //            meta.getCustomModelData() == 626016 ||  // Pants Wet
-    //            meta.getCustomModelData() == 626017 ||  // Pants Dirt
-    //            meta.getCustomModelData() == 626018     // Pants Wet & Dirty
-    //     )) return true;
-    //     return false;
-    // }
-    
-
-    private boolean isLeggings(ItemStack item) {
-        if (item == null) return false;
-        return item.getType() == Material.LEATHER_LEGGINGS ||
-               item.getType() == Material.CHAINMAIL_LEGGINGS ||
-               item.getType() == Material.IRON_LEGGINGS ||
-               item.getType() == Material.GOLDEN_LEGGINGS ||
-               item.getType() == Material.DIAMOND_LEGGINGS|| 
-               isNetheriteLeggings(item.getType());
-    }
-    private boolean isNetheriteLeggings(Material material){
-        try{
-            return material == Material.valueOf("NETHERITE_LEGGINGS");
-        } catch (IllegalArgumentException e){
-            return false;
-        }
-    }
-
-    //When weather changes, checks for thunder
-    @EventHandler
-    public void onLightningStrike(LightningStrikeEvent event) {
-        Location strikeLocation = event.getLightning().getLocation();
-        
-        // Iterate through all players
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (isNearLightningInWorld(player.getLocation(), strikeLocation, player.getWorld())) {
-                handleThunderEffect(player);
-            }
-        }
-    }
-    private boolean isNearLightningInWorld(Location location, Location lightningLocation, World world) {
-        // First check if they are in the same world
-        if (!location.getWorld().equals(world)) {
-            return false;
-        }
-        
-        // Check distance between the two locations within the specified radius (50 blocks)
-        return location.distance(lightningLocation) <= 50;
-    }
-
-    // Handle an accident if the player is near thunder
-    private void handleThunderEffect(Player player) {
-        PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-        Random random = new Random();
-        if (stats != null && stats.getOptin()) {
-            double maxIncontinence = Math.max(stats.getBladderIncontinence(), stats.getBowelIncontinence());
-            double chance = Math.min(4, Math.max(0, maxIncontinence / 2));// 1 in 4 chance of having an accident
-            if (random.nextInt(4) < chance) {
-                boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                if (bladderAccident ? stats.getBladder() > 10 : stats.getBowels() > 10) {
-                    stats.handleAccident(bladderAccident, player, false);
-                    player.sendMessage("You got so scared by the lightening that you had an accident!");
-                }
-                return;
-            }
-        }
-    }
-    //Mob attack envirorment check
-    @EventHandler
-    public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        if (!(event.getEntity() instanceof Player)) return;
-
-        Player player = (Player) event.getEntity();
-        Entity damager = event.getDamager();
-
-        // Check if it is night or the player is in a dark place
-        boolean isNight = player.getWorld().getTime() > 12300 && player.getWorld().getTime() < 23850;
-        int lightLevel = player.getLocation().getBlock().getLightLevel();
-        boolean isDark = lightLevel < 7;
-
-        if ((isNight || isDark) && damager instanceof Mob) {
-            // Check if the mob is not on the player's screen
-            Vector toEntity = damager.getLocation().toVector().subtract(player.getLocation().toVector());
-            Vector direction = player.getLocation().getDirection();
-
-            // Check if mob is outside field of view (Use a dot product for a simple "in-front" check)
-            double fieldOfView = 0.5; // Adjust for larger FOV
-            if (direction.dot(toEntity.normalize()) < fieldOfView) {
-                handleScaryEvent(player);
-            }
-        }
-    }
-    //Mob Attack chance
-    private void handleScaryEvent(Player player) {
-        PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-        Random random = new Random();
-        if (stats != null && stats.getOptin()) {
-            double maxIncontinence = Math.max(stats.getBladderIncontinence(), stats.getBowelIncontinence());
-            double chance = Math.min(4, Math.max(0, maxIncontinence / 2));
-
-            if (random.nextInt(4) < chance) {
-                if (stats.getBladder() > 10 || stats.getBowels() > 10) {
-                    boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                    stats.handleAccident(bladderAccident, player, false);
-                    player.sendMessage("You got so scared by the attack that you had an accident!");
-                }
-            }
-        }
-    }
-    //Bedwetting chance
-    @EventHandler
-    public void onPlayerBedLeave(PlayerBedLeaveEvent event) {
-        Player player = event.getPlayer();
-        // Check if world time indicates it's daytime (usually around 0 to 1,000 ticks in Minecraft)
-        long worldTime = player.getWorld().getTime();
-        if (worldTime >= 0 && worldTime < 1000) {
-            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-            if (stats != null && stats.getOptin()) {
-                
-                if (stats.getBedwetting() == 1) {
-                    double chance = Math.min(4, Math.max(0, stats.getBladderIncontinence() / 2));
-                    Random random = new Random();
-                    if (random.nextInt(4) < chance) {
-                        if (stats.getBladder() > 10) {
-                            stats.handleAccident(true, player,false);
-                            player.sendMessage("Oh no! You wet the bed!");
-                            return;
-                        }
-                    }
-                }
-                else if(stats.getBedwetting() == 2){
-                    if (stats.getBladder() > 10) {
-                        stats.handleAccident(true, player,false);
-                        player.sendMessage("Oh no! You wet the bed!");
-                        return;
-                    }
-                }
-                stats.increaseBladder(40);
-                if(stats.getMessing()){stats.increaseBowels(20);}
-            }
-        }
     }
 
     @EventHandler
@@ -1082,170 +719,6 @@ public class PlayerEventListener implements Listener {
     //     }
     // }
 
-
-    //Places custom item toilet
-    @EventHandler
-    public void onPlaceToilet(BlockPlaceEvent event) {
-        ItemStack item = event.getItemInHand();
-        if (item.hasItemMeta() && item.getItemMeta().hasCustomModelData() && item.getItemMeta().getCustomModelData() == 626006) {
-
-            // Get the block where the player is trying to place the toilet
-            Block block = event.getBlockPlaced();
-            Location loc = block.getLocation();
-
-            // Set the cauldron at the block location
-            block.setType(Material.CAULDRON);
-
-            // Place a trapdoor on top
-            Block trapdoorBlock = loc.clone().add(0, 1, 0).getBlock();
-            trapdoorBlock.setType(Material.IRON_TRAPDOOR);
-
-            // Set the trapdoor to a specific orientation (optional)
-            TrapDoor trapdoor = (TrapDoor) trapdoorBlock.getBlockData();
-            trapdoor.setHalf(Bisected.Half.BOTTOM); // Make the trapdoor flush with the cauldron
-            BlockFace playerDirection = event.getPlayer().getFacing();
-            switch (playerDirection) {
-                case NORTH:
-                    trapdoor.setFacing(BlockFace.SOUTH);
-                    break;
-                case EAST:
-                    trapdoor.setFacing(BlockFace.WEST);
-                    break;
-                case SOUTH:
-                    trapdoor.setFacing(BlockFace.NORTH);
-                    break;
-                case WEST:
-                    trapdoor.setFacing(BlockFace.EAST);
-                    break;
-                default:
-                    // Handle other cases if needed
-                    break;
-            }
-            // trapdoor.setFacing(BlockFace.NORTH); // Set the trapdoor's facing direction
-            trapdoor.setOpen(true);
-            trapdoorBlock.setBlockData(trapdoor);
-        }
-    }
-
-    
-    //Toilet interaction
-    @EventHandler
-    public void onToiletInteract(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Block block = event.getClickedBlock();
-            if (block != null) {
-                // Check if the clicked block is a cauldron or the trapdoor above it
-                if (block.getType() == Material.CAULDRON) {
-                    processCauldronInteraction(block, event.getPlayer());
-                } else if (block.getType() == Material.IRON_TRAPDOOR) {
-                    Block belowBlock = block.getLocation().subtract(0, 1, 0).getBlock();
-                    if (belowBlock.getType() == Material.CAULDRON) {
-                        // toggleTrapdoor(block);
-                    }
-                }
-            }
-        }
-    }
-    //Confrim Toilet
-    private void processCauldronInteraction(Block cauldronBlock, Player player) {
-        Block trapdoorBlock = cauldronBlock.getLocation().add(0, 1, 0).getBlock();
-        if (trapdoorBlock.getType() == Material.IRON_TRAPDOOR) {
-            // Existing code to make the player interact with the cauldron toilet
-            interactWithCauldron(player, cauldronBlock, trapdoorBlock);
-        }
-    }
-
-    // private void toggleTrapdoor(Block trapdoorBlock) {
-    //     TrapDoor trapdoor = (TrapDoor) trapdoorBlock.getBlockData();
-    //     trapdoor.setOpen(!trapdoor.isOpen());
-    //     trapdoorBlock.setBlockData(trapdoor);
-    // }
-
-    //Using Toilet Action
-    private void interactWithCauldron(Player player, Block cauldronBlock, Block trapdoorBlock) {
-        // Set the player's position to be sitting on the cauldron
-        Location cauldronLoc = cauldronBlock.getLocation();
-        Location armorStandLocation = cauldronLoc.add(0.5, 1.0, 0.5);
-
-        ArmorStand armorStand = player.getWorld().spawn(armorStandLocation, ArmorStand.class, asm -> {
-            asm.setVisible(false); // Hide the armor stand
-            asm.setMarker(true); // No bounding box/collision
-            asm.setGravity(false); // No gravity so it stays in place
-        });
-
-        // Make the player sit on the armor stand
-        armorStand.addPassenger(player);
-        // Keep bladder and bowel stats at 0 while sitting
-        PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-        if (stats.getBladder() > 10) {
-            stats.setBladder(0);
-            if(!stats.getBladderLockIncon()){stats.decreaseBladderIncontinence(0.2);}
-        }
-        if (stats.getMessing() && stats.getBowels() > 10) {
-            stats.setBowels(0);
-            if(!stats.getBowelLockIncon()){stats.decreaseBowelIncontinence(0.2);}
-        }
-        if (stats.getBowelIncontinence() > 7 || stats.getBladderIncontinence() > 7) {
-            player.sendMessage("Good job making it to the potty!");
-        }
-        else if (stats.getBowelIncontinence() >= 4 || stats.getBladderIncontinence() >= 4) {
-            // if (stats.getBladderLockIncon() && stats.getBowelLockIncon()) {
-            //     player.sendMessage("Good job pretending");
-            // }
-            player.sendMessage("Potty training is going well!");
-        }
-        stats.setUrgeToGo(0);
-
-        BukkitTask[] taskId = new BukkitTask[1];
-
-        taskId[0] = Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
-            @Override
-            public void run() {
-                // If the player is no longer a passenger of the armor stand
-                if (!armorStand.getPassengers().contains(player)) {
-                    // Play the sound
-                    cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 0.5f, 1.0f);
-    
-                    // Remove the armor stand
-                    armorStand.remove();
-    
-                    // Cancel this task
-                    taskId[0].cancel();
-                }
-            }
-        }, 0L, 5L);
-    }
-    //Returns toilet on break
-    @EventHandler
-    public void onToiletBreak(BlockBreakEvent event) {
-        Block block = event.getBlock();
-        if (block != null && block.getType() == Material.CAULDRON) {
-            Block trapdoorBlock = block.getLocation().add(0, 1, 0).getBlock();
-            if (trapdoorBlock.getType() == Material.IRON_TRAPDOOR) {
-                Location loc = block.getLocation();
-
-                // Remove cauldron and trapdoor
-                block.setType(Material.AIR);
-                loc.add(0, 1, 0).getBlock().setType(Material.AIR);
-
-                // Drop the custom item
-                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item
-            }
-        }
-        if (block != null && block.getType() == Material.IRON_TRAPDOOR) {
-            Block cauldronBlock = block.getLocation().add(0, -1, 0).getBlock();
-            if (cauldronBlock.getType() == Material.CAULDRON) {
-                Location loc = block.getLocation();
-
-                // Remove cauldron and trapdoor
-                block.setType(Material.AIR);
-                loc.add(0, -1, 0).getBlock().setType(Material.AIR);
-
-                // Drop the custom item
-                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item
-            }
-        }
-    }
     // @EventHandler
     // public void onInventoryClick(InventoryClickEvent event) {
     //     Inventory clickedInventory = event.getClickedInventory();

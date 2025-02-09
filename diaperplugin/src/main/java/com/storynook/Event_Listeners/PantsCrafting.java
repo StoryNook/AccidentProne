@@ -1,26 +1,45 @@
 package com.storynook.Event_Listeners;
 
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.PrepareAnvilEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.plugin.java.JavaPlugin;
 
+import com.storynook.PlayerStats;
+import com.storynook.Plugin;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 
 public class PantsCrafting implements Listener{
-    private JavaPlugin plugin;
-    public PantsCrafting(JavaPlugin plugin){this.plugin = plugin;}
+    private static Plugin plugin;
+    public PantsCrafting(Plugin plugin){this.plugin = plugin;}
     
-    public class CraftingListener implements Listener {
-
+    public static class CraftingListener implements Listener {
+    
         private boolean isCustomPants(ItemStack item) {
             if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
                 return false;
@@ -30,10 +49,10 @@ public class PantsCrafting implements Listener{
             }
             ItemMeta meta = item.getItemMeta();
             if(meta.hasCustomModelData() && (
-                   meta.getCustomModelData() == 626015 ||  // Pants
-                   meta.getCustomModelData() == 626016 ||  // Pants Wet
-                   meta.getCustomModelData() == 626017 ||  // Pants Dirt
-                   meta.getCustomModelData() == 626018     // Pants Wet & Dirty
+                    meta.getCustomModelData() == 626015 ||  // Pants
+                    meta.getCustomModelData() == 626016 ||  // Pants Wet
+                    meta.getCustomModelData() == 626017 ||  // Pants Dirt
+                    meta.getCustomModelData() == 626018     // Pants Wet & Dirty
             )) return true;
             return false;
         }
@@ -101,107 +120,6 @@ public class PantsCrafting implements Listener{
                 event.setResult(null); // Block the result output
             }
         }
-
-
-
-
-
-    //     @EventHandler
-    //     public void EquipLeggings(PlayerInteractEvent event) {
-    //         Player player = event.getPlayer();
-    //         PlayerInventory inventory = player.getInventory();
-    //         ItemStack itemInHand = player.getInventory().getItemInMainHand();
-
-    //         if (itemInHand != null) {
-    //             if (isPants(itemInHand)) { 
-
-    //                 LeatherArmorMeta meta = (LeatherArmorMeta) player.getInventory().getLeggings().getItemMeta();
-    //                 if(meta != null && meta.hasCustomModelData()){
-    //                     inventory.setLeggings(null);
-    //                     AttributeModifier modifier = new AttributeModifier(event.getPlayer().getUniqueId(), "generic.armor", 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.LEGS);
-    //                     meta.addAttributeModifier(Attribute.GENERIC_ARMOR, modifier);
-    //                     itemInHand.setItemMeta(meta);
-    //                     inventory.setLeggings(itemInHand);
-    //                     inventory.removeItem(itemInHand);
-
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     @EventHandler
-    //     public void onLeggingsClick(InventoryClickEvent event) {
-    //         if (!(event.getWhoClicked() instanceof Player)) return;
-
-    //         Player player = (Player) event.getWhoClicked();
-    //         InventoryType.SlotType slotType = event.getSlotType();
-    //         ItemStack currentItem = event.getCurrentItem();  // Item in the slot
-    //         ItemStack cursorItem = event.getCursor();        // Item on the cursor
-
-    //         // 1. Handle normal clicks on the leggings slot
-    //         if (slotType == InventoryType.SlotType.ARMOR && event.getSlot() == 36) {
-    //             // If the player is wearing the diaper leggings
-    //             if (isDiaper(currentItem)) {
-    //                 // If they're trying to equip ANY other leggings
-    //                 if (cursorItem != null && isPants(cursorItem) && !isDiaper(cursorItem)) {
-    //                     player.getInventory().setLeggings(null);  // Remove the diaper
-    //                 }
-    //             }
-    //         }
-
-    //         // 2. Handle SHIFT-CLICK equipping leggings
-    //         if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
-    //             ItemStack shiftItem = event.getCurrentItem();
-
-    //             if (shiftItem != null && isPants(shiftItem) && !isDiaper(shiftItem)) {
-    //                 ItemStack equippedLeggings = player.getInventory().getLeggings();
-
-    //                 // If the player is wearing diaper leggings, remove them
-    //                 if (isDiaper(equippedLeggings)) {
-    //                     player.getInventory().setLeggings(null);
-    //                 }
-    //             }
-    //         }
-
-    //         // 3. Handle number key hotbar swapping
-    //         if (event.getClick() == ClickType.NUMBER_KEY) {
-    //             int hotbarButton = event.getHotbarButton();
-    //             ItemStack hotbarItem = player.getInventory().getItem(hotbarButton);
-
-    //             if (hotbarItem != null && isPants(hotbarItem) && !isDiaper(hotbarItem)) {
-    //                 ItemStack equippedLeggings = player.getInventory().getLeggings();
-
-    //                 if (isDiaper(equippedLeggings)) {
-    //                     player.getInventory().setLeggings(null);
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     private boolean isDiaper(ItemStack item) {
-    //         if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
-    //             return false;
-    //         }
-    //         if (!item.hasItemMeta()) {
-    //             return false;
-    //         }
-    //         ItemMeta meta = item.getItemMeta();
-    //         if(meta.hasCustomModelData() && (
-    //                meta.getCustomModelData() == 626002 ||  // Underwear
-    //                meta.getCustomModelData() == 626003 ||  // Pullup
-    //                meta.getCustomModelData() == 626009 ||  // Diaper
-    //                meta.getCustomModelData() == 626001     // Thick Diaper
-    //         )) return true;
-    //         return false;
-    //     }
-
-    //     private boolean isPants(ItemStack item) {
-    //         if (item == null) return false;
-    //         ItemMeta meta = item.getItemMeta();
-    //         if (!meta.hasCustomModelData()) return false;
-    //         return meta.getCustomModelData() == 626015 ||
-    //             meta.getCustomModelData() == 626016;
-    //     }
     }
     private static Color getColorFromWool(Material wool) {
         switch (wool) {
@@ -224,6 +142,246 @@ public class PantsCrafting implements Listener{
 
             // Add more cases as needed for other colors
             default: return null;
+        }
+    }
+    public static void equipDiaperArmor(Player target, boolean changed, boolean accident) {
+        PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
+        PlayerInventory inventory = target.getInventory();
+        if (inventory.getLeggings() != null) {
+            ItemStack leggings = target.getInventory().getLeggings();
+            if (isDiaper(leggings) && !stats.getvisableUnderwear()) {
+                    target.getInventory().setLeggings(null);
+                    return;
+            }
+            else if (isDiaper(leggings) && (changed || accident)) {
+                target.getInventory().setLeggings(null);
+            }
+        }
+        if (stats.getvisableUnderwear() && inventory.getLeggings() == null) {
+            ItemStack leggings = new ItemStack(Material.LEATHER_LEGGINGS);
+
+            LeatherArmorMeta meta = (LeatherArmorMeta) leggings.getItemMeta();
+
+            Color color = Color.fromRGB(Integer.parseInt("F7FFF4", 16));
+            meta.setColor(color);
+            switch (stats.getUnderwearType()) {
+                case 0:
+                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
+                    meta.setCustomModelData(626031);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
+                    meta.setCustomModelData(626032);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
+                    meta.setCustomModelData(626033);
+                }
+                else{
+                    meta.setCustomModelData(626002);
+                }
+                    meta.setDisplayName("Underwear");
+                    break;
+                case 1:
+                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
+                    meta.setCustomModelData(626028);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
+                    meta.setCustomModelData(626029);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
+                    meta.setCustomModelData(626030);
+                }
+                else{
+                    meta.setCustomModelData(626003);
+                }
+                    meta.setDisplayName("Pullup");
+                    break;
+                case 2:
+                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
+                    meta.setCustomModelData(626022);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
+                    meta.setCustomModelData(626023);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
+                    meta.setCustomModelData(626024);
+                }
+                else{
+                    meta.setCustomModelData(626009);
+                }
+                meta.setDisplayName("Diaper");
+                    break;
+                case 3:
+                if (stats.getDiaperWetness() > 0 && stats.getDiaperFullness() == 0) {
+                    meta.setCustomModelData(626025);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() == 0) {
+                    meta.setCustomModelData(626026);
+                }
+                else if (stats.getDiaperFullness() > 0 && stats.getDiaperWetness() > 0){
+                    meta.setCustomModelData(626027);
+                }
+                else{
+                    meta.setCustomModelData(626001);
+                }
+                    meta.setDisplayName("Thick Diaper");
+                    break;
+                default:
+                    break;
+            }
+
+            meta.setUnbreakable(true);
+
+            meta.addEnchant(Enchantment.BINDING_CURSE, 1, true);
+            meta.addEnchant(Enchantment.VANISHING_CURSE, 1, true);
+            
+            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS,ItemFlag.HIDE_UNBREAKABLE,ItemFlag.HIDE_ATTRIBUTES);
+            AttributeModifier modifier = new AttributeModifier(UUID.randomUUID(), "generic.armor", 0, AttributeModifier.Operation.ADD_NUMBER, EquipmentSlot.LEGS);
+            meta.addAttributeModifier(Attribute.GENERIC_ARMOR, modifier);
+
+            leggings.setItemMeta(meta);
+            inventory.setLeggings(leggings);
+        }
+    }
+                
+    @EventHandler
+    public void EquipLeggings(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        PlayerInventory inventory = player.getInventory();
+        ItemStack itemInHand = player.getInventory().getItemInMainHand();
+        ItemStack leggings = player.getInventory().getLeggings();
+
+        if (itemInHand != null) {
+            if (isLeggings(itemInHand)) { 
+                LeatherArmorMeta leggingsmeta = (LeatherArmorMeta) leggings.getItemMeta();
+                if(leggingsmeta != null && leggingsmeta.hasCustomModelData()){
+                    if (isDiaper(leggings)) {
+                        inventory.setLeggings(null);
+                    }
+                }
+            }
+            else return;
+        }
+    }
+                    
+                
+    @EventHandler
+    public void onLeggingsBreak(PlayerItemBreakEvent event) {
+        ItemStack brokenItem = event.getBrokenItem();
+        if (isLeggings(brokenItem)) {
+            Player player = event.getPlayer();
+            Bukkit.getScheduler().runTaskLater(plugin, () -> equipDiaperArmor(player, false, false), 1L);
+        }
+    }
+                
+    @EventHandler
+    public void onLeggingsClick(InventoryClickEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+
+        Player player = (Player) event.getWhoClicked();
+        InventoryType.SlotType slotType = event.getSlotType();
+        ItemStack currentItem = event.getCurrentItem();  // Item in the slot
+        ItemStack cursorItem = event.getCursor();        // Item on the cursor
+
+        // 1. Handle normal clicks on the leggings slot
+        if (slotType == InventoryType.SlotType.ARMOR && event.getSlot() == 36) {
+            // If the player is wearing the diaper leggings
+            if (isDiaper(currentItem)) {
+                // If they're trying to equip ANY other leggings
+                if (cursorItem != null && isLeggings(cursorItem) && !isDiaper(cursorItem)) {
+                    player.getInventory().setLeggings(null);  // Remove the diaper
+                }
+            }
+        }
+
+        // 2. Handle SHIFT-CLICK equipping leggings
+        if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+            ItemStack shiftItem = event.getCurrentItem();
+
+            if (shiftItem != null && isLeggings(shiftItem) && !isDiaper(shiftItem)) {
+                ItemStack equippedLeggings = player.getInventory().getLeggings();
+
+                // If the player is wearing diaper leggings, remove them
+                if (isDiaper(equippedLeggings)) {
+                    player.getInventory().setLeggings(null);
+                }
+            }
+        }
+
+        // 3. Handle number key hotbar swapping
+        if (event.getClick() == ClickType.NUMBER_KEY) {
+            int hotbarButton = event.getHotbarButton();
+            ItemStack hotbarItem = player.getInventory().getItem(hotbarButton);
+
+            if (hotbarItem != null && isLeggings(hotbarItem) && !isDiaper(hotbarItem)) {
+                ItemStack equippedLeggings = player.getInventory().getLeggings();
+
+                if (isDiaper(equippedLeggings)) {
+                    player.getInventory().setLeggings(null);
+                }
+            }
+        }
+    }
+                
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        Player player = (Player) event.getPlayer();
+        ItemStack leggings = player.getInventory().getLeggings();
+
+        // Check if the leggings are empty
+        if (leggings == null || leggings.getType().isAir()) {
+            equipDiaperArmor(player, false, false);
+        }
+    }
+    private static boolean isDiaper(ItemStack item) {
+        if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
+            return false;
+        }
+        if (!item.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta = item.getItemMeta();
+        if (meta.hasCustomModelData()) {
+            int modelData = meta.getCustomModelData();
+            Set<Integer> diaperModels = new HashSet<>(Arrays.asList(626001, 626002, 626003, 626009,
+                    626022, 626023, 626024, 626025, 626026, 626027, 626028, 626029,
+                    626030, 626031, 626032, 626033));
+            return diaperModels.contains(modelData);
+        }
+        return false;
+    }
+            
+    // private static boolean isCustomPants(ItemStack item) {
+    //     if (item == null || item.getType() != Material.LEATHER_LEGGINGS) {
+    //         return false;
+    //     }
+    //     if (!item.hasItemMeta()) {
+    //         return false;
+    //     }
+    //     ItemMeta meta = item.getItemMeta();
+    //     if(meta.hasCustomModelData() && (
+    //            meta.getCustomModelData() == 626015 ||  // Pants
+    //            meta.getCustomModelData() == 626016 ||  // Pants Wet
+    //            meta.getCustomModelData() == 626017 ||  // Pants Dirt
+    //            meta.getCustomModelData() == 626018     // Pants Wet & Dirty
+    //     )) return true;
+    //     return false;
+    // }
+
+
+    private boolean isLeggings(ItemStack item) {
+        if (item == null) return false;
+        return item.getType() == Material.LEATHER_LEGGINGS ||
+                item.getType() == Material.CHAINMAIL_LEGGINGS ||
+                item.getType() == Material.IRON_LEGGINGS ||
+                item.getType() == Material.GOLDEN_LEGGINGS ||
+                item.getType() == Material.DIAMOND_LEGGINGS|| 
+                isNetheriteLeggings(item.getType());
+    }
+    private boolean isNetheriteLeggings(Material material){
+        try{
+            return material == Material.valueOf("NETHERITE_LEGGINGS");
+        } catch (IllegalArgumentException e){
+            return false;
         }
     }
 }

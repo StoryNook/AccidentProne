@@ -11,8 +11,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import com.storynook.menus.SettingsMenu;
 
@@ -37,7 +35,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats.getBladder() > 10) {
-                stats.handleAccident(true, player, true);
+                player.sendMessage("You just peeded yourself.");
+                stats.handleAccident(true, player, true, true);
             }
     
             return true;
@@ -46,7 +45,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats.getBowels() > 10) {
-                stats.handleAccident(false, player, true);
+                player.sendMessage("You just pooped yourself.");
+                stats.handleAccident(false, player, true, true);
             }
     
             return true;
@@ -63,6 +63,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 sender.sendMessage("MinFill: " + (int)stats.getMinFill());
                 sender.sendMessage("Time Full " + stats.getTimeWorn());
                 sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + (stats.getMessing() ? " Bowels Locked? " + stats.getBowelLockIncon() : ""));
+                // if(stats.getEffectDuration() > 0){sender.sendMessage("You still have: " + stats.getEffectDuration());}
             } else {
                 sender.sendMessage("Your current statistics are not available.");
             }

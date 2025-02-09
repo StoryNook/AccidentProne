@@ -14,10 +14,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.ScoreboardManager;
 
-import com.storynook.PlayerEventListener;
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.ScoreBoard;
+import com.storynook.Event_Listeners.PantsCrafting;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -256,7 +256,7 @@ public class SettingsMenu implements Listener {
                     if (stats.getBedwetting() == 1){player.sendMessage("Bedwetting: " + ChatColor.YELLOW + "Limited");}
                     if (stats.getBedwetting() == 2){player.sendMessage("Bedwetting: " + ChatColor.GREEN + "always");}
                     plugin.savePlayerStats(player); // Save the updated stats
-                }
+                } 
                 OpenSettings(player, plugin);
             }
             else if (event.getCurrentItem().getType() == Material.PLAYER_HEAD) {
@@ -267,7 +267,7 @@ public class SettingsMenu implements Listener {
                     plugin.setAwaitingInput(player.getUniqueId(), "minFill");
                     player.closeInventory(); // Optionally close the inventory
                     player.sendMessage(ChatColor.YELLOW + "Please enter a new minimum fill value:");
-                }
+                } else {player.sendMessage("You must be opted in to change this setting");}
             }
             else if (event.getCurrentItem().getType() == Material.OAK_SIGN) {
                 if(stats.getOptin()){
@@ -288,14 +288,15 @@ public class SettingsMenu implements Listener {
                     if (stats.getParticleEffects() == 3){player.sendMessage("Leaking and Stink Line Parrticle Effects: " + ChatColor.GOLD + "On");}
                     plugin.manageParticleEffects(player);
                     plugin.savePlayerStats(player);
-                }
+                } else {player.sendMessage("You must be opted in to change this setting");}
                 OpenSettings(player, plugin);
             }
             else if (meta.hasCustomModelData() && meta.getCustomModelData() == 626002 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
                 stats.setvisableUnderwear(!stats.getvisableUnderwear());
                 player.sendMessage(stats.getvisableUnderwear() ? "Undies are now visible using Optifine." : "Undies are now hidden.");
                 OpenSettings(player, plugin);
-                PlayerEventListener.equipDiaperArmor(player, false, false);
+                // PantsCrafting.equipDiaperArmor(player, false, false);
+                PantsCrafting.equipDiaperArmor(player, false, false);
             }
         }
     }

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -14,13 +14,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 
 import com.storynook.Plugin;
 
 public class Sit implements Listener{
 
     public Sit(Plugin plugin) {
-        //TODO Auto-generated constructor stub
+
     }
 
     @EventHandler
@@ -34,7 +35,6 @@ public class Sit implements Listener{
 
     private boolean isStairOrSlab(Block block) {
         String type = block.getType().name().toLowerCase();
-        Bukkit.getLogger().warning("Block recieved: " + type);
         return type.contains("stair") || type.contains("slab");
     }
 
@@ -43,8 +43,9 @@ public class Sit implements Listener{
     public void onPlayerInteract(PlayerInteractEvent event) {
         if(event.getAction() == Action.RIGHT_CLICK_BLOCK){
             Player player = event.getPlayer();
+            ItemStack itemInHand = player.getInventory().getItemInMainHand();
             // Check if the block being clicked is a stair or slab
-            if (event.getClickedBlock() != null && isStairOrSlab(event.getClickedBlock())){
+            if (event.getClickedBlock() != null && isStairOrSlab(event.getClickedBlock()) && (itemInHand == null || itemInHand.getType() == Material.AIR)){
                 
                 // Create an ArmorStand to sit on
                 Location blockLoc = event.getClickedBlock().getLocation();

@@ -30,8 +30,11 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 
+import com.storynook.Event_Listeners.AccidentsRandom;
+import com.storynook.Event_Listeners.Laxative;
 import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.Event_Listeners.Sit;
+import com.storynook.Event_Listeners.Toilet;
 import com.storynook.Event_Listeners.washer;
 import com.storynook.items.ItemManager;
 import com.storynook.items.pants;
@@ -92,12 +95,15 @@ public class Plugin extends JavaPlugin
     }
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
     Sit sit = new Sit(this);
+    Toilet toilet = new Toilet(this);
     SettingsMenu SettingsMenu = new SettingsMenu(this);
     Caregivermenu caregivermenu = new Caregivermenu(this);
     HUDMenu hudmenu = new HUDMenu(this);
     IncontinenceMenu incontinencemenu = new IncontinenceMenu(this);
     PantsCrafting pantsCrafting = new PantsCrafting(this);
+    AccidentsRandom accident = new AccidentsRandom(this);
     washer washer = new washer(this);
+    Laxative lax = new Laxative(this);
     //Create all the custom recipes and items related
     ItemManager itemManager = new ItemManager(this);
     underwear underwear = new underwear(this);
@@ -113,7 +119,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit, toilet, accident, lax};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
@@ -407,12 +413,11 @@ public class Plugin extends JavaPlugin
 
                 if (saturation > 0) {
                     // While saturation > 0, base fill rate on saturation depletion
-                    double saturationImpact = (5.0 - saturation) / 5.0; // Scales from 0 to 1
+                    double saturationImpact = Math.min(saturation / 20.0, 1.0); // Scales from 0 to 1
                     adjustedRate = stats.getBowelFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0) * (1 + saturationImpact);
                 } else {
-                    // Once saturation = 0, base fill rate on hunger depletion
-                    adjustedRate = stats.getBowelFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0) * 1.5; // Spike when saturation is 0
-                    adjustedRate *= (1 + (20 - hunger) * 0.02); // Add hunger impact
+                    double hungerImpact = Math.min(2.0, Math.max(1.0, 1.5 - (hunger / 40.0)));
+                    adjustedRate  = stats.getBowelFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0) * hungerImpact;
                 }
 
                 stats.increaseBowels(adjustedRate);
@@ -460,6 +465,9 @@ public class Plugin extends JavaPlugin
                 player.removePotionEffect(PotionEffectType.SLOW);
               }
               if (stats.getTimeWorn() >= 600 && player.getHealth() > 1) {
+                if (stats.getTimeWorn() == 600) {
+                  player.sendMessage(ChatColor.RED + "You are taking damage from a rash.");
+                }
                 player.damage(0.5);
               }
               if (stats.getHydration() < 10) {
@@ -521,7 +529,7 @@ public class Plugin extends JavaPlugin
     double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
     if (randomChance < accidentProbability) {
-      stats.handleAccident(isBladder, player, true);
+      stats.handleAccident(isBladder, player, true, false);
     } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
       if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
         player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
@@ -547,7 +555,7 @@ public class Plugin extends JavaPlugin
       if (sneakFails && player.isSneaking()) {
         player.sendMessage("You body has betrayed you. You couldn't hold it.");
       } 
-      stats.handleAccident(isBladder, player, true);
+      stats.handleAccident(isBladder, player, true, true);
       playerSecondsLeftMap.put(player.getUniqueId(), 0);
       playerWarningsMap.put(player.getUniqueId(), false);
     } else {
