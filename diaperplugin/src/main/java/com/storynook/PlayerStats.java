@@ -176,12 +176,12 @@ public class PlayerStats {
             }
             switch (UnderwearType) {
                 case 0:
-                    if (layers > 0) {diaperWetness += 50;}
+                    if (layers > 0) {if(diaperWetness >= 100) {diaperWetness += 100;} else {diaperWetness += 50;}}
                     else {diaperWetness += 100;}
                     break;
-                case 1: diaperWetness = wetbyamount; break;
-                case 2: diaperWetness = wetbyamount/2; break;
-                case 3: diaperWetness = wetbyamount/4; break;
+                case 1: diaperWetness += wetbyamount; break;
+                case 2: diaperWetness += wetbyamount/2; break;
+                case 3: diaperWetness += wetbyamount/4; break;
                 default: break;
             }
             // if (UnderwearType == 0) {diaperWetness += 100;}

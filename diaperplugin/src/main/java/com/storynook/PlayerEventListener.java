@@ -247,6 +247,10 @@ public class PlayerEventListener implements Listener {
                             actor.sendMessage(ChatColor.RED + "You cannot add more layers with your current underwear.");
                             return;
                         }
+                        if (Stats.getDiaperWetness() >= 100) {
+                            actor.sendMessage(ChatColor.RED + "It's a little too late for that, don't you think?");
+                            return;
+                        }
                         Stats.setLayers(Stats.getLayers() + 1);
                         actor.sendMessage(ChatColor.GREEN + "Added a layer! Current layers: " + Stats.getLayers());
 
