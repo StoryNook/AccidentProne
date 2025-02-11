@@ -1,6 +1,9 @@
 package com.storynook.Event_Listeners;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,6 +22,7 @@ import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 
 public class AccidentsRandom implements Listener {
+    private Map<UUID, Boolean> cooldown = new HashMap<>();
     private final Plugin plugin;
     public AccidentsRandom(Plugin plugin) {
         this.plugin = plugin;
@@ -45,6 +49,7 @@ public class AccidentsRandom implements Listener {
 
     // Handle an accident if the player is near thunder
     private void handleThunderEffect(Player player) {
+        if (cooldown.getOrDefault(player.getUniqueId(), false)) return;
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
         Random random = new Random();
         if (stats != null && stats.getOptin()) {
@@ -55,6 +60,11 @@ public class AccidentsRandom implements Listener {
                 if (bladderAccident ? stats.getBladder() > 10 : stats.getBowels() > 10) {
                     stats.handleAccident(bladderAccident, player, true, true);
                     player.sendMessage("You got so scared by the lightening that you had an accident!");
+                    
+                    cooldown.put(player.getUniqueId(), true);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        cooldown.put(player.getUniqueId(), false);
+                    }, 200L);
                 }
                 return;
             }
@@ -87,17 +97,25 @@ public class AccidentsRandom implements Listener {
     }
     //Mob Attack chance
     private void handleScaryEvent(Player player) {
+        if (cooldown.getOrDefault(player.getUniqueId(), false)) return;
+
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
         Random random = new Random();
+
         if (stats != null && stats.getOptin()) {
             double maxIncontinence = Math.max(stats.getBladderIncontinence(), stats.getBowelIncontinence());
-            double chance = Math.min(4, Math.max(0, maxIncontinence / 2));
+            double chance = Math.log(maxIncontinence + 1) / Math.log(10) * 4;
 
             if (random.nextInt(4) < chance) {
                 if (stats.getBladder() > 10 || stats.getBowels() > 10) {
                     boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
                     stats.handleAccident(bladderAccident, player, true, true);
                     player.sendMessage("You got so scared by the attack that you had an accident!");
+
+                    cooldown.put(player.getUniqueId(), true);
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        cooldown.put(player.getUniqueId(), false);
+                    }, 200L);
                 }
             }
         }
