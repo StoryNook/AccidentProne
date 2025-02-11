@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
@@ -55,14 +56,13 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             PlayerStats stats = plugin.getPlayerStats(((Player) sender).getUniqueId());
             if (stats != null) {
                 sender.sendMessage("Your current statistics are:");
-                sender.sendMessage("HardCore: " + (stats.getHardcore() ? ChatColor.RED + "On" : ChatColor.GREEN + "Off"));
+                sender.sendMessage("HardCore: " + (stats.getHardcore() ? ChatColor.RED + "On " + SettingsMenu.formatRemainingTime(stats) + " left" : ChatColor.GREEN + "Off"));
                 sender.sendMessage("Diaper wetness: " + Math.round(stats.getDiaperWetness()) + "/100");
                 if(stats.getDiaperFullness() > 0){sender.sendMessage("Diaper fullness: " + Math.round(stats.getDiaperFullness()) + "/100");}
                 sender.sendMessage("Bladder incontinence: " + Math.round(stats.getBladderIncontinence()) + "/10");
                 if(stats.getMessing()){sender.sendMessage("Bowel incontinence: " + Math.round(stats.getBowelIncontinence()) + "/10");}
-                sender.sendMessage("MinFill: " + (int)stats.getMinFill());
                 sender.sendMessage("Time Full " + stats.getTimeWorn());
-                sender.sendMessage("Bladder Locked? " + stats.getBladderLockIncon() + (stats.getMessing() ? " Bowels Locked? " + stats.getBowelLockIncon() : ""));
+                sender.sendMessage("Stuffers Added: " + ChatColor.GREEN + stats.getLayers());
                 // if(stats.getEffectDuration() > 0){sender.sendMessage("You still have: " + stats.getEffectDuration());}
             } else {
                 sender.sendMessage("Your current statistics are not available.");
@@ -81,7 +81,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 
                 if (args.length > 0) {
                     target = Bukkit.getPlayer(args[0]);
-                    if (target == null || !plugin.getPlayerStats(target.getUniqueId()).isCaregiver(player.getUniqueId())) {
+                    if (target == null || !plugin.getPlayerStats(target.getUniqueId()).isCaregiver(player.getUniqueId(), true)) {
                         player.sendMessage("You do not have permission to check this player's statistics.");
                         return true;
                     }
@@ -266,7 +266,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 player.sendMessage("Target player stats not available.");
                 return true;
             }
-            if (!targetStats.isCaregiver(player.getUniqueId()) && target != player) {
+            if (!targetStats.isCaregiver(player.getUniqueId(), false) && target != player) {
                 player.sendMessage("You do not have permission to use this command on the target player.");
                 return true;
             }
@@ -340,7 +340,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 player.sendMessage("Target player stats not available.");
                 return true;
             }
-            if (!targetStats.isCaregiver(player.getUniqueId()) && target != player) {
+            if (!targetStats.isCaregiver(player.getUniqueId(), false) && target != player) {
                 player.sendMessage("You do not have permission to use this command on the target player.");
                 return true;
             }
@@ -381,44 +381,134 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
     
             return true;
         }
-        if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
-            Player player = (Player) sender;
-            if (!player.hasPermission("diaperplugin.debug") && !player.isOp()) {
-                player.sendMessage("You do not have permission to use this command.");
+        // if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
+            
+        //     Player player = (Player) sender;
+        //     if (!player.hasPermission("diaperplugin.debug") && !player.isOp()) {
+        //         player.sendMessage("You do not have permission to use this command.");
+        //         return true;
+        //     }
+
+        //     PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+
+        //     if (stats == null) {
+        //         player.sendMessage("Player Stats not available");
+        //         return true;
+        //     }
+
+        //     if (args.length == 0) {
+        //         player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+        //         return true;
+        //     }
+
+        //     String type = args[0].toLowerCase();
+
+        //     if (args.length < 2) {
+        //         player.sendMessage("Usage: /debug " + type + " <number> [playername]");
+        //         return true;
+        //     }
+            
+        //     double value;
+        //     try {
+        //         value = Double.parseDouble(args[1]);
+        //     } catch (NumberFormatException e) {
+        //         player.sendMessage("Invalid number format.");
+        //         return true;
+        //     }
+
+        //     Player target;
+        //     if (args.length > 2) {
+        //         target = plugin.getServer().getPlayer(args[2]);
+        //         if (target == null) {
+        //             player.sendMessage("Player not found.");
+        //             return true;
+        //         }
+        //     } else {
+        //         target = player; // Default to the sender if no target is specified
+        //     }
+
+        //     PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
+        //     if (targetStats == null) {
+        //         player.sendMessage("Target player stats not available.");
+        //         return true;
+        //     }
+
+        //     switch (type) {
+        //         case "bladder":
+        //             targetStats.setBladder(value);
+        //             player.sendMessage("Set bladder to: " + value);
+        //             break;
+        //         case "bowel":
+        //             targetStats.setBowels(value);
+        //             player.sendMessage("Set bowels to: " + value);
+        //             break;
+        //         case "both":
+        //             targetStats.setBladder(value);
+        //             targetStats.setBowels(value);
+        //             player.sendMessage("Set both bladder and bowel to: " + value);
+        //             break;
+        //         case "type":
+        //             targetStats.setUnderwearType((int)value);
+        //             break;
+        //         case "wetness":
+        //             targetStats.setDiaperWetness(value);
+        //             player.sendMessage("Set diaper wetness to: " + value);
+        //             break;
+        //         case "fullness":
+        //             targetStats.setDiaperFullness(value);
+        //             player.sendMessage("Set diaper fullness to: " + value);
+        //             break;
+        //         case "effectduration":
+        //             targetStats.setEffectDuration((int)value);;
+        //             player.sendMessage("Set duration to: " + value);
+        //             break;
+        //         case "timeworn":
+        //             targetStats.setTimeWorn((int)value);
+        //             player.sendMessage("Set timeworn to: " + value);
+        //             break;
+        //         default:
+        //             player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+        //     }
+        //     return true;
+        // }
+
+
+
+        if (command.getName().equalsIgnoreCase("debug")) {
+            if (!(sender instanceof Player) && !(sender instanceof ConsoleCommandSender)) {
                 return true;
             }
 
-            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-
-            if (stats == null) {
-                player.sendMessage("Player Stats not available");
-                return true;
+            // Check permissions
+            boolean isConsole = sender instanceof ConsoleCommandSender;
+            if (!isConsole) {
+                Player player = (Player) sender;
+                if (!player.hasPermission("diaperplugin.debug") && !player.isOp()) {
+                    player.sendMessage("You do not have permission to use this command.");
+                    return true;
+                }
             }
 
+            // Handle command logic
+            // String[] args = command.getArgs();
+            
             if (args.length == 0) {
-                player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+                sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
                 return true;
             }
 
             String type = args[0].toLowerCase();
-            // if (type.equals("showfill")) {
-            //     // Toggle showfill for the sender
-            //     boolean currentState = plugin.showfill.getOrDefault(player.getUniqueId(), false);
-            //     plugin.showfill.put(player.getUniqueId(), !currentState);
-            //     player.sendMessage("Live feed of fill: " + (plugin.showfill.get(player.getUniqueId()) ? ChatColor.GREEN + "Enabled" : ChatColor.RED + "Disabled"));
-            //     return true;
-            // }
 
             if (args.length < 2) {
-                player.sendMessage("Usage: /debug " + type + " <number> [playername]");
+                sender.sendMessage("Usage: /debug " + type + " <number> [playername]");
                 return true;
             }
             
             double value;
-            try {
+            try { 
                 value = Double.parseDouble(args[1]);
             } catch (NumberFormatException e) {
-                player.sendMessage("Invalid number format.");
+                sender.sendMessage("Invalid number format.");
                 return true;
             }
 
@@ -426,54 +516,60 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             if (args.length > 2) {
                 target = plugin.getServer().getPlayer(args[2]);
                 if (target == null) {
-                    player.sendMessage("Player not found.");
+                    sender.sendMessage("Player not found.");
                     return true;
                 }
             } else {
-                target = player; // Default to the sender if no target is specified
+                // If no target specified, default to sender or error for console
+                if (isConsole) {
+                    sender.sendMessage("Please specify a playername when using this command from the console.");
+                    return true;
+                } else {
+                    target = (Player)sender;
+                }
             }
 
             PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
             if (targetStats == null) {
-                player.sendMessage("Target player stats not available.");
+                sender.sendMessage("Target player stats not available.");
                 return true;
             }
 
-            switch (type) {
+            switch(type) {
                 case "bladder":
                     targetStats.setBladder(value);
-                    player.sendMessage("Set bladder to: " + value);
+                    sender.sendMessage("Set bladder to: " + value);
                     break;
                 case "bowel":
                     targetStats.setBowels(value);
-                    player.sendMessage("Set bowels to: " + value);
+                    sender.sendMessage("Set bowels to: " + value);
                     break;
                 case "both":
                     targetStats.setBladder(value);
                     targetStats.setBowels(value);
-                    player.sendMessage("Set both bladder and bowel to: " + value);
+                    sender.sendMessage("Set both bladder and bowel to: " + value);
                     break;
                 case "type":
                     targetStats.setUnderwearType((int)value);
                     break;
                 case "wetness":
                     targetStats.setDiaperWetness(value);
-                    player.sendMessage("Set diaper wetness to: " + value);
+                    sender.sendMessage("Set diaper wetness to: " + value);
                     break;
                 case "fullness":
                     targetStats.setDiaperFullness(value);
-                    player.sendMessage("Set diaper fullness to: " + value);
+                    sender.sendMessage("Set diaper fullness to: " + value);
                     break;
                 case "effectduration":
-                    targetStats.setEffectDuration((int)value);;
-                    player.sendMessage("Set duration to: " + value);
+                    targetStats.setEffectDuration((int)value);
+                    sender.sendMessage("Set duration to: " + value);
                     break;
                 case "timeworn":
                     targetStats.setTimeWorn((int)value);
-                    player.sendMessage("Set timeworn to: " + value);
+                    sender.sendMessage("Set timeworn to: " + value);
                     break;
                 default:
-                    player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+                    sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
             }
             return true;
         }

@@ -29,6 +29,8 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.storynook.items.CustomItems;
+
 public class washer implements Listener{
     private JavaPlugin plugin;
     public washer(JavaPlugin plugin){this.plugin = plugin;}
@@ -196,13 +198,13 @@ public class washer implements Listener{
             if(data.has(key, PersistentDataType.INTEGER)){
                 int customModelData = data.get(key, PersistentDataType.INTEGER);
                 if (customModelData == 626014) {
-                    if (!isValidSmeltingItem(smeltingItem)) {
+                    if (!CustomItems.isValidSmeltingItem(smeltingItem)) {
                         event.setCancelled(true);
                     }
                 }
             }
             else {
-                if (isValidSmeltingItem(smeltingItem)) {
+                if (CustomItems.isValidSmeltingItem(smeltingItem)) {
                     event.setCancelled(true);
                 }
             }
@@ -220,7 +222,7 @@ public class washer implements Listener{
             int customModelData = data.get(key, PersistentDataType.INTEGER);
 
             if (customModelData == 626014) {
-                if (isValidSmeltingItem(smeltingItem)) {
+                if (CustomItems.isValidSmeltingItem(smeltingItem)) {
                     ItemStack result = smeltingItem.clone();
                     ItemMeta meta = result.getItemMeta();
                     
@@ -248,33 +250,9 @@ public class washer implements Listener{
             }
         }
         else {
-            if (isValidSmeltingItem(smeltingItem)) {
+            if (CustomItems.isValidSmeltingItem(smeltingItem)) {
                 event.setCancelled(true);
             }
         }
-    }
-
-    // Helper method to check if an item is valid for smelting
-    private boolean isValidSmeltingItem(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) {
-            return false;
-        }
-        
-        ItemMeta meta = item.getItemMeta();
-        if (!meta.hasCustomModelData()) {
-            return false;
-        }
-
-        int modelData = meta.getCustomModelData();
-
-        // Check if the item is a slimeball with model data between 626001 and 626005
-        if (item.getType() == Material.SLIME_BALL && (modelData == 626019 || 
-        modelData == 626020 || 
-        modelData == 626021)) {
-            return true;
-        }
-
-        // Check if the item is leather leggings with any custom model data
-        return item.getType() == Material.LEATHER_LEGGINGS;
     }
 }

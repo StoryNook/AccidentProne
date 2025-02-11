@@ -89,7 +89,7 @@ public class Caregivermenu implements Listener{
             SkullMeta headMeta = (SkullMeta) playerHead.getItemMeta();
             if (headMeta != null) {
                 headMeta.setOwningPlayer(otherPlayer);
-                List<String> lore = Arrays.asList("Caregiver: " + (stats.isCaregiver(otherUUID) ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
+                List<String> lore = Arrays.asList("Caregiver: " + (stats.isCaregiver(otherUUID, false) ? ChatColor.GREEN + "Yes" : ChatColor.RED + "No"));
                 headMeta.setLore(lore);
                 headMeta.setDisplayName(otherPlayer.getName());
                 playerHead.setItemMeta(headMeta);
@@ -171,7 +171,7 @@ public class Caregivermenu implements Listener{
                     // Get the UUID from the map
                     UUID targetUUID = playerHeadMap.get(playerName);
 
-                    if (stats.isCaregiver(targetUUID)) {
+                    if (stats.isCaregiver(targetUUID, false)) {
                         stats.removeCaregiver(targetUUID);
                         player.sendMessage("You have removed " + playerName + " as a caregiver.");
                     } else {

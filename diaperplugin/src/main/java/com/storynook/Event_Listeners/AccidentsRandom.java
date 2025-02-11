@@ -30,19 +30,17 @@ public class AccidentsRandom implements Listener {
         
         // Iterate through all players
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (isNearLightningInWorld(player.getLocation(), strikeLocation, player.getWorld())) {
+            if (isNearLightningInWorld(player.getLocation(), strikeLocation)) {
                 handleThunderEffect(player);
             }
         }
     }
-    private boolean isNearLightningInWorld(Location location, Location lightningLocation, World world) {
+    private boolean isNearLightningInWorld(Location location, Location lightningLocation) {
         // First check if they are in the same world
-        if (!location.getWorld().equals(world)) {
-            return false;
+        if (location.getWorld().getEnvironment() == World.Environment.NORMAL) {
+            return location.distance(lightningLocation) <= 50;
         }
-        
-        // Check distance between the two locations within the specified radius (50 blocks)
-        return location.distance(lightningLocation) <= 50;
+        return false;
     }
 
     // Handle an accident if the player is near thunder

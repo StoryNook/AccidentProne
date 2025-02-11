@@ -1,7 +1,16 @@
 package com.storynook;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +40,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 
 import com.storynook.Event_Listeners.AccidentsRandom;
+import com.storynook.Event_Listeners.Changing;
 import com.storynook.Event_Listeners.Laxative;
 import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.Event_Listeners.Sit;
@@ -56,14 +66,14 @@ public class Plugin extends JavaPlugin
   private HashMap<UUID, PlayerStats> playerStatsMap = new HashMap<>();
   private final Map<UUID, ArmorStand> armorStandTracker = new HashMap<>();
   private Map<UUID, Integer> playerCyclesMap = new HashMap<>();
-  private Map<UUID, Integer> playerSecondsLeftMap = new HashMap<>();
-  private Map<UUID, Boolean> playerWarningsMap = new HashMap<>();
-  HashMap<UUID, Integer> rightclickCount = new HashMap<>();
+  public Map<UUID, Integer> playerSecondsLeftMap = new HashMap<>();
+  public Map<UUID, Boolean> playerWarningsMap = new HashMap<>();
+  public HashMap<UUID, Integer> rightclickCount = new HashMap<>();
   HashMap<UUID, Integer> HydrationSpike = new HashMap<>();
   HashMap<UUID, Double> activityMultiplier = new HashMap<>();
   HashMap<UUID, Boolean> wasJumping = new HashMap<>();
   HashMap<UUID, Boolean> wasSprinting = new HashMap<>();
-  HashMap<UUID, Boolean> firstimeran = new HashMap<>();
+  public HashMap<UUID, Boolean> firstimeran = new HashMap<>();
   HashMap<UUID, Double> bladderfill = new HashMap<>();
   HashMap<UUID, Double> bowelfill = new HashMap<>();
   private Map<UUID, BukkitTask> ParticleEffects = new HashMap<>();
@@ -93,6 +103,10 @@ public class Plugin extends JavaPlugin
         getLogger().warning("FIALED:Player data folder not created");
       }
     }
+
+    mergeConfigFiles("config.yml");
+    mergeConfigFiles("sounds.yml");
+    
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
     Sit sit = new Sit(this);
     Toilet toilet = new Toilet(this);
@@ -102,6 +116,7 @@ public class Plugin extends JavaPlugin
     IncontinenceMenu incontinencemenu = new IncontinenceMenu(this);
     PantsCrafting pantsCrafting = new PantsCrafting(this);
     AccidentsRandom accident = new AccidentsRandom(this);
+    Changing change = new Changing(this);
     washer washer = new washer(this);
     Laxative lax = new Laxative(this);
     //Create all the custom recipes and items related
@@ -119,7 +134,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit, toilet, accident, lax};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit, toilet, accident, lax, change};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
@@ -148,6 +163,81 @@ public class Plugin extends JavaPlugin
     //Score board setup
     manager = Bukkit.getScoreboardManager();
     UpdateStatsBar();
+  }
+
+  private void mergeConfigFiles(String fileName) {
+    File dataFile = new File(getDataFolder(), fileName);
+
+    try {
+        if (!dataFile.exists()) {
+            // Create file from resources
+            InputStream resourceStream = this.getClass().getClassLoader()
+                    .getResourceAsStream(fileName);
+
+            if (resourceStream == null) {
+                getLogger().severe("Could not find " + fileName + " in resources!");
+                return;
+            }
+
+            try (OutputStream fileOutputStream = new FileOutputStream(dataFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = resourceStream.read(buffer)) != -1) {
+                    fileOutputStream.write(buffer, 0, bytesRead);
+                }
+                getLogger().info("Created " + fileName);
+            } finally {
+                if (resourceStream != null) {
+                    resourceStream.close();
+                }
+            }
+        } else {
+            // If file exists, merge new values without overwriting existing ones
+            YamlConfiguration existingConfig = YamlConfiguration.loadConfiguration(dataFile);
+
+            InputStream resourceStream = this.getClass().getClassLoader()
+                    .getResourceAsStream(fileName);
+
+            if (resourceStream == null) {
+                getLogger().severe("Could not find " + fileName + " in resources!");
+                return;
+            }
+
+            try {
+                // Read the resource stream into a temporary file
+                File tempFile = new File(getDataFolder(), "temp_" + fileName);
+                try (OutputStream tempOutputStream = new FileOutputStream(tempFile)) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = resourceStream.read(buffer)) != -1) {
+                        tempOutputStream.write(buffer, 0, bytesRead);
+                    }
+                }
+
+                YamlConfiguration newConfig = YamlConfiguration.loadConfiguration(tempFile);
+
+                // Merge new configuration into existing one
+                // This will add missing entries but keep existing values
+                for (String key : newConfig.getKeys(true)) {
+                    if (!existingConfig.contains(key)) {
+                        existingConfig.set(key, newConfig.get(key));
+                    }
+                }
+
+                // Save merged configuration back to file
+                existingConfig.save(dataFile);
+                getLogger().info("Updated " + fileName);
+
+                // Clean up temporary file
+                tempFile.delete();
+            } finally {
+                resourceStream.close();
+            }
+        }
+    } catch (IOException e) {
+        getLogger().severe("Error handling " + fileName + ": " + e.getMessage());
+        e.printStackTrace();
+    }
   }
 
   @Override
@@ -183,7 +273,7 @@ public class Plugin extends JavaPlugin
       stats.setHydration((double) config.getInt("hydration", 100));
       stats.setUrgeToGo((int) config.getInt("urgeToGo", 1));
       stats.setUnderwearType((int) config.getInt("UnderwearType", 0));
-      stats.setLayers(config.getInt("layers", 0));
+      stats.setLayers(config.getInt("Layers", 0));
       stats.setOptin(config.getBoolean("Optin"));
       stats.setMessing(config.getBoolean("Messing"));
       stats.setParticleEffects(config.getInt("Stinklines", 0));
@@ -193,6 +283,7 @@ public class Plugin extends JavaPlugin
       stats.setTimeWorn((int) config.getInt("TimeWorn", 0));
       stats.setMinFill((int) config.getInt("MinFill", 30));
       stats.setHardcore(config.getBoolean("Hardcore", false));
+      stats.setHardcoreEnabledTime(config.getLong("hardcoreEnabledTime", -1L));
       stats.setspecialCG(config.getBoolean("specialCG", false));
       stats.setAllCaregiver(config.getBoolean("AllCaregiver", false));
       stats.setvisableUnderwear(config.getBoolean("visableUnderwear", false));
@@ -237,6 +328,7 @@ public class Plugin extends JavaPlugin
       stats.setTimeWorn(0);
       stats.setMinFill(30);
       stats.setHardcore(false);
+      stats.setHardcoreEnabledTime(-1);
       stats.setvisableUnderwear(false);
       stats.setBladderLockIncon(false);
       stats.setBowelLockIncon(false);
@@ -263,6 +355,7 @@ public class Plugin extends JavaPlugin
             FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
 
             // Save stats to the YAML file
+            config.set("PlayerName", player.getName());
             config.set("bladder", stats.getBladder());
             config.set("bowels", stats.getBowels());
             config.set("diaperWetness", stats.getDiaperWetness());
@@ -286,6 +379,7 @@ public class Plugin extends JavaPlugin
             config.set("TimeWorn", stats.getTimeWorn());
             config.set("MinFill", stats.getMinFill());
             config.set("Hardcore", stats.getHardcore());
+            config.set("hardcoreEnabledTime", stats.getHardcoreEnabledTime());
             config.set("visableUnderwear", stats.getvisableUnderwear());
             config.set("BladderLockIncon", stats.getBladderLockIncon());
             config.set("BowelLockIncon", stats.getBowelLockIncon());
@@ -388,22 +482,29 @@ public class Plugin extends JavaPlugin
               player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 15 * 20, 1), true);
             }
 
-            if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) { // Default to 1.0 if no multiplier is set
-              double hydrationDecreaseRate = 0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0);
-              stats.decreaseHydration(hydrationDecreaseRate);
+            if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) { 
+              double hydrationDecreaseRate = (0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0));
+              if (player.getLocation().getWorld().getEnvironment() == World.Environment.NETHER) {hydrationDecreaseRate = hydrationDecreaseRate * 2;}
               if (stats.getEffectDuration() == 0) {
                 stats.setBladderFillRate(0.2);
                 stats.setBowelFillRate(0.07);
               }
+              double BladderAdjustedRate = 0;
+              if (stats.getHydration() > 100) {
+                BladderAdjustedRate = ((stats.getHydration()-100)/100);
+                hydrationDecreaseRate += ((stats.getHydration()-100)/100);
+              }
+              //Decrease Hydration after Hydration check, and activitity multiplier
+              stats.decreaseHydration(hydrationDecreaseRate);
               if (HydrationSpike.getOrDefault(player.getUniqueId(), 0) > 0 || isNearRunningWater(player) || isOutsideInRain(player)) {
-                stats.increaseBladder(stats.getBladderFillRate() * 2);
-                bladderfill.put(player.getUniqueId(), stats.getBladderFillRate() * 2);
+                BladderAdjustedRate += (stats.getBladderFillRate() * 2) * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0);
                 if(HydrationSpike.getOrDefault(player.getUniqueId(), 0) > 0){HydrationSpike.put(player.getUniqueId(), (HydrationSpike.get(player.getUniqueId()) - 1));}
+              } else {BladderAdjustedRate += stats.getBladderFillRate() * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0);}
+              if (stats.getHydration() < 30) {
+                BladderAdjustedRate = 0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0);
               }
-              else {
-                stats.increaseBladder(stats.getBladderFillRate());
-                bladderfill.put(player.getUniqueId(), stats.getBladderFillRate());
-              }
+              stats.increaseBladder(BladderAdjustedRate);
+              bladderfill.put(player.getUniqueId(), Math.round((BladderAdjustedRate * 100)) / 100.0);
 
               if (stats.getMessing()) {
                 double saturation = player.getSaturation();
@@ -536,7 +637,7 @@ public class Plugin extends JavaPlugin
         player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
         playerWarningsMap.put(player.getUniqueId(), true);
       }else if(stats.getUrgeToGo() > 75){
-        player.sendMessage("you can't hold it much longer!");
+        player.sendMessage("You can't hold it much longer!");
         playerWarningsMap.put(player.getUniqueId(), true);
       }else{
         player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
@@ -553,9 +654,10 @@ public class Plugin extends JavaPlugin
     
     if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
       if (sneakFails && player.isSneaking()) {
-        player.sendMessage("You body has betrayed you. You couldn't hold it.");
-      } 
-      stats.handleAccident(isBladder, player, true, true);
+        player.sendMessage("Your body has betrayed you. You couldn't hold it.");
+        stats.handleAccident(isBladder, player, true, true);
+      }
+      else {stats.handleAccident(isBladder, player, true, false);}
       playerSecondsLeftMap.put(player.getUniqueId(), 0);
       playerWarningsMap.put(player.getUniqueId(), false);
     } else {
@@ -570,6 +672,9 @@ public class Plugin extends JavaPlugin
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();
     int fullCount;
+    if (value > 100) {
+      value = 100;
+    }
     if (isWater) {
       fullCount = (int) Math.ceil(value / 10.0);
     }
@@ -709,12 +814,4 @@ public class Plugin extends JavaPlugin
   public void clearAwaitingInput(UUID uuid) {
       playerInputAwaiting.remove(uuid);
   }
-  // public void activityMultiplier(UUID uniqueId, double d) {
-  //   // TODO Auto-generated method stub
-  //   throw new UnsupportedOperationException("Unimplemented method 'activityMultiplier'");
-  // }
-  // public void HydrationSpike(UUID uniqueId, int i) {
-  //   // TODO Auto-generated method stub
-  //   throw new UnsupportedOperationException("Unimplemented method 'HydrationSpike'");
-  // }
 }

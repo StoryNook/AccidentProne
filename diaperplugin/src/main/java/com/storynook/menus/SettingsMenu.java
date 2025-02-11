@@ -191,6 +191,20 @@ public class SettingsMenu implements Listener {
                 ParticleEffectsMeta.setCustomModelData(627000);
                 ParticleEffects.setItemMeta(ParticleEffectsMeta);   
             }
+
+
+            ItemStack AudioSettings = new ItemStack(Material.SLIME_BALL); // Custom button
+            ItemMeta AudioSettingsmeta = AudioSettings.getItemMeta();
+            AudioSettingsmeta.setCustomModelData(000000);
+            if (AudioSettingsmeta != null) {
+                List<String> lore = Arrays.asList(
+                    "Preivew the sound effects,",
+                    "as well as set your preferences"
+                );
+                AudioSettingsmeta.setLore(lore);
+                AudioSettingsmeta.setDisplayName("Audio Settings");
+                AudioSettings.setItemMeta(AudioSettingsmeta);   
+            }
             
             menu.setItem(0, Optin);
             menu.setItem(1, Messing);
@@ -201,6 +215,7 @@ public class SettingsMenu implements Listener {
             menu.setItem(6, MinFill);
             menu.setItem(7, Incon);
             menu.setItem(8, showundies);
+            // menu.setItem(9, AudioSettings);
             // menu.setItem(9, ParticleEffects);
             player.openInventory(menu);
         }
@@ -239,10 +254,13 @@ public class SettingsMenu implements Listener {
             } else if (event.getCurrentItem().getType() == Material.PAINTING) {
                 HUDMenu.HUDMenuUI(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.FIRE_CHARGE) {
-                stats.setHardcore(!stats.getHardcore());
-                player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
-                plugin.savePlayerStats(player); // Save the updated stats
-                OpenSettings(player, plugin);
+                toggleHardcore(player, plugin);
+                
+                
+                // stats.setHardcore(!stats.getHardcore());
+                // player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
+                // plugin.savePlayerStats(player); // Save the updated stats
+                // OpenSettings(player, plugin);
             }
             else if (event.getCurrentItem().getType() == Material.RED_BED) {
                 if(stats.getOptin()){
@@ -272,7 +290,7 @@ public class SettingsMenu implements Listener {
             else if (event.getCurrentItem().getType() == Material.OAK_SIGN) {
                 if(stats.getOptin()){
                     IncontinenceMenu.IncontinenceSettings(player, plugin);
-                }
+                }else {player.sendMessage("You must be opted in to change this setting");}
             }
             else if (meta.hasCustomModelData() && meta.getCustomModelData() == 627000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
                 if(stats.getOptin()){
@@ -298,6 +316,9 @@ public class SettingsMenu implements Listener {
                 // PantsCrafting.equipDiaperArmor(player, false, false);
                 PantsCrafting.equipDiaperArmor(player, false, false);
             }
+            else if (meta.hasCustomModelData() && meta.getCustomModelData() == 000000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
+                SoundEffectsMenu.SoundEffects(player, plugin);
+            }
         }
     }
     private void updateScoreboard(Player player, PlayerStats stats) {
@@ -314,5 +335,43 @@ public class SettingsMenu implements Listener {
         } else if(stats.getOptin() && !(stats.getUI() == 1)){
             player.setScoreboard(scoreboardManager.getNewScoreboard()); // Clear the scoreboard
         }
+    }
+
+    public static String formatRemainingTime(PlayerStats stats) {
+        long currentTime = System.currentTimeMillis() / 1000L;
+        long timeElapsedSeconds = currentTime - stats.getHardcoreEnabledTime();
+        long remainingSeconds = (20 * 3600) - timeElapsedSeconds;
+        long hours = remainingSeconds / 3600;
+        long minutes = (remainingSeconds % 3600) / 60;
+        return String.format("%d hours and %d minutes", hours, minutes);
+    }
+        
+    public static void toggleHardcore(Player player, Plugin plugin) {
+        PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+        
+        boolean newHardcoreState = !stats.getHardcore();
+        
+        if (newHardcoreState) {   // Enabling Hardcore
+            stats.setHardcoreEnabledTime(System.currentTimeMillis() / 1000L);   // Store current time in seconds
+            stats.setHardcore(true);
+            player.sendMessage(ChatColor.RED + "You have enabled Hardcore mode! You must wait at least 20 hours before disabling it.");
+        } else {   // Disabling Hardcore
+            if (stats.getHardcore()) {
+                long currentTime = System.currentTimeMillis() / 1000L;
+                long timeElapsedSeconds = currentTime - stats.getHardcoreEnabledTime();
+                
+                if (timeElapsedSeconds < 20 * 3600) {  // If less than 20 hours have passed
+                    String remainingTime = formatRemainingTime(stats);
+            
+                    player.sendMessage(ChatColor.RED + "You can't disable Hardcore yet! You must wait another " + remainingTime);
+                    return;  // Prevent disabling
+                }
+            }
+            stats.setHardcore(false);
+            player.sendMessage(ChatColor.GREEN + "You have disabled Hardcore mode.");
+        }
+
+        plugin.savePlayerStats(player);   // Save the updated stats
+        OpenSettings(player, plugin);
     }
 }

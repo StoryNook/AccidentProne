@@ -39,7 +39,7 @@ public class IncontinenceMenu implements Listener{
         ItemMeta BladderInconMeta = BladderIncon.getItemMeta();
         if (BladderInconMeta != null) {
             List<String> lore = Arrays.asList(
-                "Current setting: " + ChatColor.BLUE + stats.getBladderIncontinence(),
+                "Current setting: " + ChatColor.BLUE + Math.round(stats.getBladderIncontinence()),
                 stats.getHardcore() ? ChatColor.RED + "LOCKED" : ""
             );
             BladderInconMeta.setLore(lore);
@@ -51,7 +51,7 @@ public class IncontinenceMenu implements Listener{
             ItemMeta BowelInconMeta = BowelIncon.getItemMeta();
             if (BowelInconMeta != null) {
                 List<String> lore = Arrays.asList(
-                    "Current setting: " + ChatColor.BLUE + stats.getBowelIncontinence(),
+                    "Current setting: " + ChatColor.BLUE + Math.round(stats.getBowelIncontinence()),
                     stats.getHardcore() ? ChatColor.RED + "LOCKED" : ""
                 );
                 BowelInconMeta.setLore(lore);

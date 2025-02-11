@@ -11,7 +11,7 @@ commands:
   pee:
     desctription: "Allows the player to wet themselves"
   poop:
-    description: "Aloows the player to mess themselves"
+    description: "Allows the player to mess themselves"
   debug:
     description: "Used for debugging and testing. Admins & OP only"
   stats:

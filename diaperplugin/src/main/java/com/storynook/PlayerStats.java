@@ -33,6 +33,7 @@ public class PlayerStats {
     private int timeworn = 0;
     private int minFill = 30;
     private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
+    private long hardcoreEnabledTime = -1;
     private List<String> allowedsounds = new ArrayList<>();
     private List<String> blockedsounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
@@ -48,11 +49,11 @@ public class PlayerStats {
     public List<UUID> getCaregivers() {return caregivers;}
     public void addCaregiver(UUID caregiverUUID) { if(!caregivers.contains(caregiverUUID)){caregivers.add(caregiverUUID);}}
     public void removeCaregiver(UUID caregiverUUID) { caregivers.remove(caregiverUUID);}
-    public boolean isCaregiver(UUID uuid) {
+    public boolean isCaregiver(UUID uuid, Boolean Specified) {
         PlayerStats triggerStats = plugin.getPlayerStats(uuid);
         if (caregivers.contains(uuid)) {
             return true;
-        } else if (AllCaregiver && triggerStats.getspecialCG()){
+        } else if (Specified && AllCaregiver && triggerStats.getspecialCG()){
             return true;
         }
         else {return false;}
@@ -100,6 +101,10 @@ public class PlayerStats {
     public boolean getHardcore() {return hardcore;}
     public void setHardcore(boolean bool) {hardcore = bool;}
 
+    public long getHardcoreEnabledTime() {return hardcoreEnabledTime;}
+
+    public void setHardcoreEnabledTime(long time) {this.hardcoreEnabledTime = time;}
+
     public double getBladder() { return bladder; }
     public void setBladder(double amount) { bladder = Math.max(0, amount); }
     public void increaseBladder(double amount) { bladder = Math.min(bladder + amount, MAX_VALUE); }
@@ -145,8 +150,8 @@ public class PlayerStats {
     public void setMinFill(int threshold) { minFill = Math.max(0, Math.min(100, threshold)); }
 
     public double getHydration() { return hydration; }
-    public void setHydration(double amount) { hydration = Math.min(amount, MAX_VALUE); }
-    public void increaseHydration(double amount) { hydration = Math.min(hydration + amount, MAX_VALUE); }
+    public void setHydration(double amount) { hydration = amount; }
+    public void increaseHydration(double amount) { hydration = hydration + amount; }
     public void decreaseHydration(double amount) { hydration = Math.max(hydration - amount, 0); }
 
     public int getUrgeToGo() { return urgeToGo; }
@@ -165,14 +170,14 @@ public class PlayerStats {
     // Method to handle an accident
     public void handleAccident(boolean isBladder, Player player, Boolean PlaySound, Boolean MessageSent) {
         if (isBladder) {
-            int wetbyamount;
+            double wetbyamount;
             switch (layers) {
-                case 0: wetbyamount = (int) bladder; break;
-                case 1: wetbyamount = (int) bladder/2; break;
-                case 2: wetbyamount = (int) bladder/4; break;
-                case 3: wetbyamount = (int) bladder/8; break;
-                case 4: wetbyamount = (int) bladder/16; break;
-                default: wetbyamount = (int) bladder; break;
+                case 0: wetbyamount = bladder; break;
+                case 1: wetbyamount = bladder/1.5; break;
+                case 2: wetbyamount = bladder/2; break;
+                case 3: wetbyamount = bladder/3; break;
+                case 4: wetbyamount = bladder/4; break;
+                default: wetbyamount = bladder; break;
             }
             switch (UnderwearType) {
                 case 0:
@@ -184,18 +189,6 @@ public class PlayerStats {
                 case 3: diaperWetness += wetbyamount/4; break;
                 default: break;
             }
-            // if (UnderwearType == 0) {diaperWetness += 100;}
-            // if (UnderwearType == 1) {diaperWetness = diaperWetness + bladder;}
-            // if (UnderwearType == 2) {
-            //     if (layers == 0) {diaperWetness = diaperWetness + bladder/2;}
-            //     if (layers == 1) {diaperWetness = diaperWetness + bladder/4;}
-            //     if (layers == 2) {diaperWetness = diaperWetness + bladder/8;}
-            // }
-            // if (UnderwearType == 3) {
-            //     if (layers == 0) {diaperWetness = diaperWetness + bladder/4;}
-            //     if (layers == 1) {diaperWetness = diaperWetness + bladder/8;}
-            //     if (layers == 2) {diaperWetness = diaperWetness + bladder/16;}
-            // }
             bladder = 0;
             if (!getBladderLockIncon()) {increaseBladderIncontinence(0.5);}
             urgeToGo = 0;

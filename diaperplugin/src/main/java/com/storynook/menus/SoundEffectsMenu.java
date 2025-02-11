@@ -38,7 +38,7 @@ public class SoundEffectsMenu implements Listener{
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().equals("Incontinence Settings")) {
+        if (!event.getView().getTitle().equals("Sound Effects")) {
             return;
         }
 
@@ -55,7 +55,7 @@ public class SoundEffectsMenu implements Listener{
         if (stats == null) {
             return;
         }
-        else if (event.getView().getTitle().equals("Incontinence Settings")) {
+        else if (event.getView().getTitle().equals("Sound Effects")) {
             if (event.getCurrentItem().getType() == Material.RED_STAINED_GLASS_PANE) {
                 SettingsMenu.OpenSettings(player, plugin);
             }
