@@ -107,10 +107,11 @@ public class AccidentsRandom implements Listener {
             double chance = Math.log(maxIncontinence + 1) / Math.log(10) * 4;
 
             if (random.nextInt(4) < chance) {
-                if (stats.getBladder() > 10 || stats.getBowels() > 10) {
-                    boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
+                if ((stats.getBladder() > 10 && stats.getBladderIncontinence() > stats.getBowelIncontinence()) || (stats.getBowels() > 10 && stats.getBowelIncontinence() > stats.getBladderIncontinence())) {
+                    boolean bladderAccident = stats.getBladder() > stats.getBowels() && stats.getBladderIncontinence() >= stats.getBowelIncontinence();
                     stats.handleAccident(bladderAccident, player, true, true);
-                    player.sendMessage("You got so scared by the attack that you had an accident!");
+                    if (bladderAccident) {player.sendMessage("You got so scared you peed yourself!");}
+                    else{player.sendMessage("You go so scared you pooped your yourself!");}
 
                     cooldown.put(player.getUniqueId(), true);
                     Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {

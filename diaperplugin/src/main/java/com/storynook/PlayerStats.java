@@ -1,10 +1,13 @@
 package com.storynook;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -193,7 +196,30 @@ public class PlayerStats {
             if (!getBladderLockIncon()) {increaseBladderIncontinence(0.5);}
             urgeToGo = 0;
             if (PlaySound) {
-                player.playSound(player.getLocation(), "minecraft:pee1", SoundCategory.PLAYERS, 1.0f, 1.0f);
+                Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+    
+                // Iterate through each online player to check their distance
+                for (Player targetPlayer : onlinePlayers) {
+                    if (targetPlayer != null) {  // Ensure we have a valid player reference
+                        if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
+                            double distance = targetPlayer.getLocation().distance(player.getLocation());
+                        
+                            // Check if the player is within the specified radius of 5 blocks
+                            if (distance <= 5.0) {
+                                // Calculate volume based on distance, with max at 1.0f and min at 0.2f
+                                float maxVolume = 1.0f;
+                                float minVolume = 0.2f; // Minimum volume to still hear the sound
+                                float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
+                                
+                                targetPlayer.playSound(targetPlayer.getLocation(), 
+                                    "minecraft:pee1", // Updated sound reference using Sound enum
+                                    SoundCategory.PLAYERS, 
+                                    volume, // Volume decreases with distance
+                                    1.0f);   // Keep pitch constant at normal speed
+                            }
+                        }
+                    }
+                }
             }
         } else {
             if (UnderwearType == 0) {diaperFullness += 100;}
@@ -204,7 +230,33 @@ public class PlayerStats {
             if(!getBowelLockIncon()){increaseBowelIncontinence(0.5);}
             urgeToGo = 0;
             if (PlaySound) {
-                player.playSound(player.getLocation(), "minecraft:mess1", SoundCategory.PLAYERS, 1.0f, 1.0f);
+                Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+    
+                // Iterate through each online player to check their distance
+                for (Player targetPlayer : onlinePlayers) {
+                    if (targetPlayer != null) {  // Ensure we have a valid player reference
+                        if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
+                            double distance = targetPlayer.getLocation().distance(player.getLocation());
+                            
+                            // Check if the player is within the specified radius of 5 blocks
+                            if (distance <= 5.0) {
+                                // Calculate volume based on distance, with max at 1.0f and min at 0.2f
+                                float maxVolume = 1.0f;
+                                float minVolume = 0.2f; // Minimum volume to still hear the sound
+                                float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
+                                
+                                targetPlayer.playSound(targetPlayer.getLocation(), 
+                                    "minecraft:mess1", // Updated sound reference using Sound enum
+                                    SoundCategory.PLAYERS, 
+                                    volume, // Volume decreases with distance
+                                    1.0f);   // Keep pitch constant at normal speed
+                            }
+                        }
+                    }
+                }
+
+
+                // player.playSound(player.getLocation(), "minecraft:mess1", SoundCategory.PLAYERS, 1.0f, 1.0f);
             }
         }
         if (!MessageSent) {

@@ -1,7 +1,11 @@
 package com.storynook.Event_Listeners;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -31,6 +35,7 @@ public class Changing implements Listener{
     private Set<UUID> cooldown = new HashSet<>();
     static HashMap<UUID, Boolean> Justchanged = new HashMap<>();
     HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
+    Map<UUID, UUID> playsounds = new HashMap<>();
     
     private final Plugin plugin;
     public Changing(Plugin plugin) {
@@ -234,13 +239,61 @@ public class Changing implements Listener{
 
     private void playAudio(Player player, int totype, int fromtype) {
         if ((totype == 626002 && fromtype != 0) || fromtype != 0) {
-            player.playSound(player.getLocation(), "minecraft:diaperchange", SoundCategory.PLAYERS, 1.0f, 1.0f);
+
+            Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+    
+            // Iterate through each online player to check their distance
+            for (Player targetPlayer : onlinePlayers) {
+                if (targetPlayer != null) {  // Ensure we have a valid player reference
+                    if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
+                        double distance = targetPlayer.getLocation().distance(player.getLocation());
+                        
+                        // Check if the player is within the specified radius of 5 blocks
+                        if (distance <= 5.0) {
+                            // Calculate volume based on distance, with max at 1.0f and min at 0.2f
+                            float maxVolume = 1.0f;
+                            float minVolume = 0.2f; // Minimum volume to still hear the sound
+                            float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
+                            
+                            targetPlayer.playSound(targetPlayer.getLocation(), 
+                                "minecraft:diaperchange", // Updated sound reference using Sound enum
+                                SoundCategory.PLAYERS, 
+                                volume, // Volume decreases with distance
+                                1.0f);   // Keep pitch constant at normal speed
+                                playsounds.put(targetPlayer.getUniqueId(), player.getUniqueId());
+                        }
+                    }
+                }
+            }
+            
+            // player.playSound(player.getLocation(), "minecraft:diaperchange", SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
     }
 
     private void stopAudio(Player player, int totype, int fromtype) {
         if ((totype == 626002 && fromtype != 0) || fromtype !=0) {
-            player.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
+            List<Map.Entry<UUID, UUID>> entriesToRemove = new ArrayList<>();
+            // Iterate through each online player to check their distance
+            for (Map.Entry<UUID, UUID> entry : playsounds.entrySet()) {
+                UUID targetUuid = entry.getKey();
+                UUID triggerUuid = entry.getValue();
+                
+                // Check if the trigger player's UUID matches the current event
+                if (triggerUuid.equals(player.getUniqueId())) {  // Assuming 'player' is the trigger player
+                    Player targetPlayer = Bukkit.getPlayer(targetUuid);
+                    
+                    if (targetPlayer != null) {   // Ensure the player is still online
+                        targetPlayer.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
+                        
+                        // Mark this entry for removal
+                        entriesToRemove.add(entry);
+                    }
+                }
+            }
+            for (Map.Entry<UUID, UUID> entry : entriesToRemove) {
+                playsounds.remove(entry.getKey());
+            }
+            // player.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
         }
     }
     private void handleInteraction(Player actor, Player target, boolean isCaregiverInteraction) {

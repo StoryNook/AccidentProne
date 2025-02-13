@@ -1,5 +1,7 @@
 package com.storynook.Event_Listeners;
 
+import java.util.Collection;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -150,7 +152,34 @@ public class Toilet implements Listener{
                 // If the player is no longer a passenger of the armor stand
                 if (!armorStand.getPassengers().contains(player)) {
                     // Play the sound
-                    cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 0.5f, 1.0f);
+
+                    Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+                        
+                    // Iterate through each online player to check their distance
+                    for (Player targetPlayer : onlinePlayers) {
+                        if (targetPlayer != null) {  // Ensure we have a valid player reference
+                            if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
+                                double distance = targetPlayer.getLocation().distance(cauldronLoc);
+                                
+                                // Check if the player is within the specified radius of 5 blocks
+                                if (distance <= 10.0) {
+                                    // Calculate volume based on distance, with max at 1.0f and min at 0.2f
+                                    float maxVolume = 0.5f;
+                                    float minVolume = 0.05f; // Minimum volume to still hear the sound
+                                    float volume = (float) ((10 - distance) / 10 * (maxVolume - minVolume)) + minVolume;
+                                    
+                                    targetPlayer.playSound(targetPlayer.getLocation(), 
+                                        "minecraft:toilet", // Updated sound reference using Sound enum
+                                        SoundCategory.PLAYERS, 
+                                        volume, // Volume decreases with distance
+                                        1.0f);   // Keep pitch constant at normal speed
+                                }
+                            }
+                        }
+                    }
+                                
+
+                    // cauldronBlock.getWorld().playSound(cauldronLoc, "minecraft:toilet", SoundCategory.PLAYERS, 0.5f, 1.0f);
     
                     // Remove the armor stand
                     armorStand.remove();

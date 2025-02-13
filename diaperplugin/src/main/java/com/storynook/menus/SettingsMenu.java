@@ -81,9 +81,9 @@ public class SettingsMenu implements Listener {
             if (HardCoreMeta != null) {
                 List<String> lore = Arrays.asList(
                     "HardCore: " + (stats.getHardcore() ? ChatColor.GREEN + "On" : ChatColor.RED + "Off"),
-                    "Removes you ablility to change yourself.",
+                    "Removes your ablility to change yourself.",
                     "Only Caregivers can change you.",
-                    "Also can't unlock or set your incontinence levels."
+                    ChatColor.RED + "Once turned on there is a 20 hour timer to turn it off"
                 );
                 HardCoreMeta.setLore(lore);
                 HardCoreMeta.setDisplayName("HardCore");
@@ -341,6 +341,9 @@ public class SettingsMenu implements Listener {
         long currentTime = System.currentTimeMillis() / 1000L;
         long timeElapsedSeconds = currentTime - stats.getHardcoreEnabledTime();
         long remainingSeconds = (20 * 3600) - timeElapsedSeconds;
+        if (remainingSeconds <= 0) {
+            return ChatColor.GREEN + "No time remaining";
+        }
         long hours = remainingSeconds / 3600;
         long minutes = (remainingSeconds % 3600) / 60;
         return String.format("%d hours and %d minutes", hours, minutes);
