@@ -83,16 +83,16 @@ public class PlayerEventListener implements Listener {
         UUID playerUUID = player.getUniqueId();
         // Determine if the player is sprinting or walking normally
         if (player.isSprinting()) {
-            plugin.activityMultiplier.put(playerUUID, 1.5); // Increase for sprinting
+            UpdateStats.activityMultiplier.put(playerUUID, 1.5); // Increase for sprinting
         } else {
-            plugin.activityMultiplier.put(playerUUID, 1.0); // Normal walking or standing still
+            UpdateStats.activityMultiplier.put(playerUUID, 1.0); // Normal walking or standing still
         }
 
         // Check for jumping specifically
         if (player.isOnGround() && player.getLocation().getY() > event.getFrom().getY()) {
             // The player location is ascending from the last event call and they were on the ground
-            Double currentMultiplier = plugin.activityMultiplier.getOrDefault(playerUUID, 1.0);
-            plugin.activityMultiplier.put(playerUUID, currentMultiplier + 0.5);
+            Double currentMultiplier = UpdateStats.activityMultiplier.getOrDefault(playerUUID, 1.0);
+            UpdateStats.activityMultiplier.put(playerUUID, currentMultiplier + 0.5);
         }
     }
         
@@ -105,7 +105,7 @@ public class PlayerEventListener implements Listener {
             ItemStack consumedItem = event.getItem();
             if(isHydrating(consumedItem)){
                 // Increase hydration when the player drinks
-                plugin.HydrationSpike.put(event.getPlayer().getUniqueId(), 10);
+                UpdateStats.HydrationSpike.put(event.getPlayer().getUniqueId(), 10);
                 stats.increaseHydration(30); 
             }
         }

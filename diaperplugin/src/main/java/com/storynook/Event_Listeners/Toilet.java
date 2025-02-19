@@ -23,6 +23,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
+import com.storynook.UpdateStats;
 import com.storynook.items.ItemManager;
 
 public class Toilet implements Listener{
@@ -140,8 +141,8 @@ public class Toilet implements Listener{
             // }
             player.sendMessage("Potty training is going well!");
         }
-        plugin.playerSecondsLeftMap.put(player.getUniqueId(), 0);
-        plugin.playerWarningsMap.put(player.getUniqueId(), false);
+        UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
+        UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
         stats.setUrgeToGo(0);
 
         BukkitTask[] taskId = new BukkitTask[1];
