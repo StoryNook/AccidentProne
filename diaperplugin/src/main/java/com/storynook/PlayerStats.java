@@ -1,13 +1,15 @@
 package com.storynook;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -37,8 +39,8 @@ public class PlayerStats {
     private int minFill = 30;
     private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
     private long hardcoreEnabledTime = -1;
-    private List<String> allowedsounds = new ArrayList<>();
-    private List<String> blockedsounds = new ArrayList<>();
+    private Map<String, List<SimpleEntry<String, Boolean>>> Sounds = new HashMap<>();
+    // private List<String> blockedsounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
     private static final int MAX_VALUE = 100;
