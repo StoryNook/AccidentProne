@@ -236,40 +236,6 @@ public class Plugin extends JavaPlugin
     saveAllPlayerStats();
   }
 
-  // private void loadSounds() {
-  //   try {
-  //       File soundsFile = new File(getDataFolder(), "sounds.yml");
-        
-  //       // Create default file if it doesn't exist
-  //       if (!soundsFile.exists()) {
-  //           saveResource("sounds.yml", false);
-  //       }
-        
-  //       YamlConfiguration config = YamlConfiguration.loadConfiguration(soundsFile);
-        
-  //       // Load each category and its sounds into the hashmap
-  //       for (String category : config.getKeys(false)) {
-  //           Map<String, String> soundMap = new HashMap<>();
-            
-  //           ConfigurationSection section = config.getConfigurationSection(category);
-  //           if (section != null) {
-  //               for (String soundName : section.getKeys(false)) {
-  //                   String value = section.getString(soundName);
-  //                   soundMap.put(soundName, value);
-  //                   getLogger().info("On Load Looping of sounds: " + soundName + " " + value);
-  //               }
-  //           }
-            
-  //           soundConfig.put(category, soundMap);
-  //       }
-  //       getLogger().info("Sounds Added " + soundConfig.size());
-        
-  //   } catch (Exception e) {
-  //       getLogger().severe("Error loading sounds.yml: " + e.getMessage());
-  //       e.printStackTrace();
-  //   }
-  // }
-
   private void loadSounds() {
     try {
         File soundsFile = new File(getDataFolder(), "sounds.yml");
@@ -381,16 +347,6 @@ public class Plugin extends JavaPlugin
                 String soundName = entry.getKey();
                 Boolean defaultValueStr = entry.getValue();
 
-                // // Parse the default value to a Boolean
-                // boolean defaultValue;
-                // if (defaultValueStr.equalsIgnoreCase("true")) {
-                //     defaultValue = true;
-                // } else if (defaultValueStr.equalsIgnoreCase("false")) {
-                //     defaultValue = false;
-                // } else {
-                //     defaultValue = Boolean.parseBoolean(defaultValueStr);
-                // }
-
                 if (!categorySection.contains(soundName)) {
                     // Set the default value in the config
                     categorySection.set(soundName, defaultValueStr);
@@ -441,16 +397,6 @@ public class Plugin extends JavaPlugin
             for (Map.Entry<String, Boolean> entry : soundMap.entrySet()) {
                 String soundName = entry.getKey();
                 Boolean defaultValueStr = entry.getValue();
-
-                // Parse the default value to a Boolean
-                // boolean defaultValue;
-                // if (defaultValueStr.equalsIgnoreCase("true")) {
-                //     defaultValue = true;
-                // } else if (defaultValueStr.equalsIgnoreCase("false")) {
-                //     defaultValue = false;
-                // } else {
-                //     defaultValue = Boolean.parseBoolean(defaultValueStr);
-                // }
 
                 categorySection.set(soundName, defaultValueStr);
                 categorySounds.put(soundName, defaultValueStr);
@@ -507,8 +453,7 @@ public class Plugin extends JavaPlugin
       stats.setshowunderwear(true);
       stats.setUI(1);
       stats.setBedwetting(0);
-      
-      
+      stats.setStoredSounds(soundConfig);
       
       // Store the default stats in the playerStatsMap
       playerStatsMap.put(playerUUID, stats);

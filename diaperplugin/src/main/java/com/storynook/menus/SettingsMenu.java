@@ -31,7 +31,7 @@ public class SettingsMenu implements Listener {
         public static void OpenSettings(Player player, Plugin plugin) {
             UUID playerUUID = player.getUniqueId();
             PlayerStats stats = plugin.getPlayerStats(playerUUID);
-            Inventory menu = Bukkit.createInventory(player, 9, "Settings");
+            Inventory menu = Bukkit.createInventory(player, 9 * 2, "Settings");
     
             ItemStack Optin = new ItemStack(Material.SLIME_BALL); // Custom button
             ItemMeta OptinMeta = Optin.getItemMeta();
@@ -215,7 +215,7 @@ public class SettingsMenu implements Listener {
             menu.setItem(6, MinFill);
             menu.setItem(7, Incon);
             menu.setItem(8, showundies);
-            // menu.setItem(9, AudioSettings);
+            menu.setItem(9, AudioSettings);
             // menu.setItem(9, ParticleEffects);
             player.openInventory(menu);
         }
@@ -255,12 +255,6 @@ public class SettingsMenu implements Listener {
                 HUDMenu.HUDMenuUI(player, plugin);
             } else if (event.getCurrentItem().getType() == Material.FIRE_CHARGE) {
                 toggleHardcore(player, plugin);
-                
-                
-                // stats.setHardcore(!stats.getHardcore());
-                // player.sendMessage(stats.getHardcore() ? "You have enabled " + ChatColor.RED + "HardCore." : "You have Disabled " + ChatColor.RED + "HardCore.");
-                // plugin.savePlayerStats(player); // Save the updated stats
-                // OpenSettings(player, plugin);
             }
             else if (event.getCurrentItem().getType() == Material.RED_BED) {
                 if(stats.getOptin()){
