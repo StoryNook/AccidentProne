@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class Plugin extends JavaPlugin
   HashMap<UUID, Boolean> wasSprinting = new HashMap<>();
   public HashMap<UUID, Boolean> firstimeran = new HashMap<>();
   private Map<UUID, BukkitTask> ParticleEffects = new HashMap<>();
-  public static Map<String, Map<String, String>> soundConfig = new HashMap<>();
+  public static Map<String, Map<String, Boolean>> soundConfig = new HashMap<>();
 
 
   public Map<UUID, ArmorStand> getArmorStandTracker() {
@@ -235,33 +236,80 @@ public class Plugin extends JavaPlugin
     saveAllPlayerStats();
   }
 
+  // private void loadSounds() {
+  //   try {
+  //       File soundsFile = new File(getDataFolder(), "sounds.yml");
+        
+  //       // Create default file if it doesn't exist
+  //       if (!soundsFile.exists()) {
+  //           saveResource("sounds.yml", false);
+  //       }
+        
+  //       YamlConfiguration config = YamlConfiguration.loadConfiguration(soundsFile);
+        
+  //       // Load each category and its sounds into the hashmap
+  //       for (String category : config.getKeys(false)) {
+  //           Map<String, String> soundMap = new HashMap<>();
+            
+  //           ConfigurationSection section = config.getConfigurationSection(category);
+  //           if (section != null) {
+  //               for (String soundName : section.getKeys(false)) {
+  //                   String value = section.getString(soundName);
+  //                   soundMap.put(soundName, value);
+  //                   getLogger().info("On Load Looping of sounds: " + soundName + " " + value);
+  //               }
+  //           }
+            
+  //           soundConfig.put(category, soundMap);
+  //       }
+  //       getLogger().info("Sounds Added " + soundConfig.size());
+        
+  //   } catch (Exception e) {
+  //       getLogger().severe("Error loading sounds.yml: " + e.getMessage());
+  //       e.printStackTrace();
+  //   }
+  // }
+
   private void loadSounds() {
     try {
         File soundsFile = new File(getDataFolder(), "sounds.yml");
-        
+
         // Create default file if it doesn't exist
         if (!soundsFile.exists()) {
-            saveResource("sounds.yml", false);
+            saveResource("sounds. yml", false);
         }
-        
+
         YamlConfiguration config = YamlConfiguration.loadConfiguration(soundsFile);
-        
+
         // Load each category and its sounds into the hashmap
         for (String category : config.getKeys(false)) {
-            Map<String, String> soundMap = new HashMap<>();
-            
-            ConfigurationSection section = config.getConfigurationSection(category);
-            if (section != null) {
-                for (String soundName : section.getKeys(false)) {
-                    String value = section.getString(soundName);
-                    soundMap.put(soundName, value);
+            Map<String, Boolean> categoryMap = new HashMap<>();
+
+            List<String> sounds = config.getStringList(category);
+            if (!sounds.isEmpty()) {
+                for (String sound : sounds) {
+                    categoryMap.put(sound, true);
+                    getLogger().info("Loaded sound: " + sound + " under category: " + category);
                 }
+            } else {
+                getLogger().warning("No sounds found in category: " + category);
             }
-            
-            soundConfig.put(category, soundMap);
+
+            // Put the category map into the main map
+            soundConfig.put(category, categoryMap);
         }
-        getLogger().info("Sounds Added" + soundConfig.size());
-        
+
+        if (soundConfig.isEmpty()) {
+            getLogger().severe("No sounds loaded. Please check your sounds.yml file.");
+        } else {
+            getLogger().info("Successfully loaded " + soundConfig.size() + " categories of sounds.");
+            for (Map.Entry<String, Map<String, Boolean>> entry : soundConfig.entrySet()) {
+                String category = entry.getKey();
+                int soundCount = entry.getValue().size();
+                getLogger().info("Category: " + category + ", Sounds loaded: " + soundCount);
+            }
+        }
+
     } catch (Exception e) {
         getLogger().severe("Error loading sounds.yml: " + e.getMessage());
         e.printStackTrace();
@@ -313,7 +361,112 @@ public class Plugin extends JavaPlugin
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
         }
-      } 
+      }
+      if (config.contains("StoredSounds")) {
+        ConfigurationSection storedSounds = config.getConfigurationSection("StoredSounds");
+
+        // Create a map to hold the sounds configuration for the player
+        Map<String, Map<String, Boolean>> soundsMap = new HashMap<>();
+
+        for (String category : soundConfig.keySet()) {
+            Map<String, Boolean> soundMap = soundConfig.get(category);
+            if (!storedSounds.contains(category)) {
+                storedSounds.createSection(category);
+            }
+            ConfigurationSection categorySection = storedSounds.getConfigurationSection(category);
+
+            // Populate the map with Boolean values
+            Map<String, Boolean> categorySounds = new HashMap<>();
+            for (Map.Entry<String, Boolean> entry : soundMap.entrySet()) {
+                String soundName = entry.getKey();
+                Boolean defaultValueStr = entry.getValue();
+
+                // // Parse the default value to a Boolean
+                // boolean defaultValue;
+                // if (defaultValueStr.equalsIgnoreCase("true")) {
+                //     defaultValue = true;
+                // } else if (defaultValueStr.equalsIgnoreCase("false")) {
+                //     defaultValue = false;
+                // } else {
+                //     defaultValue = Boolean.parseBoolean(defaultValueStr);
+                // }
+
+                if (!categorySection.contains(soundName)) {
+                    // Set the default value in the config
+                    categorySection.set(soundName, defaultValueStr);
+                    // Add to the map with Boolean
+                    categorySounds.put(soundName, defaultValueStr);
+                } else {
+                    // Use the existing value from the config and parse it as a Boolean
+                    Object existingValue = categorySection.get(soundName);
+                    if (existingValue instanceof String) {
+                        String strVal = (String) existingValue;
+                        if (strVal.equalsIgnoreCase("true")) {
+                            categorySounds.put(soundName, true);
+                        } else if (strVal.equalsIgnoreCase("false")) {
+                            categorySounds.put(soundName, false);
+                        } else {
+                            categorySounds.put(soundName, Boolean.parseBoolean(strVal));
+                        }
+                    } else if (existingValue instanceof Boolean) {
+                        categorySounds.put(soundName, (Boolean) existingValue);
+                    } else {
+                        // Handle unexpected types (e.g., numbers)
+                        try {
+                            int intValue = Integer.parseInt(existingValue.toString());
+                            categorySounds.put(soundName, intValue > 0);
+                        } catch (NumberFormatException e) {
+                            categorySounds.put(soundName, false);
+                        }
+                    }
+                }
+            }
+            soundsMap.put(category, categorySounds);
+        }
+
+        // Set the populated sounds into the player's stats
+        stats.setStoredSounds(soundsMap);
+      }
+      else {
+        // Create StoredSounds section with all sounds from soundConfig
+        ConfigurationSection storedSounds = config.createSection("StoredSounds");
+        Map<String, Map<String, Boolean>> soundsMap = new HashMap<>();
+
+        for (String category : soundConfig.keySet()) {
+            Map<String, Boolean> soundMap = soundConfig.get(category);
+            ConfigurationSection categorySection = storedSounds.createSection(category);
+
+            // Populate the map with Boolean values
+            Map<String, Boolean> categorySounds = new HashMap<>();
+            for (Map.Entry<String, Boolean> entry : soundMap.entrySet()) {
+                String soundName = entry.getKey();
+                Boolean defaultValueStr = entry.getValue();
+
+                // Parse the default value to a Boolean
+                // boolean defaultValue;
+                // if (defaultValueStr.equalsIgnoreCase("true")) {
+                //     defaultValue = true;
+                // } else if (defaultValueStr.equalsIgnoreCase("false")) {
+                //     defaultValue = false;
+                // } else {
+                //     defaultValue = Boolean.parseBoolean(defaultValueStr);
+                // }
+
+                categorySection.set(soundName, defaultValueStr);
+                categorySounds.put(soundName, defaultValueStr);
+            }
+            soundsMap.put(category, categorySounds);
+        }
+
+        // Set the populated sounds into the player's stats
+        stats.setStoredSounds(soundsMap);
+        
+        // try {
+        //     config.save(playerFile);
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+      }
       playerStatsMap.put(playerUUID, stats);
       if (stats.getOptin() && stats.getUI() > 0) {
         ScoreBoard.createSidebar(player);
@@ -355,6 +508,8 @@ public class Plugin extends JavaPlugin
       stats.setUI(1);
       stats.setBedwetting(0);
       
+      
+      
       // Store the default stats in the playerStatsMap
       playerStatsMap.put(playerUUID, stats);
 
@@ -367,54 +522,72 @@ public class Plugin extends JavaPlugin
     UUID playerUUID = player.getUniqueId();
     PlayerStats stats = playerStatsMap.get(playerUUID);
     if (stats != null) {
-        // Save stats to a file or database (not implemented in this example)
-        File playerFile = getPlayerFile(playerUUID);
-            FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
+      // Save stats to a file or database (not implemented in this example)
+      File playerFile = getPlayerFile(playerUUID);
+      FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
 
-            // Save stats to the YAML file
-            config.set("PlayerName", player.getName());
-            config.set("bladder", stats.getBladder());
-            config.set("bowels", stats.getBowels());
-            config.set("diaperWetness", stats.getDiaperWetness());
-            config.set("diaperFullness", stats.getDiaperFullness());
-            config.set("bladderIncontinence", stats.getBladderIncontinence());
-            config.set("bowelIncontinence", stats.getBowelIncontinence());
-            config.set("bladderFillRate", stats.getBladderFillRate());
-            config.set("bowelFillRate", stats.getBowelFillRate());
-            config.set("hydration", stats.getHydration());
-            config.set("urgeToGo", stats.getUrgeToGo());
-            config.set("UnderwearType", stats.getUnderwearType());
-            config.set("Layers", stats.getLayers());
-            config.set("Optin", stats.getOptin());
-            config.set("Messing", stats.getMessing());
-            config.set("Stinklines", stats.getParticleEffects());
-            config.set("specialCG", stats.getspecialCG());
-            config.set("AllCaregiver", stats.getAllCaregiver());
-            config.set("UI", stats.getUI());
-            config.set("Bedwetting", stats.getBedwetting());
-            config.set("EffectDuration", stats.getEffectDuration());
-            config.set("TimeWorn", stats.getTimeWorn());
-            config.set("MinFill", stats.getMinFill());
-            config.set("Hardcore", stats.getHardcore());
-            config.set("hardcoreEnabledTime", stats.getHardcoreEnabledTime());
-            config.set("visableUnderwear", stats.getvisableUnderwear());
-            config.set("BladderLockIncon", stats.getBladderLockIncon());
-            config.set("BowelLockIncon", stats.getBowelLockIncon());
-            config.set("ShowFill", stats.getshowfill());
-            config.set("FillBar", stats.getfillbar());
-            config.set("showunderwear", stats.getshowunderwear());
-            List<String> uuidStrings = stats.getCaregivers().stream()
-            .map(UUID::toString) // Convert UUID to string
-            .collect(Collectors.toList());
-            config.set("Caregivers", uuidStrings);
-            
-            try {
-              config.save(playerFile);
-              getLogger().info("Saved stats for player " + player.getName());
-          } catch (IOException e) {
-              getLogger().warning("Failed to save stats for player " + player.getName());
-              e.printStackTrace();
+      // Save stats to the YAML file
+      config.set("PlayerName", player.getName());
+      config.set("bladder", stats.getBladder());
+      config.set("bowels", stats.getBowels());
+      config.set("diaperWetness", stats.getDiaperWetness());
+      config.set("diaperFullness", stats.getDiaperFullness());
+      config.set("bladderIncontinence", stats.getBladderIncontinence());
+      config.set("bowelIncontinence", stats.getBowelIncontinence());
+      config.set("bladderFillRate", stats.getBladderFillRate());
+      config.set("bowelFillRate", stats.getBowelFillRate());
+      config.set("hydration", stats.getHydration());
+      config.set("urgeToGo", stats.getUrgeToGo());
+      config.set("UnderwearType", stats.getUnderwearType());
+      config.set("Layers", stats.getLayers());
+      config.set("Optin", stats.getOptin());
+      config.set("Messing", stats.getMessing());
+      config.set("Stinklines", stats.getParticleEffects());
+      config.set("specialCG", stats.getspecialCG());
+      config.set("AllCaregiver", stats.getAllCaregiver());
+      config.set("UI", stats.getUI());
+      config.set("Bedwetting", stats.getBedwetting());
+      config.set("EffectDuration", stats.getEffectDuration());
+      config.set("TimeWorn", stats.getTimeWorn());
+      config.set("MinFill", stats.getMinFill());
+      config.set("Hardcore", stats.getHardcore());
+      config.set("hardcoreEnabledTime", stats.getHardcoreEnabledTime());
+      config.set("visableUnderwear", stats.getvisableUnderwear());
+      config.set("BladderLockIncon", stats.getBladderLockIncon());
+      config.set("BowelLockIncon", stats.getBowelLockIncon());
+      config.set("ShowFill", stats.getshowfill());
+      config.set("FillBar", stats.getfillbar());
+      config.set("showunderwear", stats.getshowunderwear());
+      List<String> uuidStrings = stats.getCaregivers().stream()
+      .map(UUID::toString) // Convert UUID to string
+      .collect(Collectors.toList());
+      config.set("Caregivers", uuidStrings);
+
+      ConfigurationSection storedSoundsConfig = config.createSection("StoredSounds");
+
+      // Iterate through all categories in StoredSounds
+      for (Map.Entry<String, Map<String, Boolean>> categoryEntry : stats.getStoredSounds().entrySet()) {
+          String categoryName = categoryEntry.getKey();
+          ConfigurationSection categoryConfig = storedSoundsConfig.createSection(categoryName);
+          
+          // Get the sounds map for the current category
+          Map<String, Boolean> sounds = categoryEntry.getValue();
+          
+          // Add each sound to the category configuration
+          for (Map.Entry<String, Boolean> soundEntry : sounds.entrySet()) {
+              String soundName = soundEntry.getKey();
+              boolean isEnabled = soundEntry.getValue();
+              categoryConfig.set(soundName, isEnabled);
           }
+      }
+      
+      try {
+        config.save(playerFile);
+        getLogger().info("Saved stats for player " + player.getName());
+      } catch (IOException e) {
+        getLogger().warning("Failed to save stats for player " + player.getName());
+        e.printStackTrace();
+      }
     }
   }
   private File getPlayerFile(UUID playerUUID) {

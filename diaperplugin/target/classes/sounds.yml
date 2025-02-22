@@ -1,11 +1,12 @@
 flush:  
-  toilet
+  - toilet
 mess:
-  mess1
+  - mess1
 pee:
-  pee1
+  - pee1
 crinkle:
-  crinklewalk1
-  crinklewalk2
+  - crinklewalk1
+  - crinklewalk2
 changing:
-  diaperchange
+  - diaperchange
+  - diaperchange2

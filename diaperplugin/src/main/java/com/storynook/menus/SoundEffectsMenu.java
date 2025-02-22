@@ -22,8 +22,8 @@ public class SoundEffectsMenu implements Listener{
         this.plugin = plugin;
     }
     public static void SoundEffects(Player player, Plugin plugin) {
-        // UUID playerUUID = player.getUniqueId();
-        // PlayerStats stats = plugin.getPlayerStats(playerUUID);
+        UUID playerUUID = player.getUniqueId();
+        PlayerStats stats = plugin.getPlayerStats(playerUUID);
         Inventory menu = Bukkit.createInventory(player, 9, "Sound Effects");
 
         ItemStack Back = new ItemStack(Material.RED_STAINED_GLASS_PANE); // Custom button

@@ -1,11 +1,11 @@
 package com.storynook;
 
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -39,7 +39,7 @@ public class PlayerStats {
     private int minFill = 30;
     private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
     private long hardcoreEnabledTime = -1;
-    private Map<String, List<SimpleEntry<String, Boolean>>> Sounds = new HashMap<>();
+    private Map<String, Map<String, Boolean>> StoredSounds = new HashMap<>();
     // private List<String> blockedsounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
@@ -50,7 +50,45 @@ public class PlayerStats {
         this.plugin = plugin;
     }
     private Plugin plugin;
-    // Getters and setters for all fields
+
+    //Sound Settings
+    public Map<String, Map<String, Boolean>> getStoredSounds() {
+        return StoredSounds;
+    }
+    public void setStoredSounds(Map<String, Map<String, Boolean>> sounds) {
+        this.StoredSounds = sounds;
+    }
+    
+    public void toggleSound(String categoryName, String soundName) {
+        Map<String, Boolean> sounds = StoredSounds.get(categoryName);
+        if (sounds != null && sounds.containsKey(soundName)) {
+            boolean currentStatus = sounds.get(soundName);
+            sounds.put(soundName, !currentStatus);  // Toggle the status
+        }
+    }
+    public String getRandomSoundFromCategory(String categoryName) {
+        Map<String, Boolean> sounds = StoredSounds.get(categoryName);
+        if (sounds == null || sounds.isEmpty()) {
+            return null;  // No sounds in this category
+        }
+        
+        List<String> enabledSounds = new ArrayList<>();
+        for (Map.Entry<String, Boolean> entry : sounds.entrySet()) {
+            if (entry.getValue()) {  // Only add enabled sounds
+                enabledSounds.add(entry.getKey());
+            }
+        }
+        
+        if (enabledSounds.isEmpty()) {
+            return null;  // No enabled sounds in this category
+        }
+        
+        Random random = new Random();
+        int index = random.nextInt(enabledSounds.size());
+        return enabledSounds.get(index);
+    }
+
+    // Caregiver Settings
     public List<UUID> getCaregivers() {return caregivers;}
     public void addCaregiver(UUID caregiverUUID) { if(!caregivers.contains(caregiverUUID)){caregivers.add(caregiverUUID);}}
     public void removeCaregiver(UUID caregiverUUID) { caregivers.remove(caregiverUUID);}
@@ -63,6 +101,13 @@ public class PlayerStats {
         }
         else {return false;}
     }
+
+    //Quick Boolean Settings
+    public boolean getlethear() {return lethear;}
+    public void setlethear(boolean bool) {lethear = bool;}
+
+    public boolean getcanhear() {return canhear;}
+    public void setcanhear(boolean bool) {canhear = bool;}
 
     public boolean getOptin() {return optin;}
     public void setOptin(boolean bool) {optin = bool;}
@@ -94,22 +139,24 @@ public class PlayerStats {
     public boolean getBowelLockIncon() {return BowelLockIncon;}
     public void setBowelLockIncon(boolean bool) {BowelLockIncon = bool;}
 
-    public int getUI() {return UI;}
-    public void setUI(int number) {UI = number;}
-
-    public int getBedwetting() {return Bedwetting;}
-    public void setBedwetting(int number) {Bedwetting = number;}
-    
     public boolean getMessing() {return messing;}
     public void setMessing(boolean bool) {messing = bool;}
 
     public boolean getHardcore() {return hardcore;}
     public void setHardcore(boolean bool) {hardcore = bool;}
 
-    public long getHardcoreEnabledTime() {return hardcoreEnabledTime;}
+    //Settings Menu Options
+    public int getUI() {return UI;}
+    public void setUI(int number) {UI = number;}
 
+    public int getBedwetting() {return Bedwetting;}
+    public void setBedwetting(int number) {Bedwetting = number;}
+
+    //Hardcore timer
+    public long getHardcoreEnabledTime() {return hardcoreEnabledTime;}
     public void setHardcoreEnabledTime(long time) {this.hardcoreEnabledTime = time;}
 
+    //Bladder, Bowels, Diaper Fill, etc.
     public double getBladder() { return bladder; }
     public void setBladder(double amount) { bladder = Math.max(0, amount); }
     public void increaseBladder(double amount) { bladder = Math.min(bladder + amount, MAX_VALUE); }
