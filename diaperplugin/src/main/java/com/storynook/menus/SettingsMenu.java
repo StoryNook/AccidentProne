@@ -311,7 +311,7 @@ public class SettingsMenu implements Listener {
                 PantsCrafting.equipDiaperArmor(player, false, false);
             }
             else if (meta.hasCustomModelData() && meta.getCustomModelData() == 000000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
-                SoundEffectsMenu.SoundEffects(player, plugin);
+                SoundEffectsMenu.SoundEffects(player, plugin,0);
             }
         }
     }
