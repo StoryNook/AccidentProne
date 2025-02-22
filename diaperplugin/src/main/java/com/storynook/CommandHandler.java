@@ -13,6 +13,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import com.storynook.AccidentsANDWanrings.HandleAccident;
 import com.storynook.menus.SettingsMenu;
 
 import net.md_5.bungee.api.ChatColor;
@@ -37,7 +38,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats.getBladder() > 10) {
                 player.sendMessage("You just peeded yourself.");
-                stats.handleAccident(true, player, true, true);
+                HandleAccident.handleAccident(true, player, true, true);
             }
     
             return true;
@@ -47,7 +48,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats.getBowels() > 10) {
                 player.sendMessage("You just pooped yourself.");
-                stats.handleAccident(false, player, true, true);
+                HandleAccident.handleAccident(false, player, true, true);
             }
     
             return true;

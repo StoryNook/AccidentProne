@@ -20,6 +20,7 @@ import org.bukkit.util.Vector;
 
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
+import com.storynook.AccidentsANDWanrings.HandleAccident;
 
 public class AccidentsRandom implements Listener {
     private Map<UUID, Boolean> cooldown = new HashMap<>();
@@ -58,7 +59,7 @@ public class AccidentsRandom implements Listener {
             if (random.nextInt(4) < chance) {
                 boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
                 if (bladderAccident ? stats.getBladder() > 10 : stats.getBowels() > 10) {
-                    stats.handleAccident(bladderAccident, player, true, true);
+                    HandleAccident.handleAccident(bladderAccident, player, true, true);
                     player.sendMessage("You got so scared by the lightening that you had an accident!");
                     
                     cooldown.put(player.getUniqueId(), true);
@@ -109,7 +110,7 @@ public class AccidentsRandom implements Listener {
             if (random.nextInt(4) < chance) {
                 if ((stats.getBladder() > 10 && stats.getBladderIncontinence() > stats.getBowelIncontinence()) || (stats.getBowels() > 10 && stats.getBowelIncontinence() > stats.getBladderIncontinence())) {
                     boolean bladderAccident = stats.getBladder() > stats.getBowels() && stats.getBladderIncontinence() >= stats.getBowelIncontinence();
-                    stats.handleAccident(bladderAccident, player, true, true);
+                    HandleAccident.handleAccident(bladderAccident, player, true, true);
                     if (bladderAccident) {player.sendMessage("You got so scared you peed yourself!");}
                     else{player.sendMessage("You go so scared you pooped your yourself!");}
 
@@ -136,7 +137,7 @@ public class AccidentsRandom implements Listener {
                     Random random = new Random();
                     if (random.nextInt(4) < chance) {
                         if (stats.getBladder() > 10) {
-                            stats.handleAccident(true, player,false, true);
+                            HandleAccident.handleAccident(true, player,false, true);
                             player.sendMessage("Oh no! You wet the bed!");
                             return;
                         }
@@ -144,7 +145,7 @@ public class AccidentsRandom implements Listener {
                 }
                 else if(stats.getBedwetting() == 2){
                     if (stats.getBladder() > 10) {
-                        stats.handleAccident(true, player,false, true);
+                        HandleAccident.handleAccident(true, player,false, true);
                         player.sendMessage("Oh no! You wet the bed!");
                         return;
                     }

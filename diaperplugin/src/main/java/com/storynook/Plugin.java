@@ -33,6 +33,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.ScoreboardManager;
 
+import com.storynook.AccidentsANDWanrings.HandleAccident;
 import com.storynook.Event_Listeners.AccidentsRandom;
 import com.storynook.Event_Listeners.Changing;
 import com.storynook.Event_Listeners.Laxative;
@@ -69,6 +70,7 @@ public class Plugin extends JavaPlugin
       return armorStandTracker;
   }
   private CommandHandler commandHandler;
+  private HandleAccident handleAccident;
   private ScoreboardManager manager;
 
   @Override
@@ -137,6 +139,8 @@ public class Plugin extends JavaPlugin
 
     //Registers the commands
     commandHandler = new CommandHandler(this);
+    
+    handleAccident = new HandleAccident(this);
 
     String[] singleCommands = {"settings", "pee", "poop", "stats", "nightvision", "nv"};
     for (String cmd : singleCommands) {
@@ -586,7 +590,7 @@ public class Plugin extends JavaPlugin
     double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
     if (randomChance < accidentProbability) {
-      stats.handleAccident(isBladder, player, true, false);
+      HandleAccident.handleAccident(isBladder, player, true, false);
     } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
       if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
         player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
@@ -611,9 +615,9 @@ public class Plugin extends JavaPlugin
     if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
       if (sneakFails && player.isSneaking()) {
         player.sendMessage("Your body has betrayed you. You couldn't hold it.");
-        stats.handleAccident(isBladder, player, true, true);
+        HandleAccident.handleAccident(isBladder, player, true, true);
       }
-      else {stats.handleAccident(isBladder, player, true, false);}
+      else {HandleAccident.handleAccident(isBladder, player, true, false);}
       UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
       UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
     } else {
