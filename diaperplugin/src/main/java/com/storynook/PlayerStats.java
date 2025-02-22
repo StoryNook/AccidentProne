@@ -39,7 +39,7 @@ public class PlayerStats {
     private int minFill = 30;
     private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
     private long hardcoreEnabledTime = -1;
-    public Map<String, Map<String, Boolean>> StoredSounds = new HashMap<>();
+    private Map<String, Map<String, Boolean>> StoredSounds = new HashMap<>();
     // private List<String> blockedsounds = new ArrayList<>();
     private List<UUID> caregivers = new ArrayList<>();
 
@@ -53,19 +53,19 @@ public class PlayerStats {
 
     //Sound Settings
 
-    public void printAllStoredSounds() {
-        System.out.println("Current StoredSounds contents:");
-        for (Map.Entry<String, Map<String, Boolean>> categoryEntry : StoredSounds.entrySet()) {
-            String categoryName = categoryEntry.getKey();
-            Map<String, Boolean> sounds = categoryEntry.getValue();
-            System.out.println("Category: " + categoryName);
-            for (Map.Entry<String, Boolean> soundEntry : sounds.entrySet()) {
-                String soundName = soundEntry.getKey();
-                boolean isEnabled = soundEntry.getValue();
-                System.out.println("- Sound: " + soundName + " | Enabled: " + isEnabled);
-            }
-        }
-    }
+    // public void printAllStoredSounds() {
+    //     System.out.println("Current StoredSounds contents:");
+    //     for (Map.Entry<String, Map<String, Boolean>> categoryEntry : StoredSounds.entrySet()) {
+    //         String categoryName = categoryEntry.getKey();
+    //         Map<String, Boolean> sounds = categoryEntry.getValue();
+    //         System.out.println("Category: " + categoryName);
+    //         for (Map.Entry<String, Boolean> soundEntry : sounds.entrySet()) {
+    //             String soundName = soundEntry.getKey();
+    //             boolean isEnabled = soundEntry.getValue();
+    //             System.out.println("- Sound: " + soundName + " | Enabled: " + isEnabled);
+    //         }
+    //     }
+    // }
     public Map<String, Map<String, Boolean>> getStoredSounds() {
         return StoredSounds;
     }

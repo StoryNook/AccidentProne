@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +28,6 @@ public class SoundEffectsMenu implements Listener{
     public static void SoundEffects(Player player, Plugin plugin) {
         UUID playerUUID = player.getUniqueId();
         PlayerStats stats = plugin.getPlayerStats(playerUUID);
-        stats.printAllStoredSounds();
         Inventory menu = Bukkit.createInventory(player, 9 * 6, "Sound Effects");
 
         ItemStack Back = new ItemStack(Material.RED_STAINED_GLASS_PANE); // Custom button
@@ -39,10 +39,9 @@ public class SoundEffectsMenu implements Listener{
         menu.setItem(0, Back);
 
         int currentSlot = 9; // Start at first slot
-        for (Map.Entry<String, Map<String, Boolean>> categoryEntry : stats.StoredSounds.entrySet()) {
+        for (Map.Entry<String, Map<String, Boolean>> categoryEntry : stats.getStoredSounds().entrySet()) {
             String categoryName = categoryEntry.getKey();
             Map<String, Boolean> sounds = categoryEntry.getValue();
-            System.out.println("\nProcessing category: " + categoryName);
             // Create category item
             ItemStack categoryItem = new ItemStack(Material.SLIME_BALL);
             ItemMeta categoryMeta = categoryItem.getItemMeta();
@@ -57,9 +56,6 @@ public class SoundEffectsMenu implements Listener{
             for (Map.Entry<String, Boolean> soundEntry : sounds.entrySet()) {
                 String soundName = soundEntry.getKey();
                 boolean isEnabled = soundEntry.getValue();
-                System.out.println("Processing sound: " + soundName + 
-                              " | Enabled: " + isEnabled + 
-                              " | Category: " + categoryName);
 
                 ItemStack soundItem = new ItemStack(Material.SLIME_BALL);
                 ItemMeta soundMeta = soundItem.getItemMeta();
@@ -67,16 +63,14 @@ public class SoundEffectsMenu implements Listener{
                     soundMeta.setDisplayName(soundName);
                     List<String> lore = new ArrayList<>();
                     lore.add("Enabled: " + isEnabled);
+                    lore.add("Category: " + categoryName);
                     soundMeta.setLore(lore);
                     soundItem.setItemMeta(soundMeta);
                 }
                 
                 int soundSlot = currentSlot + 1 + soundIndex;
-                System.out.println("Attempting to place sound in slot: " + soundSlot +
-                              " | Sound Name: " + soundName);
                 if (soundSlot < currentSlot + 8) { // Ensure we don't exceed inventory size
                     menu.setItem(soundSlot, soundItem);
-                    System.out.println("Sound successfully placed in slot: " + soundSlot);
                 }else {
                     System.out.println("Skipping sound placement - slot exceeds inventory size");
                 }
@@ -111,6 +105,37 @@ public class SoundEffectsMenu implements Listener{
             if (event.getCurrentItem().getType() == Material.RED_STAINED_GLASS_PANE) {
                 SettingsMenu.OpenSettings(player, plugin);
             }
+            if (event.getCurrentItem().getType() == Material.SLIME_BALL) {
+                ItemMeta meta = event.getCurrentItem().getItemMeta();
+                if (meta != null && meta.getDisplayName() != null) {
+                    String displayName = meta.getDisplayName();
+                    // Skip category headers
+                    if (displayName.startsWith("Category: ")) {
+                        return;
+                    }
+                    String soundName = displayName;
+                    String categoryName = "";
+                    List<String> lore = meta.getLore();
+                    if (lore != null) {
+                        for (String line : lore) {
+                            if (line.startsWith("Category: ")) {
+                                String[] parts = line.split(": ");
+                                if (parts.length > 1) {
+                                    categoryName = parts[1];
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (!categoryName.isEmpty()) {
+                        stats.toggleSound(categoryName, soundName);
+                        SoundEffectsMenu.SoundEffects(player, plugin); // Reload the menu
+                    }
+                }
+            }
         }
+    }
+    private void PlaySound(Player player, String soundName) {
+        player.playSound(player.getLocation(), "minecraft:"+soundName, SoundCategory.PLAYERS,1.0f, 1.0f);
     }
 }

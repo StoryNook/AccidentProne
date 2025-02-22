@@ -47,6 +47,7 @@ import com.storynook.menus.Caregivermenu;
 import com.storynook.menus.HUDMenu;
 import com.storynook.menus.IncontinenceMenu;
 import com.storynook.menus.SettingsMenu;
+import com.storynook.menus.SoundEffectsMenu;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -94,10 +95,13 @@ public class Plugin extends JavaPlugin
     PlayerEventListener playerEventListener = new PlayerEventListener(this);
     Sit sit = new Sit(this);
     Toilet toilet = new Toilet(this);
+    //Menus
     SettingsMenu SettingsMenu = new SettingsMenu(this);
     Caregivermenu caregivermenu = new Caregivermenu(this);
     HUDMenu hudmenu = new HUDMenu(this);
     IncontinenceMenu incontinencemenu = new IncontinenceMenu(this);
+    SoundEffectsMenu soundmenu = new SoundEffectsMenu(this);
+
     PantsCrafting pantsCrafting = new PantsCrafting(this);
     AccidentsRandom accident = new AccidentsRandom(this);
     Changing change = new Changing(this);
@@ -118,7 +122,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, pantsCrafting, washer, sit, toilet, accident, lax, change};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
