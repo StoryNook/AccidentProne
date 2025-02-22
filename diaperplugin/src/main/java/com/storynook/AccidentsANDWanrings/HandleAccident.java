@@ -3,6 +3,7 @@ package com.storynook.AccidentsANDWanrings;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
@@ -12,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
+import com.storynook.PlaySounds;
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.Event_Listeners.PantsCrafting;
@@ -56,46 +58,7 @@ public class HandleAccident {
             stats.setUrgeToGo(0);
         }
         if (PlaySound) {
-            World world = player.getLocation().getWorld();
-            Collection<Entity> nearbyEntities = world.getNearbyEntities(player.getLocation(), 5.0, 5.0, 5.0);
-
-            Boolean shouldBroadcast = stats.getlethear();
-            List<Player> affectedPlayers = new ArrayList<>();
-
-            for (Entity entity : nearbyEntities) {
-                if (entity instanceof Player) {
-                    Player targetPlayer = (Player) entity;
-                    PlayerStats targetstats = plugin.getPlayerStats(targetPlayer.getUniqueId());
-                    if (targetPlayer != null && targetPlayer.getLocation() != null) {
-                        if (shouldBroadcast) {
-                            if (targetstats.getcanhear()) {
-                                affectedPlayers.add(targetPlayer);
-                            }
-                            else if (targetPlayer.equals(player)) {
-                                affectedPlayers.add(player);
-                            }
-                        }
-                        else {
-                            if (targetPlayer.equals(player)) {
-                                affectedPlayers.add(player);
-                            }
-                        }  
-                    }
-                }
-            }
-            for (Player target : affectedPlayers){
-                double distance = target.getLocation().distance(player.getLocation());
-                // Calculate volume based on distance, with max at 1.0f and min at 0.2f
-                float maxVolume = 1.0f;
-                float minVolume = 0.2f;  // Minimum volume to still hear the sound
-                float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
-
-                target.playSound(target.getLocation(), 
-                                        "minecraft:pee1",
-                                        SoundCategory.PLAYERS, 
-                                        volume,
-                                        1.0f);
-            }
+            PlaySounds.playsounds(player,(isBladder ? "pee" : "mess"), 5,1.0,0.2);
         }
         if (!MessageSent) {
             if (isBladder ? stats.getBladderIncontinence() == 10 && !stats.getBladderLockIncon() : stats.getBowelIncontinence() == 10 && !stats.getBowelLockIncon()) {

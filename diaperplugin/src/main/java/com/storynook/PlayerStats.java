@@ -1,23 +1,11 @@
 package com.storynook;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.SoundCategory;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.LeatherArmorMeta;
-
-import com.storynook.Event_Listeners.PantsCrafting;
 
 public class PlayerStats {
     private UUID playerUUID;
@@ -234,119 +222,6 @@ public class PlayerStats {
     public void increaseLayers(int type) { layers = Math.min(layers + type, 4); }
     public void decreaseLayers(int type) { layers = Math.max(layers - type, 0);}
 
-
-    // Method to handle an accident
-    // public void handleAccident(boolean isBladder, Player player, Boolean PlaySound, Boolean MessageSent) {
-    //     if (isBladder) {
-    //         double wetbyamount;
-    //         switch (layers) {
-    //             case 0: wetbyamount = bladder; break;
-    //             case 1: wetbyamount = bladder/1.5; break;
-    //             case 2: wetbyamount = bladder/2; break;
-    //             case 3: wetbyamount = bladder/3; break;
-    //             case 4: wetbyamount = bladder/4; break;
-    //             default: wetbyamount = bladder; break;
-    //         }
-    //         switch (UnderwearType) {
-    //             case 0:
-    //                 if (layers > 0) {if(diaperWetness >= 100) {diaperWetness += 100;} else {diaperWetness += 50;}}
-    //                 else {diaperWetness += 100;}
-    //                 break;
-    //             case 1: diaperWetness += wetbyamount; break;
-    //             case 2: diaperWetness += wetbyamount/2; break;
-    //             case 3: diaperWetness += wetbyamount/4; break;
-    //             default: break;
-    //         }
-    //         bladder = 0;
-    //         if (!getBladderLockIncon()) {increaseBladderIncontinence(0.5);}
-    //         urgeToGo = 0;
-    //     } else {
-    //         if (UnderwearType == 0) {diaperFullness += 100;}
-    //         else if (UnderwearType == 1) {diaperFullness = diaperFullness + bowels;}
-    //         else if (UnderwearType == 2) {diaperFullness = diaperFullness + bowels/2;}
-    //         else if (UnderwearType == 3) {diaperFullness = diaperFullness + bowels/4;}
-    //         bowels = 0;
-    //         if(!getBowelLockIncon()){increaseBowelIncontinence(0.5);}
-    //         urgeToGo = 0;
-    //     }
-    //     if (PlaySound) {
-    //         World world = player.getLocation().getWorld();
-    //         Collection<Entity> nearbyEntities = world.getNearbyEntities(player.getLocation(), 5.0, 5.0, 5.0);
-
-    //         Boolean shouldBroadcast = getlethear();
-    //         List<Player> affectedPlayers = new ArrayList<>();
-
-    //         for (Entity entity : nearbyEntities) {
-    //             if (entity instanceof Player) {
-    //                 Player targetPlayer = (Player) entity;
-    //                 if (targetPlayer != null && targetPlayer.getLocation() != null) {
-    //                     if (shouldBroadcast) {
-    //                         if (targetPlayer.getcanhear) {
-                                
-    //                         }
-    //                     }
-    //                     double distance = targetPlayer.getLocation().distance(player.getLocation());
-
-    //                     // Calculate volume based on distance, with max at 1.0f and min at 0.2f
-    //                     float maxVolume = 1.0f;
-    //                     float minVolume = 0.2f;  // Minimum volume to still hear the sound
-    //                     float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
-    
-    //                     targetPlayer.playSound(targetPlayer.getLocation(), 
-    //                                             "minecraft:pee1",
-    //                                             SoundCategory.PLAYERS, 
-    //                                             volume,
-    //                                             1.0f);
-                        
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     if (!MessageSent) {
-    //         if (isBladder ? getBladderIncontinence() == 10 && !BladderLockIncon : getBowelIncontinence() == 10 && !BowelLockIncon) {
-    //             player.sendMessage("Oh no! Someone has no control!");
-    //         }
-    //         else if (isBladder ? getBladderIncontinence() > 7 : getBowelIncontinence() > 7) {
-    //             if (isBladder ? BladderLockIncon : BowelLockIncon) {
-    //                 player.sendMessage("Some one likes using their pants, huh?");
-    //             }
-    //             else{
-    //                 player.sendMessage("Seems like someone is losing control");
-    //             }
-    //         }
-    //         else if (isBladder ? getBladderIncontinence() > 3 : getBowelIncontinence() > 3) {
-    //             player.sendMessage("You should try to make it to the potty next time.");
-    //         }else {
-    //             player.sendMessage("Oh no! You had an accident...");
-    //         }
-    //     }
-        
-    //     if (diaperWetness >= 100 && diaperFullness >= 100) {
-    //         changeLeggingsModel(player, 626018);
-    //     }
-    //     else if (diaperWetness >= 100 && diaperFullness < 100) {
-    //         changeLeggingsModel(player, 626016);
-    //     }
-    //     else if(diaperFullness >= 100 && diaperWetness < 100){
-    //         changeLeggingsModel(player, 626017);
-    //     }
-    //     if (visableUnderwear) {
-    //         PantsCrafting.equipDiaperArmor(player, false, true);
-    //     }
-    //     // plugin.manageParticleEffects(player);
-    // }
-
-    // private void changeLeggingsModel(Player player, int modelData) {
-    //     ItemStack leggings = player.getInventory().getLeggings();
-    //     if (leggings != null && leggings.getType() == Material.LEATHER_LEGGINGS) {
-    //         LeatherArmorMeta meta = (LeatherArmorMeta) leggings.getItemMeta();
-    //         if (meta.getCustomModelData() == 626015 || meta.getCustomModelData() == 626016 || meta.getCustomModelData() == 626017) {
-    //             meta.setCustomModelData(modelData);
-    //             leggings.setItemMeta(meta);
-    //             return;
-    //         }
-    //     }
-    // }
     public void unlockIncon(String type) {
         switch (type.toLowerCase()) {
             case "bladder":

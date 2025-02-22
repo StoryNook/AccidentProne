@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.storynook.PlaySounds;
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.items.CustomItems;
@@ -239,32 +240,32 @@ public class Changing implements Listener{
 
     private void playAudio(Player player, int totype, int fromtype) {
         if ((totype == 626002 && fromtype != 0) || fromtype != 0) {
-
-            Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
+            PlaySounds.playsounds(player, "changing", 5, 1.0, 0.2);
+            // Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
     
-            // Iterate through each online player to check their distance
-            for (Player targetPlayer : onlinePlayers) {
-                if (targetPlayer != null) {  // Ensure we have a valid player reference
-                    if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
-                        double distance = targetPlayer.getLocation().distance(player.getLocation());
+            // // Iterate through each online player to check their distance
+            // for (Player targetPlayer : onlinePlayers) {
+            //     if (targetPlayer != null) {  // Ensure we have a valid player reference
+            //         if (targetPlayer.getLocation().getWorld() == player.getLocation().getWorld()) {
+            //             double distance = targetPlayer.getLocation().distance(player.getLocation());
                         
-                        // Check if the player is within the specified radius of 5 blocks
-                        if (distance <= 5.0) {
-                            // Calculate volume based on distance, with max at 1.0f and min at 0.2f
-                            float maxVolume = 1.0f;
-                            float minVolume = 0.2f; // Minimum volume to still hear the sound
-                            float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
+            //             // Check if the player is within the specified radius of 5 blocks
+            //             if (distance <= 5.0) {
+            //                 // Calculate volume based on distance, with max at 1.0f and min at 0.2f
+            //                 float maxVolume = 1.0f;
+            //                 float minVolume = 0.2f; // Minimum volume to still hear the sound
+            //                 float volume = (float) ((5 - distance) / 5 * (maxVolume - minVolume)) + minVolume;
                             
-                            targetPlayer.playSound(targetPlayer.getLocation(), 
-                                "minecraft:diaperchange", // Updated sound reference using Sound enum
-                                SoundCategory.PLAYERS, 
-                                volume, // Volume decreases with distance
-                                1.0f);   // Keep pitch constant at normal speed
-                                playsounds.put(targetPlayer.getUniqueId(), player.getUniqueId());
-                        }
-                    }
-                }
-            }
+            //                 targetPlayer.playSound(targetPlayer.getLocation(), 
+            //                     "minecraft:diaperchange", // Updated sound reference using Sound enum
+            //                     SoundCategory.PLAYERS, 
+            //                     volume, // Volume decreases with distance
+            //                     1.0f);   // Keep pitch constant at normal speed
+            //                     playsounds.put(targetPlayer.getUniqueId(), player.getUniqueId());
+            //             }
+            //         }
+            //     }
+            // }
             
             // player.playSound(player.getLocation(), "minecraft:diaperchange", SoundCategory.PLAYERS, 1.0f, 1.0f);
         }

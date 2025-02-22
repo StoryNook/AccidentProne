@@ -69,8 +69,9 @@ public class Plugin extends JavaPlugin
   public Map<UUID, ArmorStand> getArmorStandTracker() {
       return armorStandTracker;
   }
-  private CommandHandler commandHandler;
-  private HandleAccident handleAccident;
+  private CommandHandler commandHandler = new CommandHandler(this);
+  private HandleAccident handleAccident = new HandleAccident(this);
+  private PlaySounds playsounds = new PlaySounds(this);
   private ScoreboardManager manager;
 
   @Override
@@ -138,9 +139,7 @@ public class Plugin extends JavaPlugin
     playerStatsMap = new HashMap<UUID, PlayerStats>();
 
     //Registers the commands
-    commandHandler = new CommandHandler(this);
-    
-    handleAccident = new HandleAccident(this);
+
 
     String[] singleCommands = {"settings", "pee", "poop", "stats", "nightvision", "nv"};
     for (String cmd : singleCommands) {
@@ -331,6 +330,8 @@ public class Plugin extends JavaPlugin
       stats.setfillbar(config.getBoolean("FillBar", false));
       stats.setshowfill(config.getBoolean("ShowFill",false));
       stats.setshowunderwear(config.getBoolean("showunderwear", true));
+      stats.setcanhear(config.getBoolean("CanHear", true));
+      stats.setlethear(config.getBoolean("LetHear", true));
       if (config.contains("Caregivers")) {
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
@@ -462,6 +463,8 @@ public class Plugin extends JavaPlugin
       stats.setUI(1);
       stats.setBedwetting(0);
       stats.setStoredSounds(soundConfig);
+      stats.setlethear(true);
+      stats.setcanhear(true);
       
       // Store the default stats in the playerStatsMap
       playerStatsMap.put(playerUUID, stats);
@@ -511,6 +514,8 @@ public class Plugin extends JavaPlugin
       config.set("ShowFill", stats.getshowfill());
       config.set("FillBar", stats.getfillbar());
       config.set("showunderwear", stats.getshowunderwear());
+      config.set("CanHear", stats.getcanhear());
+      config.set("LetHear", stats.getlethear());
       List<String> uuidStrings = stats.getCaregivers().stream()
       .map(UUID::toString) // Convert UUID to string
       .collect(Collectors.toList());
