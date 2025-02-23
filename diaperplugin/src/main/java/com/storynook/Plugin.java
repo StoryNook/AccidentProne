@@ -330,8 +330,8 @@ public class Plugin extends JavaPlugin
       stats.setfillbar(config.getBoolean("FillBar", false));
       stats.setshowfill(config.getBoolean("ShowFill",false));
       stats.setshowunderwear(config.getBoolean("showunderwear", true));
-      stats.setcanhear(config.getBoolean("CanHear", true));
-      stats.setlethear(config.getBoolean("LetHear", true));
+      stats.setcanhear(config.getInt("CanHear", 0));
+      stats.setlethear(config.getInt("LetHear", 0));
       if (config.contains("Caregivers")) {
         for (String uuid : config.getStringList("Caregivers")){
           stats.addCaregiver(UUID.fromString(uuid));
@@ -463,8 +463,8 @@ public class Plugin extends JavaPlugin
       stats.setUI(1);
       stats.setBedwetting(0);
       stats.setStoredSounds(soundConfig);
-      stats.setlethear(true);
-      stats.setcanhear(true);
+      stats.setlethear(0);
+      stats.setcanhear(0);
       
       // Store the default stats in the playerStatsMap
       playerStatsMap.put(playerUUID, stats);

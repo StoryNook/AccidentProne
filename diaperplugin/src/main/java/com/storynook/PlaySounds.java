@@ -20,7 +20,7 @@ public class PlaySounds {
         World world = player.getLocation().getWorld();
         Collection<Entity> nearbyEntities = world.getNearbyEntities(player.getLocation(), triggerDistance, triggerDistance, triggerDistance);
 
-        Boolean shouldBroadcast = stats.getlethear();
+        int shouldBroadcast = stats.getlethear();
         List<Player> affectedPlayers = new ArrayList<>();
 
         for (Entity entity : nearbyEntities) {
@@ -28,8 +28,11 @@ public class PlaySounds {
                 Player targetPlayer = (Player) entity;
                 PlayerStats targetstats = plugin.getPlayerStats(targetPlayer.getUniqueId());
                 if (targetPlayer != null && targetPlayer.getLocation() != null) {
-                    if (shouldBroadcast) {
-                        if (targetstats.getcanhear() || bypass) {
+                    if (shouldBroadcast == 0 || shouldBroadcast == 1) {
+                        if ((targetstats.getcanhear() == 0 && shouldBroadcast == 0)
+                         || shouldBroadcast == 0 && (targetstats.getcanhear() == 0 || (targetstats.getcanhear() == 1 && stats.isCaregiver(targetPlayer.getUniqueId(), true)))
+                         || (shouldBroadcast == 1 && stats.isCaregiver(targetPlayer.getUniqueId(), true))
+                         || bypass) {
                             affectedPlayers.add(targetPlayer);
                         }
                         else if (targetPlayer.equals(player)) {

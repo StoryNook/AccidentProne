@@ -294,7 +294,6 @@ public class Changing implements Listener{
             for (Map.Entry<UUID, UUID> entry : entriesToRemove) {
                 playsounds.remove(entry.getKey());
             }
-            // player.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
         }
     }
     private void handleInteraction(Player actor, Player target, boolean isCaregiverInteraction) {

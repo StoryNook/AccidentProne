@@ -27,7 +27,9 @@ public class PlayerStats {
     private int EffectDuration = 0;
     private int timeworn = 0;
     private int minFill = 30;
-    private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear, canhear, lethear;
+    private int canhear = 0;
+    private int lethear = 0;
+    private boolean optin, messing, hardcore, BladderLockIncon, BowelLockIncon, AllCaregiver, specialCG, visableUnderwear, fillbar, showfill, showunderwear;
     private long hardcoreEnabledTime = -1;
     private Map<String, Map<String, Boolean>> StoredSounds = new HashMap<>();
     // private List<String> blockedsounds = new ArrayList<>();
@@ -107,11 +109,11 @@ public class PlayerStats {
     }
 
     //Quick Boolean Settings
-    public boolean getlethear() {return lethear;}
-    public void setlethear(boolean bool) {lethear = bool;}
+    public int getlethear() {return lethear;}
+    public void setlethear(int number) {lethear = number;}
 
-    public boolean getcanhear() {return canhear;}
-    public void setcanhear(boolean bool) {canhear = bool;}
+    public int getcanhear() {return canhear;}
+    public void setcanhear(int number) {canhear = number;}
 
     public boolean getOptin() {return optin;}
     public void setOptin(boolean bool) {optin = bool;}
