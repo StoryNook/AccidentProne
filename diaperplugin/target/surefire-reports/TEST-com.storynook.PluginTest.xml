@@ -12,7 +12,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="US"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-17-openjdk-amd64/lib"/>
-    <property name="sun.java.command" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter4445461299944164152.jar /home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire 2025-02-22T22-47-49_294-jvmRun1 surefire1826170894661693378tmp surefire_013860860903429029260tmp"/>
+    <property name="sun.java.command" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter10699955542946670538.jar /home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire 2025-02-23T03-29-39_106-jvmRun1 surefire2214481421726960501tmp surefire_08998659519393255581tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/test-classes:/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/classes:/home/dudepher/.m2/repository/junit/junit/4.11/junit-4.11.jar:/home/dudepher/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/dudepher/.m2/repository/org/spigotmc/spigot-api/1.15.1-R0.1-SNAPSHOT/spigot-api-1.15.1-R0.1-SNAPSHOT.jar:/home/dudepher/.m2/repository/commons-lang/commons-lang/2.6/commons-lang-2.6.jar:/home/dudepher/.m2/repository/com/google/guava/guava/21.0/guava-21.0.jar:/home/dudepher/.m2/repository/com/google/code/gson/gson/2.8.0/gson-2.8.0.jar:/home/dudepher/.m2/repository/net/md-5/bungeecord-chat/1.13-SNAPSHOT/bungeecord-chat-1.13-SNAPSHOT.jar:/home/dudepher/.m2/repository/org/yaml/snakeyaml/1.25/snakeyaml-1.25.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -27,7 +27,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter4445461299944164152.jar"/>
+    <property name="surefire.real.class.path" value="/home/dudepher/MinecraftDiaperPlugin/diaperplugin/target/surefire/surefirebooter10699955542946670538.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.14+7-Ubuntu-124.04"/>
     <property name="user.name" value="dudepher"/>
