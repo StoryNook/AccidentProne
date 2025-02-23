@@ -15,7 +15,7 @@ public class PlaySounds {
     public PlaySounds(Plugin plugin) {
         this.plugin = plugin;
     }
-    public static void playsounds (Player player, String categoryName, int triggerDistance, Double maxVolume, Double minVolume){
+    public static void playsounds (Player player, String categoryName, int triggerDistance, Double maxVolume, Double minVolume, Boolean bypass){
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
         World world = player.getLocation().getWorld();
         Collection<Entity> nearbyEntities = world.getNearbyEntities(player.getLocation(), triggerDistance, triggerDistance, triggerDistance);
@@ -29,7 +29,7 @@ public class PlaySounds {
                 PlayerStats targetstats = plugin.getPlayerStats(targetPlayer.getUniqueId());
                 if (targetPlayer != null && targetPlayer.getLocation() != null) {
                     if (shouldBroadcast) {
-                        if (targetstats.getcanhear()) {
+                        if (targetstats.getcanhear() || bypass) {
                             affectedPlayers.add(targetPlayer);
                         }
                         else if (targetPlayer.equals(player)) {

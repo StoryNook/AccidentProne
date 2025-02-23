@@ -154,7 +154,7 @@ public class Toilet implements Listener{
                 // If the player is no longer a passenger of the armor stand
                 if (!armorStand.getPassengers().contains(player)) {
                     // Play the sound
-                    PlaySounds.playsounds(player, "flush", 10, 0.5, 0.05);
+                    PlaySounds.playsounds(player, "flush", 10, 0.5, 0.05, true);
                     // Remove the armor stand
                     armorStand.remove();
     

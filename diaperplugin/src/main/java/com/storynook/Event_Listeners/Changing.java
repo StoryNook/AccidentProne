@@ -240,7 +240,7 @@ public class Changing implements Listener{
 
     private void playAudio(Player player, int totype, int fromtype) {
         if ((totype == 626002 && fromtype != 0) || fromtype != 0) {
-            PlaySounds.playsounds(player, "changing", 5, 1.0, 0.2);
+            PlaySounds.playsounds(player, "changing", 5, 1.0, 0.2, true);
             // Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
     
             // // Iterate through each online player to check their distance

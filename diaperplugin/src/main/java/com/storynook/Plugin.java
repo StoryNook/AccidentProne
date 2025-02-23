@@ -569,70 +569,70 @@ public class Plugin extends JavaPlugin
       updateStats.Update();
     }, 0L, 20L * 2);  // Run every 2 second (40 ticks)
   }
-  public void calculateUrgeToGo(PlayerStats stats){
-    double bladderUrge = stats.getBladder() * stats.getBladderIncontinence();
-    double bowelUrge = stats.getBowels() * stats.getBowelIncontinence();
-    double urgeToGo = Math.max(bladderUrge, bowelUrge);
-    stats.setUrgeToGo((int)urgeToGo);
-  }
-  //Warning system, and accident triggers.
-  public void triggerWarnings(Player player, PlayerStats stats) {
-      if (stats != null) {
-        calculateUrgeToGo(stats);
-        boolean warning = UpdateStats.playerWarningsMap.getOrDefault(player.getUniqueId(), false);
-        boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
-        double random = (Math.random() * 100) + (stats.getMinFill() - ((isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence()) * (stats.getMinFill()/10)));
-        if (Math.min((int)random, 100) <= ((int)stats.getUrgeToGo()) && warning == false) {
-          handleWarning(player, stats, isBladder);
-        }
-      }
-  }
+  // public void calculateUrgeToGo(PlayerStats stats){
+  //   double bladderUrge = stats.getBladder() * stats.getBladderIncontinence();
+  //   double bowelUrge = stats.getBowels() * stats.getBowelIncontinence();
+  //   double urgeToGo = Math.max(bladderUrge, bowelUrge);
+  //   stats.setUrgeToGo((int)urgeToGo);
+  // }
+  // //Warning system, and accident triggers.
+  // public void triggerWarnings(Player player, PlayerStats stats) {
+  //     if (stats != null) {
+  //       calculateUrgeToGo(stats);
+  //       boolean warning = UpdateStats.playerWarningsMap.getOrDefault(player.getUniqueId(), false);
+  //       boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
+  //       double random = (Math.random() * 100) + (stats.getMinFill() - ((isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence()) * (stats.getMinFill()/10)));
+  //       if (Math.min((int)random, 100) <= ((int)stats.getUrgeToGo()) && warning == false) {
+  //         handleWarning(player, stats, isBladder);
+  //       }
+  //     }
+  // }
 
-  private void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
-    double fullness = isBladder ? stats.getBladder() : stats.getBowels();
-    double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-    double randomChance = (Math.random() * 10) + 1;
-    double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
+  // private void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
+  //   double fullness = isBladder ? stats.getBladder() : stats.getBowels();
+  //   double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
+  //   double randomChance = (Math.random() * 10) + 1;
+  //   double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
 
-    if (randomChance < accidentProbability) {
-      HandleAccident.handleAccident(isBladder, player, true, false);
-    } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
-      if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
-        player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
-        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
-        UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
-      }else if(stats.getUrgeToGo() > 75){
-        player.sendMessage("You can't hold it much longer!");
-        UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
-      }else{
-        player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
-        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
-        UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
-      }
-    }
-  }
+  //   if (randomChance < accidentProbability) {
+  //     HandleAccident.handleAccident(isBladder, player, true, false);
+  //   } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
+  //     if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
+  //       player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
+  //       player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+  //       UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
+  //     }else if(stats.getUrgeToGo() > 75){
+  //       player.sendMessage("You can't hold it much longer!");
+  //       UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
+  //     }else{
+  //       player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
+  //       player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+  //       UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
+  //     }
+  //   }
+  // }
 
-  public void sneakCheck(Player player, PlayerStats stats, double need, double incontinenceLevel, boolean isBladder) {
-    double randomChance = (Math.random() * 10) + 1;
-    boolean sneakFails = randomChance <= incontinenceLevel;
-    int secondsleft = UpdateStats.playerSecondsLeftMap.get(player.getUniqueId());
+  // public void sneakCheck(Player player, PlayerStats stats, double need, double incontinenceLevel, boolean isBladder) {
+  //   double randomChance = (Math.random() * 10) + 1;
+  //   boolean sneakFails = randomChance <= incontinenceLevel;
+  //   int secondsleft = UpdateStats.playerSecondsLeftMap.get(player.getUniqueId());
     
-    if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
-      if (sneakFails && player.isSneaking()) {
-        player.sendMessage("Your body has betrayed you. You couldn't hold it.");
-        HandleAccident.handleAccident(isBladder, player, true, true);
-      }
-      else {HandleAccident.handleAccident(isBladder, player, true, false);}
-      UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
-      UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
-    } else {
-      if((isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && player.isSneaking() && secondsleft <= 3){
-        player.sendMessage("Good job! You held it in.");
-        UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
-        UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
-      }
-    }
-  }
+  //   if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
+  //     if (sneakFails && player.isSneaking()) {
+  //       player.sendMessage("Your body has betrayed you. You couldn't hold it.");
+  //       HandleAccident.handleAccident(isBladder, player, true, true);
+  //     }
+  //     else {HandleAccident.handleAccident(isBladder, player, true, false);}
+  //     UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
+  //     UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
+  //   } else {
+  //     if((isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && player.isSneaking() && secondsleft <= 3){
+  //       player.sendMessage("Good job! You held it in.");
+  //       UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
+  //       UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
+  //     }
+  //   }
+  // }
 
   private String buildStatusBar(int value, char fullChar, char emptyChar, boolean isWater){
     StringBuilder statusBar = new StringBuilder();

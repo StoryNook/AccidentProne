@@ -16,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.storynook.AccidentsANDWanrings.Warnings;
+
 import net.md_5.bungee.api.ChatColor;
 
 public class UpdateStats {
@@ -201,7 +203,7 @@ public class UpdateStats {
               boolean warning = playerWarningsMap.getOrDefault(player.getUniqueId(), false);
               if (!warning && cycles > 6) {
                 secondsLeft = 0;
-                plugin.triggerWarnings(player, stats);
+                Warnings.triggerWarnings(player, stats);
               }
               else {
                 if (cycles > 7 && warning) {
@@ -212,7 +214,7 @@ public class UpdateStats {
                   boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
                   double fullness = isBladder ? stats.getBladder() : stats.getBowels();
                   double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-                  plugin.sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
+                  Warnings.sneakCheck(player, stats, fullness, incontinenceLevel, isBladder);
                 }
               }
               cycles++;
