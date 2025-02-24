@@ -72,6 +72,16 @@ public class SoundEffectsMenu implements Listener{
             ItemMeta categoryMeta = categoryItem.getItemMeta();
             if (categoryMeta != null) {
                 categoryMeta.setDisplayName("Category: " + categoryName);
+                switch (categoryName) {
+                    case "pee":
+                        categoryMeta.setCustomModelData(626005);
+                        break;
+                    case "mess":
+                        categoryMeta.setCustomModelData(626004);
+                        break;
+                    default:
+                        break;
+                }
                 categoryItem.setItemMeta(categoryMeta);
             }
             menu.setItem(currentSlot, categoryItem);
