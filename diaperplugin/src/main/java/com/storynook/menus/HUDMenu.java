@@ -79,7 +79,8 @@ public class HUDMenu implements Listener{
                 "of you bladder and bowel",
                 "rill Rates.",
                 "Meaning every 2 seconds your bladder",
-                "and bowels fill at that rate."
+                "and bowels fill at that rate.",
+                stats.getHardcore() ? ChatColor.RED + "SETTING LOCKED" : ""
             );
             toggleFillmeta.setLore(lore);
             toggleFillmeta.setDisplayName("Fill Rates Visible");
@@ -154,9 +155,14 @@ public class HUDMenu implements Listener{
             }
             else if (event.getCurrentItem().getType() == Material.WATER_BUCKET) {
                 if(stats.getOptin()){
-                    stats.setshowfill(!stats.getshowfill());
-                    player.sendMessage(stats.getshowfill() ? "You are now seeing the fill rates." : "You no longer are seeing the fill rates.");
-                    updateScoreboard(player, stats);
+                    if (!stats.getHardcore()) {
+                        stats.setshowfill(!stats.getshowfill());
+                        player.sendMessage(stats.getshowfill() ? "You are now seeing the fill rates." : "You no longer are seeing the fill rates.");
+                        updateScoreboard(player, stats);
+                    }
+                    else{
+                        player.sendMessage("You are in hardcore mode, this setting is disabled");
+                    }
                     HUDMenuUI(player, plugin);
                 }
             }

@@ -356,6 +356,7 @@ public class SettingsMenu implements Listener {
         if (newHardcoreState) {   // Enabling Hardcore
             stats.setHardcoreEnabledTime(System.currentTimeMillis() / 1000L);   // Store current time in seconds
             stats.setHardcore(true);
+            stats.setshowfill(false);
             player.sendMessage(ChatColor.RED + "You have enabled Hardcore mode! You must wait at least 20 hours before disabling it.");
         } else {   // Disabling Hardcore
             if (stats.getHardcore()) {
