@@ -100,7 +100,8 @@ public class SettingsMenu implements Listener {
                 else{BedwettingSetting = "Error";}
                 List<String> lore = Arrays.asList(
                     "Bedwetting: " + BedwettingSetting,
-                    "Limited will be random based on your bladder control."
+                    "Limited will be random based on your bladder control.",
+                    stats.getHardcore() ? ChatColor.RED + "SETTING LOCKED" : ""
                 );
                 BedwettingMeta.setLore(lore);
                 BedwettingMeta.setDisplayName("Bedwetting");
@@ -258,16 +259,21 @@ public class SettingsMenu implements Listener {
             }
             else if (event.getCurrentItem().getType() == Material.RED_BED) {
                 if(stats.getOptin()){
-                    int newBedwetting = stats.getBedwetting();
-                    newBedwetting++;
-                    if (newBedwetting > 2) {
-                        newBedwetting = 0;
+                    if (!stats.getHardcore()) {
+                        int newBedwetting = stats.getBedwetting();
+                        newBedwetting++;
+                        if (newBedwetting > 2) {
+                            newBedwetting = 0;
+                        }
+                        stats.setBedwetting(newBedwetting);
+                        if (stats.getBedwetting() == 0){player.sendMessage("Bedwetting: " + ChatColor.RED + "Disabled");}
+                        if (stats.getBedwetting() == 1){player.sendMessage("Bedwetting: " + ChatColor.YELLOW + "Limited");}
+                        if (stats.getBedwetting() == 2){player.sendMessage("Bedwetting: " + ChatColor.GREEN + "always");}
+                        plugin.savePlayerStats(player); // Save the updated stats
                     }
-                    stats.setBedwetting(newBedwetting);
-                    if (stats.getBedwetting() == 0){player.sendMessage("Bedwetting: " + ChatColor.RED + "Disabled");}
-                    if (stats.getBedwetting() == 1){player.sendMessage("Bedwetting: " + ChatColor.YELLOW + "Limited");}
-                    if (stats.getBedwetting() == 2){player.sendMessage("Bedwetting: " + ChatColor.GREEN + "always");}
-                    plugin.savePlayerStats(player); // Save the updated stats
+                    else{
+                        player.sendMessage("You are in " + ChatColor.RED + "Hardcore Mode" + ChatColor.WHITE + " setting is locked.");
+                    }
                 } 
                 OpenSettings(player, plugin);
             }
@@ -307,7 +313,6 @@ public class SettingsMenu implements Listener {
                 stats.setvisableUnderwear(!stats.getvisableUnderwear());
                 player.sendMessage(stats.getvisableUnderwear() ? "Undies are now visible using Optifine." : "Undies are now hidden.");
                 OpenSettings(player, plugin);
-                // PantsCrafting.equipDiaperArmor(player, false, false);
                 PantsCrafting.equipDiaperArmor(player, false, false);
             }
             else if (meta.hasCustomModelData() && meta.getCustomModelData() == 000000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
