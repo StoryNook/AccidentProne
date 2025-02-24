@@ -444,8 +444,16 @@ public class PlayerEventListener implements Listener {
                     Bukkit.getScheduler().runTask(plugin, () ->  IncontinenceMenu.IncontinenceSettings(player, plugin));
                 }
             } catch (NumberFormatException e) {
+                plugin.clearAwaitingInput(playerUUID);
                 player.sendMessage(ChatColor.RED + "Invalid number. Please enter a valid number.");
-                Bukkit.getScheduler().runTask(plugin, () -> SettingsMenu.OpenSettings(player, plugin));
+                if ("minFill".equals(inputType)) {
+                    Bukkit.getScheduler().runTask(plugin, () -> SettingsMenu.OpenSettings(player, plugin));
+                } else {
+                    Bukkit.getScheduler().runTask(plugin, () -> IncontinenceMenu.IncontinenceSettings(player, plugin));
+                }
+            } finally {
+                // Ensure the input state is always cleared
+                plugin.clearAwaitingInput(playerUUID);
             }
         }
     }
