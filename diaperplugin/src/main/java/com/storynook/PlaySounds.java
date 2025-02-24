@@ -2,18 +2,37 @@ package com.storynook;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class PlaySounds {
+    // public static Map<UUID, UUID> playsounds = new HashMap<>();
+    // public Map<UUID, String> SoundPlayed = new HashMap<>();
     private static Plugin plugin;
     public PlaySounds(Plugin plugin) {
         this.plugin = plugin;
+    }
+
+    private static List<SoundPlayback> activeSounds = new ArrayList<>();
+
+    public static class SoundPlayback {
+        UUID targetUuid;
+        UUID triggerUuid;
+        String soundName;
+
+        SoundPlayback(UUID target, UUID trigger, String sound) {
+            this.targetUuid = target;
+            this.triggerUuid = trigger;
+            this.soundName = sound;
+        }
     }
     public static void playsounds (Player player, String categoryName, int triggerDistance, Double maxVolume, Double minVolume, Boolean bypass){
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
@@ -50,6 +69,7 @@ public class PlaySounds {
         for (Player target : affectedPlayers) {
             // Skip checking if target is the main player
             String soundName = stats.getRandomSoundFromCategory(categoryName);
+            activeSounds.add(new SoundPlayback(target.getUniqueId(), player.getUniqueId(), soundName));
             if (target.getUniqueId().equals(player.getUniqueId())) {
                 // Play sound for main player without additional checks
                 target.playSound(target.getLocation(), 
@@ -81,6 +101,28 @@ public class PlaySounds {
                                 "minecraft:" + soundName, 
                                 SoundCategory.PLAYERS, 
                                 volume, 1.0f);
+            }
+        }
+    }
+    public static void stopSounds(Player triggerPlayer) {
+        List<SoundPlayback> toStop = new ArrayList<>();
+
+        for (SoundPlayback playback : activeSounds) {
+            if (playback.triggerUuid.equals(triggerPlayer.getUniqueId())) {
+                // Check if target is out of bounds or other conditions
+                // Player target = Bukkit.getPlayer(playback.targetUuid);
+                // if (target != null && triggerPlayer.getLocation().distance(target.getLocation()) > 0 /* define your condition here */) {
+                    toStop.add(playback);
+                // }
+            }
+        }
+
+        for (SoundPlayback playback : toStop) {
+            activeSounds.remove(playback);
+
+            Player target = Bukkit.getPlayer(playback.targetUuid);
+            if (target != null) {
+                target.stopSound("minecraft:"+playback.soundName, SoundCategory.PLAYERS);
             }
         }
     }

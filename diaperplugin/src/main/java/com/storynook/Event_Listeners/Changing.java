@@ -36,7 +36,7 @@ public class Changing implements Listener{
     private Set<UUID> cooldown = new HashSet<>();
     static HashMap<UUID, Boolean> Justchanged = new HashMap<>();
     HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
-    Map<UUID, UUID> playsounds = new HashMap<>();
+    // Map<UUID, UUID> playsounds = new HashMap<>();
     
     private final Plugin plugin;
     public Changing(Plugin plugin) {
@@ -273,27 +273,28 @@ public class Changing implements Listener{
 
     private void stopAudio(Player player, int totype, int fromtype) {
         if ((totype == 626002 && fromtype != 0) || fromtype !=0) {
-            List<Map.Entry<UUID, UUID>> entriesToRemove = new ArrayList<>();
-            // Iterate through each online player to check their distance
-            for (Map.Entry<UUID, UUID> entry : playsounds.entrySet()) {
-                UUID targetUuid = entry.getKey();
-                UUID triggerUuid = entry.getValue();
+            PlaySounds.stopSounds(player);
+            // List<Map.Entry<UUID, UUID>> entriesToRemove = new ArrayList<>();
+            // // Iterate through each online player to check their distance
+            // for (Map.Entry<UUID, UUID> entry : PlaySounds.playsounds.entrySet()) {
+            //     UUID targetUuid = entry.getKey();
+            //     UUID triggerUuid = entry.getValue();
                 
-                // Check if the trigger player's UUID matches the current event
-                if (triggerUuid.equals(player.getUniqueId())) {  // Assuming 'player' is the trigger player
-                    Player targetPlayer = Bukkit.getPlayer(targetUuid);
+            //     // Check if the trigger player's UUID matches the current event
+            //     if (triggerUuid.equals(player.getUniqueId())) {  // Assuming 'player' is the trigger player
+            //         Player targetPlayer = Bukkit.getPlayer(targetUuid);
                     
-                    if (targetPlayer != null) {   // Ensure the player is still online
-                        targetPlayer.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
+            //         if (targetPlayer != null) {   // Ensure the player is still online
+            //             targetPlayer.stopSound("minecraft:diaperchange", SoundCategory.PLAYERS);
                         
-                        // Mark this entry for removal
-                        entriesToRemove.add(entry);
-                    }
-                }
-            }
-            for (Map.Entry<UUID, UUID> entry : entriesToRemove) {
-                playsounds.remove(entry.getKey());
-            }
+            //             // Mark this entry for removal
+            //             entriesToRemove.add(entry);
+            //         }
+            //     }
+            // }
+            // for (Map.Entry<UUID, UUID> entry : entriesToRemove) {
+            //     PlaySounds.playsounds.remove(entry.getKey());
+            // }
         }
     }
     private void handleInteraction(Player actor, Player target, boolean isCaregiverInteraction) {

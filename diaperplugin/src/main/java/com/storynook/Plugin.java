@@ -184,7 +184,7 @@ public class Plugin extends JavaPlugin
                 }
             }
         } else {
-            // If file exists, merge new values without overwriting existing ones
+            // If file exists, merge new values, overwriting existing ones
             YamlConfiguration existingConfig = YamlConfiguration.loadConfiguration(dataFile);
 
             InputStream resourceStream = this.getClass().getClassLoader()
@@ -209,11 +209,9 @@ public class Plugin extends JavaPlugin
                 YamlConfiguration newConfig = YamlConfiguration.loadConfiguration(tempFile);
 
                 // Merge new configuration into existing one
-                // This will add missing entries but keep existing values
+                // This will overwrite existing entries with the new values
                 for (String key : newConfig.getKeys(true)) {
-                    if (!existingConfig.contains(key)) {
-                        existingConfig.set(key, newConfig.get(key));
-                    }
+                    existingConfig.set(key, newConfig.get(key));
                 }
 
                 // Save merged configuration back to file
@@ -227,10 +225,85 @@ public class Plugin extends JavaPlugin
             }
         }
     } catch (IOException e) {
-        getLogger().severe("Error handling " + fileName + ": " + e.getMessage());
+        getLogger().severe("Error handling " + fileName + ": " + e.getLocalizedMessage());
         e.printStackTrace();
     }
   }
+
+  // private void mergeConfigFiles(String fileName) {
+  //   File dataFile = new File(getDataFolder(), fileName);
+
+  //   try {
+  //       if (!dataFile.exists()) {
+  //           // Create file from resources
+  //           InputStream resourceStream = this.getClass().getClassLoader()
+  //                   .getResourceAsStream(fileName);
+
+  //           if (resourceStream == null) {
+  //               getLogger().severe("Could not find " + fileName + " in resources!");
+  //               return;
+  //           }
+
+  //           try (OutputStream fileOutputStream = new FileOutputStream(dataFile)) {
+  //               byte[] buffer = new byte[1024];
+  //               int bytesRead;
+  //               while ((bytesRead = resourceStream.read(buffer)) != -1) {
+  //                   fileOutputStream.write(buffer, 0, bytesRead);
+  //               }
+  //               getLogger().info("Created " + fileName);
+  //           } finally {
+  //               if (resourceStream != null) {
+  //                   resourceStream.close();
+  //               }
+  //           }
+  //       } else {
+  //           // If file exists, merge new values without overwriting existing ones
+  //           YamlConfiguration existingConfig = YamlConfiguration.loadConfiguration(dataFile);
+
+  //           InputStream resourceStream = this.getClass().getClassLoader()
+  //                   .getResourceAsStream(fileName);
+
+  //           if (resourceStream == null) {
+  //               getLogger().severe("Could not find " + fileName + " in resources!");
+  //               return;
+  //           }
+
+  //           try {
+  //               // Read the resource stream into a temporary file
+  //               File tempFile = new File(getDataFolder(), "temp_" + fileName);
+  //               try (OutputStream tempOutputStream = new FileOutputStream(tempFile)) {
+  //                   byte[] buffer = new byte[1024];
+  //                   int bytesRead;
+  //                   while ((bytesRead = resourceStream.read(buffer)) != -1) {
+  //                       tempOutputStream.write(buffer, 0, bytesRead);
+  //                   }
+  //               }
+
+  //               YamlConfiguration newConfig = YamlConfiguration.loadConfiguration(tempFile);
+
+  //               // Merge new configuration into existing one
+  //               // This will add missing entries but keep existing values
+  //               for (String key : newConfig.getKeys(true)) {
+  //                   if (!existingConfig.contains(key)) {
+  //                       existingConfig.set(key, newConfig.get(key));
+  //                   }
+  //               }
+
+  //               // Save merged configuration back to file
+  //               existingConfig.save(dataFile);
+  //               getLogger().info("Updated " + fileName);
+
+  //               // Clean up temporary file
+  //               tempFile.delete();
+  //           } finally {
+  //               resourceStream.close();
+  //           }
+  //       }
+  //   } catch (IOException e) {
+  //       getLogger().severe("Error handling " + fileName + ": " + e.getMessage());
+  //       e.printStackTrace();
+  //   }
+  // }
 
   @Override
   public void onDisable()

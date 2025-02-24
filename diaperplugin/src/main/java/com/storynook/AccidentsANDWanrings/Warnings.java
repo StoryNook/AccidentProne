@@ -2,7 +2,7 @@ package com.storynook.AccidentsANDWanrings;
 
 import org.bukkit.entity.Player;
 import com.storynook.Plugin;
-
+import com.storynook.PlaySounds;
 import com.storynook.PlayerStats;
 import com.storynook.UpdateStats;
 
@@ -35,12 +35,16 @@ public class Warnings {
   private static void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
     double fullness = isBladder ? stats.getBladder() : stats.getBowels();
     double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-    double randomChance = (Math.random() * 10) + 1;
-    double accidentProbability = Math.min(0.0, (incontinenceLevel * (fullness/10)));
+    double randomChance = (Math.random() * 10) + 3;
+    double accidentProbability = incontinenceLevel < 3 ? 
+    0.0 : Math.min(13.0, ((incontinenceLevel - 3.0) / 7.0) * 100.0);
 
     if (randomChance < accidentProbability) {
       HandleAccident.handleAccident(isBladder, player, true, false);
     } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
+      if (!isBladder) {
+        PlaySounds.playsounds(player,"tummyrumble", 5,1.0,0.2, false);
+      }
       if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
         player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
         player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");

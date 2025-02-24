@@ -1,12 +1,18 @@
-flush:  
-  - toilet
-mess:
-  - mess1
 pee:
-  - pee1
-crinkle:
-  - crinklewalk1
-  - crinklewalk2
+- pee1
+mess:
+- mess1
+- mess2
+- mess4
+- mess5
+- mess6
+tummyrumble:
+- tummy2
+- tummy3
+- tummy4
+- tummygroan7
+- tummygroan9
+flush:
+- toilet
 changing:
-  - diaperchange
-  - diaperchange2
+- diaperchange
