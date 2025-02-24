@@ -186,7 +186,7 @@ public class PlayerStats {
 
     public double getBowelIncontinence() { return bowelIncontinence; }
     public void increaseBowelIncontinence(double amount) { bowelIncontinence = Math.min(bowelIncontinence + amount, 10); }
-    public void decreaseBowelIncontinence(double amount) { bowelIncontinence = Math.max(bladderIncontinence - amount, 1); }
+    public void decreaseBowelIncontinence(double amount) { bowelIncontinence = Math.max(bowelIncontinence - amount, 1); }
     public void setBowelIncontinence(double amount) { bowelIncontinence = Math.max(1, Math.min(10, amount)); }
 
     public int getEffectDuration() { return EffectDuration; }
