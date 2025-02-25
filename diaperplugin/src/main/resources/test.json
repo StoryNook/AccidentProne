@@ -3,182 +3,182 @@
         {
          "type": "bitmap",
          "file": "minecraft:custom/clean.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE000"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE001"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE002"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE003"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE004"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet1mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE005"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet1mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE006"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet1mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE007"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE008"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet2mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE009"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet2mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00a"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet2mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00b"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00c"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet3mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00d"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet3mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00e"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet3mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE00f"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet4.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE010"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet4mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE011"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet4mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE012"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet4mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE013"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet5.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE014"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet5mess1.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE015"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet5mess2.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE016"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/wet5mess3.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE017"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/undies_clean.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE018"]
 		 },
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/undies_mess.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE019"]
 		 },
@@ -192,7 +192,7 @@
 	  {
          "type": "bitmap",
          "file": "minecraft:custom/undies_wetmess.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE01b"]
 		 },
@@ -402,7 +402,7 @@
 	{
          "type": "bitmap",
          "file": "minecraft:custom/undies_wet.png",
-		 "ascent": 10,
+		 "ascent": 70,
          "height": 90,
          "chars": ["\uE041"]
 		 },
@@ -451,28 +451,42 @@
 	{
             "type": "bitmap",
             "file": "minecraft:custom/poopicon.png",
-            "ascent": 5,
+            "ascent": 3,
             "height": 9,
             "chars": ["\uE048"]
         },
         {
             "type": "bitmap",
             "file": "minecraft:custom/poop_empty.png",
-            "ascent": 5,
+            "ascent": 3,
             "height": 9,
             "chars": ["\uE049"]
         },
-{
+	{
+            "type": "bitmap",
+            "file": "minecraft:custom/poopicon.png",
+            "ascent": 9,
+            "height": 9,
+            "chars": ["\uE052"]
+        },
+        {
+            "type": "bitmap",
+            "file": "minecraft:custom/poop_empty.png",
+            "ascent": 9,
+            "height": 9,
+            "chars": ["\uE053"]
+        },
+	{
             "type": "bitmap",
             "file": "minecraft:custom/peeicon_small.png",
-            "ascent": 5,
+            "ascent": 9,
             "height": 11,
             "chars": ["\uE050"]
         },
         {
             "type": "bitmap",
             "file": "minecraft:custom/bladder_empty_small.png",
-            "ascent": 5,
+            "ascent": 7,
             "height": 11,
             "chars": ["\uE051"]
         },

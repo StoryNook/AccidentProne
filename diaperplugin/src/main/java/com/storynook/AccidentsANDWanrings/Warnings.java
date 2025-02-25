@@ -90,7 +90,7 @@ public class Warnings {
     
     if ((!player.isSneaking() || sneakFails) && (isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && secondsleft > 3) { 
       if (sneakFails && player.isSneaking()) {
-        player.sendMessage("Your body has betrayed you. You couldn't hold it.");
+        player.sendMessage(ChatColor.RED + "Your body has betrayed you. You couldn't hold it.");
         HandleAccident.handleAccident(isBladder, player, true, true);
       }
       else {HandleAccident.handleAccident(isBladder, player, true, false);}
@@ -98,7 +98,7 @@ public class Warnings {
       UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
     } else {
       if((isBladder ? stats.getBladder() > 10 : stats.getBowels() > 10) && player.isSneaking() && secondsleft <= 3){
-        player.sendMessage("Good job! You held it in.");
+        player.sendMessage(ChatColor.GREEN + "Good job! You held it in.");
         UpdateStats.playerSecondsLeftMap.put(player.getUniqueId(), 0);
         UpdateStats.playerWarningsMap.put(player.getUniqueId(), false);
       }
