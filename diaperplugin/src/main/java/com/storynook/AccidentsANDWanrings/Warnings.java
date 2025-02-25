@@ -40,18 +40,28 @@ public class Warnings {
     double minFullnessForAccident = 100 - (8 * (incontinenceLevel - 1));
     if (minFullnessForAccident < fullness) {
       double accidentProbability;
-      switch ((int) incontinenceLevel) {
-          case 1: accidentProbability = 0.10; break; // 10%
-          case 2: accidentProbability = 0.15; break; // 15%
-          case 3: accidentProbability = 0.20; break; // 20%
-          case 4: accidentProbability = 0.25; break; // 25%
-          case 5: accidentProbability = 0.40; break; // 40%
-          case 6: accidentProbability = 0.50; break; // 50%
-          case 7: accidentProbability = 0.60; break; // 60%
-          case 8: accidentProbability = 0.70; break; // 70%
-          case 9: accidentProbability = 0.80; break; // 80%
-          case 10: accidentProbability = 0.95; break; // 95%
-          default: accidentProbability = 0.0; break;
+      if (incontinenceLevel >= 10.0) {
+        accidentProbability = 0.95;
+      } else if (incontinenceLevel >= 9.0) {
+          accidentProbability = 0.80;
+      } else if (incontinenceLevel >= 8.0) {
+          accidentProbability = 0.70;
+      } else if (incontinenceLevel >= 7.0) {
+          accidentProbability = 0.60;
+      } else if (incontinenceLevel >= 6.0) {
+          accidentProbability = 0.50;
+      } else if (incontinenceLevel >= 5.0) {
+          accidentProbability = 0.40;
+      } else if (incontinenceLevel >= 4.0) {
+          accidentProbability = 0.25;
+      } else if (incontinenceLevel >= 3.0) {
+          accidentProbability = 0.20;
+      } else if (incontinenceLevel >= 2.0) {
+          accidentProbability = 0.15;
+      } else if (incontinenceLevel >= 1.0) {
+          accidentProbability = 0.10;
+      } else {
+          accidentProbability = 0.0;
       }
 
       accidentProbability *= fullness / 100;
