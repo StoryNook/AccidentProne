@@ -10,6 +10,8 @@ import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.Event_Listeners.PantsCrafting;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class HandleAccident {
     private static Plugin plugin;
         public HandleAccident(Plugin plugin) {
@@ -54,20 +56,20 @@ public class HandleAccident {
         }
         if (!MessageSent) {
             if (isBladder ? stats.getBladderIncontinence() == 10 && !stats.getBladderLockIncon() : stats.getBowelIncontinence() == 10 && !stats.getBowelLockIncon()) {
-                player.sendMessage("Oh no! Someone has no control!");
+                player.sendMessage(ChatColor.RED + "Oh no! Someone has no control!");
             }
             else if (isBladder ? stats.getBladderIncontinence() > 7 : stats.getBowelIncontinence() > 7) {
                 if (isBladder ? stats.getBladderLockIncon() : stats.getBowelLockIncon()) {
                     player.sendMessage("Some one likes using their pants, huh?");
                 }
                 else{
-                    player.sendMessage("Seems like someone is losing control");
+                    player.sendMessage(ChatColor.RED + "Seems like someone is losing control");
                 }
             }
             else if (isBladder ? stats.getBladderIncontinence() > 3 : stats.getBowelIncontinence() > 3) {
-                player.sendMessage("You should try to make it to the potty next time.");
+                player.sendMessage(ChatColor.RED + "You should try to make it to the potty next time.");
             }else {
-                player.sendMessage("Oh no! You had an accident...");
+                player.sendMessage(ChatColor.RED + "Oh no! You had an accident...");
             }
         }
         

@@ -6,6 +6,8 @@ import com.storynook.PlaySounds;
 import com.storynook.PlayerStats;
 import com.storynook.UpdateStats;
 
+import net.md_5.bungee.api.ChatColor;
+
 
 public class Warnings {
   private static Plugin plugin;
@@ -35,26 +37,47 @@ public class Warnings {
   private static void handleWarning(Player player, PlayerStats stats, boolean isBladder) {
     double fullness = isBladder ? stats.getBladder() : stats.getBowels();
     double incontinenceLevel = isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence();
-    double randomChance = (Math.random() * 10) + 3;
-    double accidentProbability = incontinenceLevel < 3 ? 
-    0.0 : Math.min(13.0, ((incontinenceLevel - 3.0) / 7.0) * 100.0);
+    double minFullnessForAccident = 100 - (8 * (incontinenceLevel - 1));
+    if (minFullnessForAccident < fullness) {
+      double accidentProbability;
+      switch ((int) incontinenceLevel) {
+          case 1: accidentProbability = 0.10; break; // 10%
+          case 2: accidentProbability = 0.15; break; // 15%
+          case 3: accidentProbability = 0.20; break; // 20%
+          case 4: accidentProbability = 0.25; break; // 25%
+          case 5: accidentProbability = 0.40; break; // 40%
+          case 6: accidentProbability = 0.50; break; // 50%
+          case 7: accidentProbability = 0.60; break; // 60%
+          case 8: accidentProbability = 0.70; break; // 70%
+          case 9: accidentProbability = 0.80; break; // 80%
+          case 10: accidentProbability = 0.95; break; // 95%
+          default: accidentProbability = 0.0; break;
+      }
 
-    if (randomChance < accidentProbability) {
-      HandleAccident.handleAccident(isBladder, player, true, false);
-    } else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
+      accidentProbability *= fullness / 100;
+      accidentProbability = Math.min(accidentProbability, 1.0);
+      double random = Math.random();
+
+      if (random < accidentProbability) {
+        player.sendMessage(ChatColor.RED +"You couldn't hold it anymore.");
+        HandleAccident.handleAccident(isBladder, player, true, true);
+        return;
+      } 
+    }
+    if ((fullness/10) >= ((Math.random() * 8) + 1)) {
       if (!isBladder) {
         PlaySounds.playsounds(player,"tummyrumble", 5,1.0,0.2, false);
       }
       if(stats.getUrgeToGo() > 50 && stats.getUrgeToGo() < 75){
-        player.sendMessage(isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!");
-        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+        player.sendMessage(ChatColor.GOLD + (isBladder ? "You REALLY need to pee!" : "You REALLY need to Poop!"));
+        player.sendMessage(ChatColor.GOLD + "Hold sneak to hold it in! You only have 5 seconds!");
         UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
       }else if(stats.getUrgeToGo() > 75){
-        player.sendMessage("You can't hold it much longer!");
+        player.sendMessage(ChatColor.RED + "You can't hold it much longer!");
         UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
       }else{
-        player.sendMessage(isBladder ? "You need to pee!" : "You need to Poop!");
-        player.sendMessage("Hold sneak to hold it in! You only have 5 seconds!");
+        player.sendMessage(ChatColor.GOLD + (isBladder ? "You need to pee!" : "You need to Poop!"));
+        player.sendMessage(ChatColor.GOLD + "Hold sneak to hold it in! You only have 5 seconds!");
         UpdateStats.playerWarningsMap.put(player.getUniqueId(), true);
       }
     }
