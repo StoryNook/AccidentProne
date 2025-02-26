@@ -57,6 +57,9 @@ public class Changing implements Listener{
                                 if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
                                     return;
                                 }
+                                if (!CustomItems.VailidUnderwear(item)) {
+                                    return;
+                                }
                                 rightclicktimes++;
                                 if (rightclicktimes > 1) {
                                     // rightclicktimes = 1;

@@ -96,7 +96,7 @@ public class SoundEffectsMenu implements Listener{
                 ItemMeta soundMeta = soundItem.getItemMeta();
                 if (soundMeta != null) {
                     soundMeta.setDisplayName(soundName);
-                    soundMeta.setCustomModelData((isEnabled ? 000000:000001));
+                    soundMeta.setCustomModelData((isEnabled ? 625000:625001));
                     List<String> lore = new ArrayList<>();
                     lore.add("Enabled: " + (isEnabled ? ChatColor.GREEN + "True" : ChatColor.RED + "False"));
                     lore.add(ChatColor.AQUA + "Left Click to Preview");
@@ -129,15 +129,16 @@ public class SoundEffectsMenu implements Listener{
         ItemMeta AllowOtherListenmeta = AllowOtherListen.getItemMeta();
         if (AllowOtherListenmeta != null) {
             String lethearString = "";
-            if (stats.getlethear() == 0) {lethearString = ChatColor.GREEN + "Yes";}
-                else if (stats.getlethear() == 1) {lethearString = ChatColor.YELLOW + "Only My Caregivers";}
-                else if(stats.getlethear() == 2){lethearString = ChatColor.RED + "No";}
+            int image = 0;
+            if (stats.getlethear() == 0) {lethearString = ChatColor.GREEN + "Yes"; image = 625002;}
+                else if (stats.getlethear() == 1) {lethearString = ChatColor.YELLOW + "Only My Caregivers"; image = 626002;}
+                else if(stats.getlethear() == 2){lethearString = ChatColor.RED + "No"; image = 625003;}
             List<String> lore = Arrays.asList(
                 "Other Players can hear my sounds: " + lethearString,
                 "When a sound effect players for me,",
                 "Other nearby by players can hear it."
             );
-            AllowOtherListenmeta.setCustomModelData(000002);
+            AllowOtherListenmeta.setCustomModelData(image);
             AllowOtherListenmeta.setLore(lore);
             AllowOtherListenmeta.setDisplayName("Allow Others To Hear");
             AllowOtherListen.setItemMeta(AllowOtherListenmeta);   
@@ -147,15 +148,16 @@ public class SoundEffectsMenu implements Listener{
         ItemMeta CanHearOthersmeta = CanHearOthers.getItemMeta();
         if (CanHearOthersmeta != null) {
             String canhearString = "";
-            if (stats.getcanhear() == 0) {canhearString = ChatColor.GREEN + "Yes";}
-                else if (stats.getcanhear() == 1) {canhearString = ChatColor.YELLOW + "Only My Caregivers";}
-                else if(stats.getcanhear() == 2){canhearString = ChatColor.RED + "No";}
+            int image = 0;
+            if (stats.getcanhear() == 0) {canhearString = ChatColor.GREEN + "Yes"; image = 625004;}
+                else if (stats.getcanhear() == 1) {canhearString = ChatColor.YELLOW + "Only My Caregivers"; image = 626002;}
+                else if(stats.getcanhear() == 2){canhearString = ChatColor.RED + "No"; image = 625005;}
             List<String> lore = Arrays.asList(
                 "I can hear other player's sounds: " + canhearString,
                 "When a player has an accident or other custom sounds,",
                 "I can hear it."
             );
-            CanHearOthersmeta.setCustomModelData(000003);
+            CanHearOthersmeta.setCustomModelData(image);
             CanHearOthersmeta.setLore(lore);
             CanHearOthersmeta.setDisplayName("Can hear others");
             CanHearOthers.setItemMeta(CanHearOthersmeta);
@@ -200,8 +202,28 @@ public class SoundEffectsMenu implements Listener{
             } else if (event.getCurrentItem().getType() == Material.BARRIER) {
                 SettingsMenu.OpenSettings(player, plugin);
             }
+            else if(event.getCurrentItem().getType() == Material.SLIME_BALL && meta.getDisplayName().contains("Allow Others To Hear")){
+                int newLetHear = stats.getlethear();
+                newLetHear++;
+                if (newLetHear > 2) {
+                    newLetHear = 0;
+                }
+                stats.setlethear(newLetHear);
+                SoundEffects(player, plugin, currentPage.getOrDefault(playerUUID, 0));
+                return;
+            }
+            else if(event.getCurrentItem().getType() == Material.SLIME_BALL && meta.getDisplayName().contains("Can hear others")){
+                int newCanHear = stats.getcanhear();
+                newCanHear++;
+                if (newCanHear > 2) {
+                    newCanHear = 0;
+                }
+                stats.setcanhear(newCanHear);
+                SoundEffects(player, plugin, currentPage.getOrDefault(playerUUID, 0));
+                return;
+            }
             else if (event.getAction() == InventoryAction.PICKUP_HALF && event.getCurrentItem().getType() == Material.SLIME_BALL && 
-            meta.hasCustomModelData() && (meta.getCustomModelData() == 000000 || meta.getCustomModelData() == 000001)) {
+            meta.hasCustomModelData() && (meta.getCustomModelData() == 625000 || meta.getCustomModelData() == 625001)) {
                 if (meta != null && meta.getDisplayName() != null) {
                     String displayName = meta.getDisplayName();
                     // Skip category headers
@@ -229,7 +251,7 @@ public class SoundEffectsMenu implements Listener{
                 }
             }
             else if (event.getAction() == InventoryAction.PICKUP_ALL && event.getCurrentItem().getType() == Material.SLIME_BALL&& 
-            meta.hasCustomModelData() && (meta.getCustomModelData() == 000000 || meta.getCustomModelData() == 000001)){
+            meta.hasCustomModelData() && (meta.getCustomModelData() == 625000 || meta.getCustomModelData() == 625001)){
                 if (meta != null && meta.getDisplayName() != null) {
                     String displayName = meta.getDisplayName();
                     // Skip category headers
@@ -239,26 +261,6 @@ public class SoundEffectsMenu implements Listener{
                     String soundName = displayName;
                     PlaySound(player, soundName);
                 }
-            }
-            else if(event.getCurrentItem().getType() == Material.SLIME_BALL&& 
-            meta.hasCustomModelData() && meta.getCustomModelData() == 000002){
-                int newLetHear = stats.getlethear();
-                newLetHear++;
-                if (newLetHear > 2) {
-                    newLetHear = 0;
-                }
-                stats.setlethear(newLetHear);
-                SoundEffects(player, plugin, currentPage.getOrDefault(playerUUID, 0));
-            }
-            else if(event.getCurrentItem().getType() == Material.SLIME_BALL&& 
-            meta.hasCustomModelData() && meta.getCustomModelData() == 000003){
-                int newCanHear = stats.getcanhear();
-                newCanHear++;
-                if (newCanHear > 2) {
-                    newCanHear = 0;
-                }
-                stats.setcanhear(newCanHear);
-                SoundEffects(player, plugin, currentPage.getOrDefault(playerUUID, 0));
             }
         }
     }

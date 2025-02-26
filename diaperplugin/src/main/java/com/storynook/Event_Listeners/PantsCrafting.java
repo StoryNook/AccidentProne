@@ -33,99 +33,99 @@ import org.bukkit.Color;
 
 public class PantsCrafting implements Listener{
     private static Plugin plugin;
-        public PantsCrafting(Plugin plugin){this.plugin = plugin;}
+    public PantsCrafting(Plugin plugin){this.plugin = plugin;}
         
-        public static class CraftingListener implements Listener {
-    
-            @EventHandler
-            public void onPrepareCraft(PrepareItemCraftEvent event) {
-                if (event.getRecipe() == null || event.getInventory() == null) return;
-    
-                ItemStack result = event.getRecipe().getResult();
-                if (result.getType() != Material.LEATHER_LEGGINGS) return;
-    
-                ItemStack[] matrix = event.getInventory().getMatrix();
-                Material woolColor = null;
-    
-                // Check wool colors in the grid
-                for (ItemStack item : matrix) {
-                    if (item != null && item.getType().toString().endsWith("_WOOL")) {
-                        if (woolColor == null) {
-                            woolColor = item.getType(); // Set initial color
-                        } else if (!woolColor.equals(item.getType())) {
-                            event.getInventory().setResult(new ItemStack(Material.AIR)); // Mismatched colors cancel craft
-                            return;
-                        }
-                    }
-                }
-    
-                if (woolColor != null) {
-    
-                    Color color = getColorFromWool(woolColor);
-                    if (color == null) {
-                        // Cancel crafting if color mapping fails
-                        event.getInventory().setResult(new ItemStack(Material.AIR));
+    public static class CraftingListener implements Listener {
+
+        @EventHandler
+        public void onPrepareCraft(PrepareItemCraftEvent event) {
+            if (event.getRecipe() == null || event.getInventory() == null) return;
+
+            ItemStack result = event.getRecipe().getResult();
+            if (result.getType() != Material.LEATHER_LEGGINGS) return;
+
+            ItemStack[] matrix = event.getInventory().getMatrix();
+            Material woolColor = null;
+
+            // Check wool colors in the grid
+            for (ItemStack item : matrix) {
+                if (item != null && item.getType().toString().endsWith("_WOOL")) {
+                    if (woolColor == null) {
+                        woolColor = item.getType(); // Set initial color
+                    } else if (!woolColor.equals(item.getType())) {
+                        event.getInventory().setResult(new ItemStack(Material.AIR)); // Mismatched colors cancel craft
                         return;
                     }
-                    // Create leggings matching the wool color
-                    ItemStack coloredLeggings = new ItemStack(Material.LEATHER_LEGGINGS);
-                    LeatherArmorMeta meta = (LeatherArmorMeta) coloredLeggings.getItemMeta();
-                    meta.setDisplayName("Pants");
-                    meta.setCustomModelData(626015);
-                    meta.setUnbreakable(true);
-                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES);
-                    meta.setColor(color);
-                    coloredLeggings.setItemMeta(meta);
-                    event.getInventory().setResult(coloredLeggings);
-                }
-                else {
-                    event.getInventory().setResult(new ItemStack(Material.AIR)); // Ensure no item is crafted if no wool is found
                 }
             }
-            @EventHandler
-            public void onPrepareEnchant(PrepareItemEnchantEvent event) {
-                ItemStack item = event.getItem();
-                if (CustomItems.isCustomPants(item)) {
-                    event.setCancelled(true);
+
+            if (woolColor != null) {
+
+                Color color = getColorFromWool(woolColor);
+                if (color == null) {
+                    // Cancel crafting if color mapping fails
+                    event.getInventory().setResult(new ItemStack(Material.AIR));
+                    return;
                 }
+                // Create leggings matching the wool color
+                ItemStack coloredLeggings = new ItemStack(Material.LEATHER_LEGGINGS);
+                LeatherArmorMeta meta = (LeatherArmorMeta) coloredLeggings.getItemMeta();
+                meta.setDisplayName("Pants");
+                meta.setCustomModelData(626015);
+                meta.setUnbreakable(true);
+                meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES);
+                meta.setColor(color);
+                coloredLeggings.setItemMeta(meta);
+                event.getInventory().setResult(coloredLeggings);
             }
-    
-            @EventHandler
-            public void onPrepareAnvil(PrepareAnvilEvent event) {
-                ItemStack firstItem = event.getInventory().getItem(0);
-                ItemStack secondItem = event.getInventory().getItem(1);
-    
-                if ((firstItem != null && CustomItems.isCustomPants(firstItem)) || 
-                    (secondItem != null && CustomItems.isCustomPants(secondItem))) {
-                    event.setResult(null); // Block the result output
-                }
+            else {
+                event.getInventory().setResult(new ItemStack(Material.AIR)); // Ensure no item is crafted if no wool is found
             }
         }
-        private static Color getColorFromWool(Material wool) {
-            switch (wool) {
-                case WHITE_WOOL: return Color.WHITE;
-                case LIGHT_GRAY_WOOL: return Color.fromRGB(211, 211, 211);
-                case GRAY_WOOL: return Color.GRAY; 
-                case BLACK_WOOL: return Color.BLACK;
-                case RED_WOOL: return Color.RED;
-                case ORANGE_WOOL: return Color.ORANGE;
-                case YELLOW_WOOL: return Color.YELLOW;
-                case LIME_WOOL: return Color.LIME;
-                case GREEN_WOOL: return Color.GREEN;
-                case LIGHT_BLUE_WOOL : return Color.fromRGB(173, 216, 230);
-                case CYAN_WOOL: return Color.fromRGB(0, 255, 255);
-                case BLUE_WOOL: return Color.BLUE;
-                case PURPLE_WOOL: return Color.PURPLE;
-                case MAGENTA_WOOL : return Color.fromRGB(255, 0, 255);
-                case PINK_WOOL: return Color.fromRGB(243, 139, 170);
-                case BROWN_WOOL: return Color.fromRGB(131, 84, 50);
-    
-                // Add more cases as needed for other colors
-                default: return null;
+        @EventHandler
+        public void onPrepareEnchant(PrepareItemEnchantEvent event) {
+            ItemStack item = event.getItem();
+            if (CustomItems.isCustomPants(item)) {
+                event.setCancelled(true);
             }
         }
-        public static void equipDiaperArmor(Player target, boolean changed, boolean accident) {
-            PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
+
+        @EventHandler
+        public void onPrepareAnvil(PrepareAnvilEvent event) {
+            ItemStack firstItem = event.getInventory().getItem(0);
+            ItemStack secondItem = event.getInventory().getItem(1);
+
+            if ((firstItem != null && CustomItems.isCustomPants(firstItem)) || 
+                (secondItem != null && CustomItems.isCustomPants(secondItem))) {
+                event.setResult(null); // Block the result output
+            }
+        }
+    }
+    private static Color getColorFromWool(Material wool) {
+        switch (wool) {
+            case WHITE_WOOL: return Color.WHITE;
+            case LIGHT_GRAY_WOOL: return Color.fromRGB(211, 211, 211);
+            case GRAY_WOOL: return Color.GRAY; 
+            case BLACK_WOOL: return Color.BLACK;
+            case RED_WOOL: return Color.RED;
+            case ORANGE_WOOL: return Color.ORANGE;
+            case YELLOW_WOOL: return Color.YELLOW;
+            case LIME_WOOL: return Color.LIME;
+            case GREEN_WOOL: return Color.GREEN;
+            case LIGHT_BLUE_WOOL : return Color.fromRGB(173, 216, 230);
+            case CYAN_WOOL: return Color.fromRGB(0, 255, 255);
+            case BLUE_WOOL: return Color.BLUE;
+            case PURPLE_WOOL: return Color.PURPLE;
+            case MAGENTA_WOOL : return Color.fromRGB(255, 0, 255);
+            case PINK_WOOL: return Color.fromRGB(243, 139, 170);
+            case BROWN_WOOL: return Color.fromRGB(131, 84, 50);
+
+            // Add more cases as needed for other colors
+            default: return null;
+        }
+    }
+    public static void equipDiaperArmor(Player target, boolean changed, boolean accident) {
+        PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
         PlayerInventory inventory = target.getInventory();
         if (inventory.getLeggings() != null) {
             ItemStack leggings = target.getInventory().getLeggings();

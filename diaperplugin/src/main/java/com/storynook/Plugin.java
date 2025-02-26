@@ -121,7 +121,8 @@ public class Plugin extends JavaPlugin
     pants.WashedPants();
     itemManager.createWasherRecipe();
     // itemManager.createDiaperPailRecipe();
-    // itemManager.createLaxRecipe();
+    itemManager.createLaxRecipe();
+    itemManager.createlaxedItem();
   
    
     // Create an array of all your listener objects

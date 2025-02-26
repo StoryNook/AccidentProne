@@ -50,7 +50,8 @@ public class PlayerEventListener implements Listener {
             "CleanPants",
             "Toilet",
             "DiaperStuffer",
-            "Washer"
+            "Washer",
+            "Laxative"
         };
         
         for (String recipe : recipes) {

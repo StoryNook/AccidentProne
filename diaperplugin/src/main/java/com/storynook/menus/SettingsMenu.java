@@ -196,7 +196,7 @@ public class SettingsMenu implements Listener {
 
             ItemStack AudioSettings = new ItemStack(Material.SLIME_BALL); // Custom button
             ItemMeta AudioSettingsmeta = AudioSettings.getItemMeta();
-            AudioSettingsmeta.setCustomModelData(000000);
+            AudioSettingsmeta.setCustomModelData(625000);
             if (AudioSettingsmeta != null) {
                 List<String> lore = Arrays.asList(
                     "Preivew the sound effects,",
@@ -315,7 +315,7 @@ public class SettingsMenu implements Listener {
                 OpenSettings(player, plugin);
                 PantsCrafting.equipDiaperArmor(player, false, false);
             }
-            else if (meta.hasCustomModelData() && meta.getCustomModelData() == 000000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
+            else if (meta.hasCustomModelData() && meta.getCustomModelData() == 625000 && event.getCurrentItem().getType() == Material.SLIME_BALL) {
                 SoundEffectsMenu.SoundEffects(player, plugin,0);
             }
         }
