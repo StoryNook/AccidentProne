@@ -1,14 +1,22 @@
 package com.storynook.Event_Listeners;
 
 
+import java.util.Collections;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.CraftingInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -17,7 +25,7 @@ import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 
 public class Laxative implements Listener{
-     private final Plugin plugin;
+    private final Plugin plugin;
     public Laxative(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -90,12 +98,21 @@ public class Laxative implements Listener{
                 result = new ItemStack(foodType);
                 ItemMeta meta = result.getItemMeta();
                 if (meta != null) {
+                    NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+                    String crafterName = ((Player) inventory.getViewers().get(0)).getName();
+                    Bukkit.getLogger().info("Setting crafted_by to: " + crafterName);
+                    meta.getPersistentDataContainer().set(
+                        craftedByKey,
+                        PersistentDataType.STRING,
+                        crafterName
+                    );
                     meta.getPersistentDataContainer().set(
                         new NamespacedKey(plugin, "laxative_effect"),
                         PersistentDataType.BYTE,
                         (byte) 1
                     );
                 }
+                meta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
                 result.setItemMeta(meta);
                 inventory.setResult(result);
             } else {
@@ -104,21 +121,64 @@ public class Laxative implements Listener{
         }
     }
 
-    // @EventHandler
-    // public void onItemPickup(EntityPickupItemEvent  event) {
-    //     if (!(event.getEntity() instanceof Player)) {
-    //         return; // Ensure that the entity is a player
-    //     }
+    @EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        if (event.getPlayer() instanceof Player) {
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = event.getInventory();
+
+            for (int i = 0; i < inventory.getSize(); i++) {
+                ItemStack item = inventory.getItem(i);
+                if (item != null) {
+                    ItemMeta meta = item.getItemMeta();
+                    NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+
+                    if (meta.getPersistentDataContainer().has(craftedByKey, PersistentDataType.STRING)) {
+                        updateLoreForPlayer(item, player);
+                        inventory.setItem(i, item); // Update the item in the inventory
+                    }
+                }
+            }
+        }
+    }
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (event.getPlayer() instanceof Player) {
+            Player player = (Player) event.getPlayer();
+            Inventory inventory = event.getInventory();
+
+            for (int i = 0; i < inventory.getSize(); i++) {
+                ItemStack item = inventory.getItem(i);
+                if (item != null) {
+                    ItemMeta meta = item.getItemMeta();
+                    NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+
+                    if (meta.getPersistentDataContainer().has(craftedByKey, PersistentDataType.STRING)) {
+                        updateLoreForPlayer(item, player);
+                        inventory.setItem(i, item); // Update the item in the inventory
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onItemPickup(EntityPickupItemEvent  event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return; // Ensure that the entity is a player
+        }
     
-    //     Player player = (Player) event.getEntity();
-    //     ItemStack item = event.getItem().getItemStack();
-    //     ItemMeta meta = item.getItemMeta();
-    
-    //     if (meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
-    //         UUID playerUUID = player.getUniqueId();
-    //         playerCraftedSpecialItems.computeIfAbsent(playerUUID, k -> new HashSet<>()).add(new NamespacedKey(plugin, Integer.toString(item.getItemMeta().getCustomModelData())));
-    //     }
-    // }
+        Player player = (Player) event.getEntity();
+        ItemStack item = event.getItem().getItemStack();
+        if (event.getItem() != null) {
+            ItemMeta meta = item.getItemMeta();
+            NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+
+            if (meta.getPersistentDataContainer().has(craftedByKey, PersistentDataType.STRING)) {
+                updateLoreForPlayer(item, player);
+            }
+        }
+    }
 
     // @EventHandler
     // public void onInventoryClick(InventoryClickEvent event) {
@@ -152,21 +212,30 @@ public class Laxative implements Listener{
     //     }
     // }
 
-    // private void updateLoreForPlayer(ItemStack item, Player player) {
-    //     if (item == null || !item.hasItemMeta()) return;
-    
-    //     ItemMeta meta = item.getItemMeta();
-    //     NamespacedKey laxativeKey = new NamespacedKey(plugin, "laxative_effect");
-    //     if (meta.getPersistentDataContainer().has(laxativeKey, PersistentDataType.BYTE)) {
-    //         HashSet<NamespacedKey> craftedItems = playerCraftedSpecialItems.get(player.getUniqueId());
-    //         if (craftedItems != null && craftedItems.contains(item.getItemMeta().getCustomModelData())) {
-    //             meta.setLore(Collections.singletonList(ChatColor.RED + "Contains a laxative effect"));
-    //         } else {
-    //             meta.setLore(null);
-    //         }
-    //         item.setItemMeta(meta);
-    //     }
-    // }
+    private void updateLoreForPlayer(ItemStack item, Player player) {
+        if (item == null || !item.hasItemMeta()) return;
+
+        ItemMeta meta = item.getItemMeta();
+        NamespacedKey laxativeKey = new NamespacedKey(plugin, "laxative_effect");
+        NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+
+        if (meta.getPersistentDataContainer().has(laxativeKey, PersistentDataType.BYTE) &&
+                meta.getPersistentDataContainer().has(craftedByKey, PersistentDataType.STRING)) {
+
+            String crafterName = meta.getPersistentDataContainer()
+                    .get(craftedByKey, PersistentDataType.STRING);
+            Bukkit.getLogger().info("Crafter name: " + crafterName); // Add this line
+            Bukkit.getLogger().info("Current player name: " + player.getName());
+
+            if (crafterName != null && crafterName.equals(player.getName())) {
+                meta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
+            } else {
+                meta.setLore(null);
+            }
+
+            item.setItemMeta(meta);
+        }
+    }
 
     // @EventHandler
     // public void onPotionEffect(EntityPotionEffectEvent event) {
