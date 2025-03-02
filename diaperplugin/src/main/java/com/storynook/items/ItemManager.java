@@ -88,13 +88,6 @@ public class ItemManager {
         ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Laxative");
-        // List<String> lore = Arrays.asList(
-        //         "Use to spike food items in the crafting table.",
-        //         ChatColor.YELLOW + "NOTE:",
-        //         "You can only use 1 food item and 1 laxative at a time.",
-        //         "Increases the rate the bowels fills."
-        //     );
-        // meta.setLore(lore);
         meta.setCustomModelData(626012);
         item.setItemMeta(meta);
         lax = item;
