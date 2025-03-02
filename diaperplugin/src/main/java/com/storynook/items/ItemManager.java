@@ -106,19 +106,20 @@ public class ItemManager {
         // Register the recipe
         Bukkit.addRecipe(recipe);
     }
-    @SuppressWarnings("deprecation")
+    
     public void createlaxedItem(){
         List<Material> foodMaterials = Arrays.asList(
             Material.SUSPICIOUS_STEW, Material.APPLE, Material.BAKED_POTATO,  Material.CAKE, Material.COOKED_BEEF, Material.COOKED_CHICKEN, 
             Material.COOKED_COD, Material.COOKED_MUTTON, Material.COOKED_PORKCHOP, Material.COOKED_RABBIT, Material.COOKED_SALMON,
             Material.GOLDEN_CARROT, Material.COOKIE, Material.GOLDEN_APPLE, Material.PUMPKIN_PIE,  Material.RABBIT_STEW,  Material.MUSHROOM_STEW,
-            Material.BREAD, Material.BEETROOT_SOUP, Material.POTION, Material.ENCHANTED_GOLDEN_APPLE
+            Material.BREAD, Material.BEETROOT_SOUP, Material.ENCHANTED_GOLDEN_APPLE
         );
 
         RecipeChoice.MaterialChoice foodChoice = new RecipeChoice.MaterialChoice(foodMaterials);
 
         ShapelessRecipe recipe = new ShapelessRecipe(
         new NamespacedKey(plugin, "LaxedItem"), createLaxedItem(foodMaterials.get(0)));
+        
 
         // Create a custom recipe choice to check for slimeball with specific model data
         recipe.addIngredient(foodChoice);

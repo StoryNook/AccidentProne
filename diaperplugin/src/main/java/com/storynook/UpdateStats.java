@@ -26,11 +26,14 @@ public class UpdateStats {
     public static Map<UUID, Integer> playerCyclesMap = new HashMap<>();
     public static Map<UUID, Integer> playerSecondsLeftMap = new HashMap<>();
     public static Map<UUID, Boolean> playerWarningsMap = new HashMap<>();
+    public static Map<UUID, Integer> Startingdelay = new HashMap<>();
+    // public static Map<UUID, Boolean> HitZero = new HashMap<>();
 
     static HashMap<UUID, Double> bladderfill = new HashMap<>();
     static HashMap<UUID, Double> bowelfill = new HashMap<>();
     static HashMap<UUID, Double> activityMultiplier = new HashMap<>();
     static HashMap<UUID, Integer> HydrationSpike = new HashMap<>();
+    static HashMap<UUID, Boolean> Growled = new HashMap<>();
 
     private final Plugin plugin;
         public UpdateStats(Plugin plugin, CommandHandler commandHandler) {
@@ -106,8 +109,7 @@ public class UpdateStats {
             if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) { 
               double hydrationDecreaseRate = (0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0));
               if (player.getLocation().getWorld().getEnvironment() == World.Environment.NETHER) {hydrationDecreaseRate = hydrationDecreaseRate * 2;}
-              if (stats.getEffectDuration() == 0) {
-                stats.setBladderFillRate(0.2);
+              if (stats.getLaxEffectDuration() == 0) {
                 stats.setBowelFillRate(0.07);
               }
               double BladderAdjustedRate = 0;
@@ -127,6 +129,30 @@ public class UpdateStats {
               stats.increaseBladder(BladderAdjustedRate);
               bladderfill.put(player.getUniqueId(), Math.round((BladderAdjustedRate * 100)) / 100.0);
 
+              if (stats.getBowelFillRate() > 0.07) {
+                stats.decreaseLaxEffectDuration(1);
+              }
+              if (stats.getLaxEffectDelay() > 0) {
+                stats.setLaxEffectDelay(stats.getLaxEffectDelay() - 1);
+              }
+              if (stats.getLaxEffectDelay() == 0 && stats.getLaxEffectDuration() > 0) {
+                Growled.remove(player.getUniqueId());
+                Startingdelay.remove(player.getUniqueId());
+                if (stats.getBowelFillRate() == 0.07) {
+                  stats.setBowelFillRate(stats.getBowelFillRate() * ((Math.random() * 7) + 3));
+                }
+              }
+              if (stats.getLaxEffectDelay() > 0 && !Growled.getOrDefault(player.getUniqueId(), false)) {
+                int startingDelay = Startingdelay.getOrDefault(player.getUniqueId(), 0);
+                  // Calculate a randomized threshold between 0 and half of the starting delay
+                  double randomThreshold = (startingDelay / 2.0) * (1 - Math.random() * 0.5);
+                  if (stats.getLaxEffectDelay() < randomThreshold) {
+                      Growled.put(player.getUniqueId(), true);
+                      PlaySounds.playsounds(player, "tummyrumble", 5, 1.0, 0.2, false);
+                      if(!stats.getHardcore()){player.sendMessage(ChatColor.RED + "It seems like your tummy is upset, was it something you ate?");}
+                  }
+              }
+
               if (stats.getMessing()) {
                 double saturation = player.getSaturation();
                 int hunger = player.getFoodLevel();
@@ -145,7 +171,7 @@ public class UpdateStats {
                 stats.increaseBowels(adjustedRate);
                 bowelfill.put(player.getUniqueId(), Math.round((adjustedRate * 100)) / 100.0);
               }
-              stats.decreaseEffectDuration(1);
+              
               if (stats.getDiaperFullness() >= 100 || stats.getDiaperWetness() >= 100) {
                 stats.increaseTimeWorn(1);
               }

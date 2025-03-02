@@ -83,7 +83,7 @@ public class underwear {
         diaper = item;
         return item;
     }
-    @SuppressWarnings("deprecation")
+
     public void createDiaperRecipe() {
         Diaper();
         // Create the recipe
@@ -106,7 +106,7 @@ public class underwear {
         thickdiaper = item;
         return item;
     }
-    @SuppressWarnings("deprecation")
+    
     public void createThickDiaperRecipe() {
         ThickDiaper();
         // Create the recipe
@@ -128,7 +128,7 @@ public class underwear {
         pullup = item;
         return item;
     }
-    @SuppressWarnings("deprecation")
+    
     public void createPullupRecipe() {
         Pullup();
         // Define the custom item

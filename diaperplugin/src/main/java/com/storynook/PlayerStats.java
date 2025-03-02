@@ -24,7 +24,10 @@ public class PlayerStats {
     private int ParticleEffects;
     private int UI;
     private int Bedwetting;
-    private int EffectDuration = 0;
+    private int LaxEffectDuration = 0;
+    private int LaxEffectDelay = 0;
+    private int DurEffectDuration = 0;
+    private int DurEffectDelay = 0;
     private int timeworn = 0;
     private int minFill = 30;
     private int canhear = 0;
@@ -189,10 +192,21 @@ public class PlayerStats {
     public void decreaseBowelIncontinence(double amount) { bowelIncontinence = Math.max(bowelIncontinence - amount, 1); }
     public void setBowelIncontinence(double amount) { bowelIncontinence = Math.max(1, Math.min(10, amount)); }
 
-    public int getEffectDuration() { return EffectDuration; }
-    public void increaseEffectDuration(int amount) { EffectDuration = Math.min(EffectDuration + amount, 1000); }
-    public void decreaseEffectDuration(int amount) { EffectDuration = Math.max(EffectDuration - amount, 0); }
-    public void setEffectDuration(int amount) { EffectDuration = Math.max(0, amount); }
+    public int getLaxEffectDuration() { return LaxEffectDuration; }
+    public void increaseLaxEffectDuration(int amount) { LaxEffectDuration = Math.min(LaxEffectDuration + amount, 1000); }
+    public void decreaseLaxEffectDuration(int amount) { LaxEffectDuration = Math.max(LaxEffectDuration - amount, 0); }
+    public void setLaxEffectDuration(int amount) { LaxEffectDuration = Math.max(0, amount); }
+
+    public int getDurEffectDuration() { return DurEffectDuration; }
+    public void increaseDurEffectDuration(int amount) { DurEffectDuration = Math.min(DurEffectDuration + amount, 1000); }
+    public void decreaseDurEffectDuration(int amount) { DurEffectDuration = Math.max(DurEffectDuration - amount, 0); }
+    public void setDurEffectDuration(int amount) { DurEffectDuration = Math.max(0, amount); }
+
+    public int getLaxEffectDelay() { return LaxEffectDelay; }
+    public void setLaxEffectDelay(int amount) { LaxEffectDelay = Math.max(0, amount); }
+
+    public int getLDurEffectDelay() { return DurEffectDelay; }
+    public void setDurEffectDelay(int amount) { DurEffectDelay = Math.max(0, amount); }
     
     public int getTimeWorn() { return timeworn; }
     public void increaseTimeWorn(int amount) { timeworn = Math.max(timeworn + amount, 0); }

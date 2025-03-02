@@ -23,6 +23,7 @@ import org.bukkit.persistence.PersistentDataType;
 
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
+import com.storynook.UpdateStats;
 
 public class Laxative implements Listener{
     private final Plugin plugin;
@@ -42,10 +43,11 @@ public class Laxative implements Listener{
                 // Apply laxative effect
                 PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
                 if(stats.getMessing()){
-                    if (stats.getEffectDuration() == 0) {
-                        stats.setBowelFillRate(stats.getBowelFillRate() * ((Math.random() * 7) + 3));
+                    if (stats.getLaxEffectDelay() == 0) {
+                        stats.setLaxEffectDelay((int) (Math.random() * (300 - 175 + 1)) + 175);
+                        UpdateStats.Startingdelay.put(player.getUniqueId(), stats.getLaxEffectDelay());
                     }
-                    stats.increaseEffectDuration(30);
+                    stats.increaseLaxEffectDuration(30);
                 }
             }
         }

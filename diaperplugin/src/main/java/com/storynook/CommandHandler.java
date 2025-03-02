@@ -561,8 +561,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     targetStats.setDiaperFullness(value);
                     sender.sendMessage("Set diaper fullness to: " + value);
                     break;
-                case "effectduration":
-                    targetStats.setEffectDuration((int)value);
+                case "Laxeffectduration":
+                    targetStats.setLaxEffectDuration((int)value);
                     sender.sendMessage("Set duration to: " + value);
                     break;
                 case "timeworn":
@@ -570,7 +570,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     sender.sendMessage("Set timeworn to: " + value);
                     break;
                 default:
-                    sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+                    sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|Laxeffectduration|timeworn> <number> [playername]");
             }
             return true;
         }
@@ -590,7 +590,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 completions.add("type");
                 completions.add("wetness");
                 completions.add("fullness");
-                completions.add("effectduration");
+                completions.add("Laxeffectduration");
                 completions.add("timeworn");
                 // completions.add("showfill");
                 return completions; // Filter based on arguments (optional)

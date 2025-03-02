@@ -391,7 +391,8 @@ public class Plugin extends JavaPlugin
       stats.setParticleEffects(config.getInt("Stinklines", 0));
       stats.setUI((int) config.getInt("UI", 1));
       stats.setBedwetting((int) config.getInt("Bedwetting", 0));
-      stats.setEffectDuration((int) config.getInt("EffectDuration", 0));
+      stats.setLaxEffectDuration((int) config.getInt("LaxEffectDuration", 0));
+      stats.setLaxEffectDelay((int) config.getInt("LaxEffectDelay", 0));
       stats.setTimeWorn((int) config.getInt("TimeWorn", 0));
       stats.setMinFill((int) config.getInt("MinFill", 30));
       stats.setHardcore(config.getBoolean("Hardcore", false));
@@ -523,7 +524,8 @@ public class Plugin extends JavaPlugin
       stats.setParticleEffects(0);
       stats.setAllCaregiver(false);
       stats.setspecialCG(false);
-      stats.setEffectDuration(0);
+      stats.setLaxEffectDuration(0);
+      stats.setLaxEffectDelay(0);
       stats.setTimeWorn(0);
       stats.setMinFill(30);
       stats.setHardcore(false);
@@ -577,7 +579,8 @@ public class Plugin extends JavaPlugin
       config.set("AllCaregiver", stats.getAllCaregiver());
       config.set("UI", stats.getUI());
       config.set("Bedwetting", stats.getBedwetting());
-      config.set("EffectDuration", stats.getEffectDuration());
+      config.set("LaxEffectDuration", stats.getLaxEffectDuration());
+      config.set("LaxEffectDelay", stats.getLaxEffectDelay());
       config.set("TimeWorn", stats.getTimeWorn());
       config.set("MinFill", stats.getMinFill());
       config.set("Hardcore", stats.getHardcore());
