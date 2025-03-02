@@ -20,7 +20,6 @@ import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
@@ -126,11 +125,6 @@ public class PlayerEventListener implements Listener {
         CraftingInventory inventory = event.getInventory();
         ItemStack[] matrix = inventory.getMatrix();
 
-        boolean hasLaxative = false;
-        ItemStack foodItem = null;
-        Material foodItemType = null;
-        int foodItemCount = 0;
-
         if (event.getRecipe() == null || event.getInventory() == null) return;
 
             ItemStack result = event.getRecipe().getResult();
@@ -173,178 +167,8 @@ public class PlayerEventListener implements Listener {
             if (CustomItems.isCustomItem(item)) {
                 inventory.setResult(null); // Only block crafting if it's not intended
             }
-
-            // if (isLaxative(item)) {
-            //     hasLaxative = true;
-            // } else if (item.getType().isEdible()) {
-            //     foodItemCount++;
-            //     if (foodItemType == null) {
-            //         foodItemType = item.getType();
-            //         foodItem = item;
-            //     } else if (foodItemType != item.getType()){
-            //         inventory.setResult(null);
-            //         return;
-            //     }
-            // }
         }
-        // else if (hasLaxative && foodItem != null && foodItemCount == 1) {
-        //     // Logic for creating laxative-imbued food items
-        //     ItemStack lacedResult = foodItem.clone();
-        //     ItemMeta meta = lacedResult.getItemMeta();
-        //     if (meta != null) {
-        //         meta.getPersistentDataContainer().set(
-        //             new NamespacedKey(plugin, "laxative_effect"),
-        //             PersistentDataType.BYTE,
-        //             (byte) 1
-        //         );
-        //         meta.setCustomModelData(626100);
-        //         lacedResult.setItemMeta(meta);
-        //     }
-        //     lacedResult.setAmount(1);
-        //     inventory.setResult(lacedResult);
-        // }
     }
-
-    // private void clearCraftingGrid(CraftingInventory inventory) {
-    //     ItemStack[] emptyMatrix = new ItemStack[inventory.getSize()];
-    //     inventory.setMatrix(emptyMatrix);
-    // }
-
-    // @EventHandler
-    // public void onCraftItem(CraftItemEvent event) {
-    //     if (!(event.getWhoClicked() instanceof Player)) return;
-    //     Player player = (Player) event.getWhoClicked();
-    //     CraftingInventory inventory = (CraftingInventory) event.getInventory();
-
-    //     ItemStack result = event.getRecipe().getResult();
-
-    //     if (result.hasItemMeta()) {
-    //         ItemMeta meta = result.getItemMeta();
-    //         int customModelData = result.getItemMeta().getCustomModelData();
-    //         if (meta != null && (meta.getPersistentDataContainer().has(
-    //             new NamespacedKey(plugin, "laxative_effect"),
-    //             PersistentDataType.BYTE
-    //         ) || customModelData == 626100)) {
-    //             clearCraftingGrid(inventory);
-    //         }
-    //     }
-
-    //     // // Cancel the default crafting to handle it manually
-    //     // event.setCancelled(true);
-
-    //     // // Prepare to decrement items
-    //     // ItemStack[] matrix = inventory.getMatrix();
-    //     // boolean foodReduced = false;
-    //     // boolean laxativeReduced = false;
-
-    //     // for (int i = 0; i < matrix.length; i++) {
-    //     //     ItemStack item = matrix[i];
-    //     //     if (item == null) continue;
-
-    //     //     if (isLaxative(item) && !laxativeReduced) {
-    //     //         item.setAmount(item.getAmount() - 1);
-    //     //         if (item.getAmount() <= 0) matrix[i] = null;
-    //     //         laxativeReduced = true;
-    //     //     } else if (item.getType().isEdible() && !foodReduced) {
-    //     //         item.setAmount(item.getAmount() - 1);
-    //     //         if (item.getAmount() <= 0) matrix[i] = null;
-    //     //         foodReduced = true;
-    //     //     }
-
-    //     //     if (laxativeReduced && foodReduced) break;
-    //     // }
-
-    //     // // Update the crafting matrix after a small delay to avoid conflicts
-    //     // Bukkit.getScheduler().runTask(plugin, () -> inventory.setMatrix(matrix));
-
-    //     // // Add the result to the player's inventory
-    //     // if (event.isShiftClick()) {
-    //     //     HashMap<Integer, ItemStack> excess = player.getInventory().addItem(result.clone());
-    //     //     // Drop excess items if inventory is full
-    //     //     for (ItemStack leftover : excess.values()) {
-    //     //         player.getWorld().dropItemNaturally(player.getLocation(), leftover);
-    //     //     }
-    //     // } else {
-    //     //     player.setItemOnCursor(result.clone());
-    //     // }
-    // }
-
-    
-
-
-
-
-
-
-    // private boolean isLaxative(ItemStack item) {
-    //     if (item == null || !item.hasItemMeta()) return false;
-    //     ItemMeta meta = item.getItemMeta();
-    //     return meta.hasCustomModelData() && meta.getCustomModelData() == 626012;
-    // }
-
-    // @EventHandler
-    // public void onItemPickup(EntityPickupItemEvent  event) {
-    //     if (!(event.getEntity() instanceof Player)) {
-    //         return; // Ensure that the entity is a player
-    //     }
-    
-    //     Player player = (Player) event.getEntity();
-    //     ItemStack item = event.getItem().getItemStack();
-    //     ItemMeta meta = item.getItemMeta();
-    
-    //     if (meta != null && meta.getPersistentDataContainer().has(new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE)) {
-    //         UUID playerUUID = player.getUniqueId();
-    //         playerCraftedSpecialItems.computeIfAbsent(playerUUID, k -> new HashSet<>()).add(new NamespacedKey(plugin, Integer.toString(item.getItemMeta().getCustomModelData())));
-    //     }
-    // }
-
-    // @EventHandler
-    // public void onInventoryClick(InventoryClickEvent event) {
-    //     if (event.isShiftClick()) {
-    //         // Add same logic check to avoid duplications
-    //         ItemStack currentItem = event.getCurrentItem();
-    //         if (currentItem != null && currentItem.hasItemMeta()) {
-    //             ItemMeta meta = currentItem.getItemMeta();
-    //             if (meta != null && meta.getPersistentDataContainer().has(
-    //                 new NamespacedKey(plugin, "laxative_effect"),
-    //                 PersistentDataType.BYTE
-    //             )) {
-    //                 // log or debug; manage how items are handled further.
-    //             }
-    //         }
-    //     }
-    //     if (!(event.getWhoClicked() instanceof Player)) return;
-
-    //     Player player = (Player) event.getWhoClicked();
-    //     ItemStack item = event.getCurrentItem();
-
-    //     if (item != null && item.hasItemMeta()) {
-    //         ItemMeta meta = item.getItemMeta();
-    //         if (meta != null && meta.getPersistentDataContainer().has(
-    //             new NamespacedKey(plugin, "laxative_effect"),
-    //             PersistentDataType.BYTE
-    //         )) {
-    //             // Add custom lore visible only to this player
-    //             updateLoreForPlayer(item, player);
-    //         }
-    //     }
-    // }
-
-    // private void updateLoreForPlayer(ItemStack item, Player player) {
-    //     if (item == null || !item.hasItemMeta()) return;
-    
-    //     ItemMeta meta = item.getItemMeta();
-    //     NamespacedKey laxativeKey = new NamespacedKey(plugin, "laxative_effect");
-    //     if (meta.getPersistentDataContainer().has(laxativeKey, PersistentDataType.BYTE)) {
-    //         HashSet<NamespacedKey> craftedItems = playerCraftedSpecialItems.get(player.getUniqueId());
-    //         if (craftedItems != null && craftedItems.contains(item.getItemMeta().getCustomModelData())) {
-    //             meta.setLore(Collections.singletonList(ChatColor.RED + "Contains a laxative effect"));
-    //         } else {
-    //             meta.setLore(null);
-    //         }
-    //         item.setItemMeta(meta);
-    //     }
-    // }
 
     // @EventHandler
     // public void onPotionEffect(EntityPotionEffectEvent event) {
