@@ -49,15 +49,16 @@ public class PlayerEventListener implements Listener {
             "CleanPants",
             "Toilet",
             "DiaperStuffer",
-            "Washer"
+            "Washer",
+            "LaxedItem"
         };
         
         for (String recipe : recipes) {
             event.getPlayer().discoverRecipe(new NamespacedKey(plugin, recipe));
         }
-        if (event.getPlayer().hasPermission("diaperplugin.debug") || event.getPlayer().isOp()) {
-            event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
-        }
+        // if (event.getPlayer().hasPermission("diaperplugin.debug") || event.getPlayer().isOp()) {
+        //     event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
+        // }
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "DiaperPail"));
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Laxative"));
         // event.getPlayer().discoverRecipe(new NamespacedKey(plugin, "Diuretic"));

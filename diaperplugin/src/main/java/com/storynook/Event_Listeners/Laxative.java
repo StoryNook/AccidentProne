@@ -3,7 +3,6 @@ package com.storynook.Event_Listeners;
 
 import java.util.Collections;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -71,6 +70,8 @@ public class Laxative implements Listener{
         
         ItemStack result = event.getRecipe().getResult();
         ItemMeta resultmeta = result.getItemMeta();
+
+
         if (resultmeta.getPersistentDataContainer().has(
             new NamespacedKey(plugin, "laxative_effect"),
             PersistentDataType.BYTE)) {

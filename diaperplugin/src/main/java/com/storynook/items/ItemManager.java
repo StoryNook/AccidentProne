@@ -83,24 +83,30 @@ public class ItemManager {
         Bukkit.addRecipe(recipe);
     }
 
-    public void createLaxRecipe() {
-        // Define the custom item
-        ItemStack item = new ItemStack(Material.GLOWSTONE_DUST, 1);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("Laxative");
-        meta.setCustomModelData(626012);
-        item.setItemMeta(meta);
-        lax = item;
+    // public void createLaxRecipe() {
+    //     // Define the custom item
+    //     ItemStack item = new ItemStack(Material.GLOWSTONE_DUST, 1);
+    //     ItemMeta meta = item.getItemMeta();
+    //     meta.setDisplayName("Laxative");
+    //     meta.setCustomModelData(626012);
+    //     item.setItemMeta(meta);
+    //     lax = item;
 
-        // Create the recipe
-        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Laxative"), lax);
-        recipe.addIngredient(Material.ROTTEN_FLESH);
+    //     // Create the recipe
+    //     ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Laxative"), lax);
+    //     recipe.addIngredient(Material.ROTTEN_FLESH);
 
-        // Register the recipe
-        Bukkit.addRecipe(recipe);
-    }
+    //     // Register the recipe
+    //     Bukkit.addRecipe(recipe);
+    // }
     
     public void createlaxedItem(){
+        ItemStack Laxitem = new ItemStack(Material.GLOWSTONE_DUST);
+        ItemMeta Laxmeta = Laxitem.getItemMeta();
+        Laxmeta.setDisplayName("Laxative");
+        Laxmeta.setCustomModelData(626012);// Custom Model Data for texture
+        Laxitem.setItemMeta(Laxmeta);
+        lax = Laxitem;
         List<Material> foodMaterials = Arrays.asList(
             Material.SUSPICIOUS_STEW, Material.APPLE, Material.BAKED_POTATO,  Material.CAKE, Material.COOKED_BEEF, Material.COOKED_CHICKEN, 
             Material.COOKED_COD, Material.COOKED_MUTTON, Material.COOKED_PORKCHOP, Material.COOKED_RABBIT, Material.COOKED_SALMON,
@@ -119,10 +125,9 @@ public class ItemManager {
         recipe.addIngredient(new RecipeChoice.ExactChoice(lax));
         ItemStack result = new ItemStack(foodMaterials.get(0)); // Use any food material as placeholder
         ItemMeta meta = result.getItemMeta();
-        if (meta != null) {
-            meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE, (byte) 1);
-            result.setItemMeta(meta);
-        }
+        meta.getPersistentDataContainer().set(new NamespacedKey(plugin, "laxative_effect"), PersistentDataType.BYTE, (byte) 1);
+        result.setItemMeta(meta);
+        
         Bukkit.addRecipe(recipe);
     }
     
