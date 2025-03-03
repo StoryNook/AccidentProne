@@ -205,10 +205,8 @@ public class Laxative implements Listener{
 
             String crafterName = meta.getPersistentDataContainer()
                     .get(craftedByKey, PersistentDataType.STRING);
-            Bukkit.getLogger().info("Crafter name: " + crafterName); // Add this line
-            Bukkit.getLogger().info("Current player name: " + player.getName());
-
-            if (crafterName != null && crafterName.equals(player.getName())) {
+            PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+            if (crafterName != null && crafterName.equals(player.getName()) && !stats.getHardcore()) {
                 meta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
             } else {
                 meta.setLore(null);
