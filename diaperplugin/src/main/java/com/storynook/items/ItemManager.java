@@ -85,7 +85,7 @@ public class ItemManager {
 
     public void createLaxRecipe() {
         // Define the custom item
-        ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
+        ItemStack item = new ItemStack(Material.GLOWSTONE_DUST, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Laxative");
         meta.setCustomModelData(626012);

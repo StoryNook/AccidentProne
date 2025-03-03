@@ -64,6 +64,7 @@ public class Sit implements Listener{
                     asm.setMarker(true);
                     asm.setGravity(false);
                     asm.setRotation(180,0);
+                    asm.setCustomName("Chair");
                 });
 
                 // Make the player sit

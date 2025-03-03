@@ -106,7 +106,9 @@ public class UpdateStats {
               player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, 15 * 20, 1), true);
             }
 
-            if (stats != null && stats.getOptin() && !(player.getVehicle() instanceof ArmorStand)) { 
+            if (stats != null && stats.getOptin() 
+            && !(player.getVehicle() instanceof ArmorStand 
+                && ((ArmorStand) player.getVehicle()).getCustomName().equals("ToiletArmor"))) { 
               double hydrationDecreaseRate = (0.1 * activityMultiplier.getOrDefault(player.getUniqueId(), 1.0));
               if (player.getLocation().getWorld().getEnvironment() == World.Environment.NETHER) {hydrationDecreaseRate = hydrationDecreaseRate * 2;}
               if (stats.getLaxEffectDuration() == 0) {

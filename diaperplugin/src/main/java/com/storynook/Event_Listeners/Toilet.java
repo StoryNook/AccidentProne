@@ -116,6 +116,7 @@ public class Toilet implements Listener{
             asm.setVisible(false); // Hide the armor stand
             asm.setMarker(true); // No bounding box/collision
             asm.setGravity(false); // No gravity so it stays in place
+            asm.setCustomName("ToiletArmor");
         });
 
         // Make the player sit on the armor stand

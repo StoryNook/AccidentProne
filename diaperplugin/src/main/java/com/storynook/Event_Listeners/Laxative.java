@@ -11,14 +11,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.PrepareItemCraftEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import com.storynook.PlayerStats;
@@ -102,7 +105,6 @@ public class Laxative implements Listener{
                 if (meta != null) {
                     NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
                     String crafterName = ((Player) inventory.getViewers().get(0)).getName();
-                    Bukkit.getLogger().info("Setting crafted_by to: " + crafterName);
                     meta.getPersistentDataContainer().set(
                         craftedByKey,
                         PersistentDataType.STRING,
@@ -119,6 +121,15 @@ public class Laxative implements Listener{
                 inventory.setResult(result);
             } else {
                 return;
+            }
+        }
+        else {
+            for (ItemStack item : matrix) {
+                if (item == null) continue;
+                if (isLaxative(item)) {
+                    inventory.setResult(null);
+                    return;
+                } 
             }
         }
     }
@@ -182,38 +193,6 @@ public class Laxative implements Listener{
         }
     }
 
-    // @EventHandler
-    // public void onInventoryClick(InventoryClickEvent event) {
-    //     if (event.isShiftClick()) {
-    //         // Add same logic check to avoid duplications
-    //         ItemStack currentItem = event.getCurrentItem();
-    //         if (currentItem != null && currentItem.hasItemMeta()) {
-    //             ItemMeta meta = currentItem.getItemMeta();
-    //             if (meta != null && meta.getPersistentDataContainer().has(
-    //                 new NamespacedKey(plugin, "laxative_effect"),
-    //                 PersistentDataType.BYTE
-    //             )) {
-    //                 // log or debug; manage how items are handled further.
-    //             }
-    //         }
-    //     }
-    //     if (!(event.getWhoClicked() instanceof Player)) return;
-
-    //     Player player = (Player) event.getWhoClicked();
-    //     ItemStack item = event.getCurrentItem();
-
-    //     if (item != null && item.hasItemMeta()) {
-    //         ItemMeta meta = item.getItemMeta();
-    //         if (meta != null && meta.getPersistentDataContainer().has(
-    //             new NamespacedKey(plugin, "laxative_effect"),
-    //             PersistentDataType.BYTE
-    //         )) {
-    //             // Add custom lore visible only to this player
-    //             updateLoreForPlayer(item, player);
-    //         }
-    //     }
-    // }
-
     private void updateLoreForPlayer(ItemStack item, Player player) {
         if (item == null || !item.hasItemMeta()) return;
 
@@ -238,6 +217,59 @@ public class Laxative implements Listener{
             item.setItemMeta(meta);
         }
     }
+    @EventHandler
+    public void onBrew(BrewEvent event) {
+        BrewerInventory inventory = event.getContents();
+
+        // Get the ingredient
+        ItemStack ingredient = inventory.getIngredient();
+        if (ingredient == null || ingredient.getType() != Material.GLOWSTONE_DUST) return;
+
+        // Check for Custom Model Data (e.g., 12345)
+        ItemMeta meta = ingredient.getItemMeta();
+        if (meta == null || !meta.hasCustomModelData() || meta.getCustomModelData() != 626012) return;
+
+        // Cancel the brewing process
+        event.setCancelled(true);
+
+        // You can still add custom data without changing potion properties
+        for (int i = 0; i < 3; i++) {
+            ItemStack potion = inventory.getItem(i);
+            if (potion != null && potion.getType() == Material.POTION) {
+                
+                PotionMeta potionMeta = (PotionMeta) potion.getItemMeta();
+                
+                if (potionMeta != null) {
+                    NamespacedKey craftedByKey = new NamespacedKey(plugin, "crafted_by");
+                    String crafterName = ((Player) inventory.getViewers().get(0)).getName();
+                    potionMeta.getPersistentDataContainer().set(
+                        craftedByKey,
+                        PersistentDataType.STRING,
+                        crafterName
+                    );
+                    potionMeta.getPersistentDataContainer().set(
+                        new NamespacedKey(plugin, "laxative_effect"),
+                        PersistentDataType.BYTE,
+                        (byte) 1
+                    );
+                    
+                    potionMeta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
+                    ItemStack customPotion = potion.clone();
+                    customPotion.setItemMeta(potionMeta);
+                    
+                    // Set the modified potion back in the brewing stand
+                    inventory.setItem(i, customPotion);
+                }
+            }
+        }
+        // Optionally consume the ingredient if needed
+        if (ingredient.getAmount() > 1) {
+            ingredient.setAmount(ingredient.getAmount() - 1);
+        } else if (ingredient.getAmount() == 1) {
+            inventory.setIngredient(null);
+        }
+    }
+
 
     // @EventHandler
     // public void onPotionEffect(EntityPotionEffectEvent event) {
