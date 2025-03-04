@@ -80,6 +80,7 @@ public class SoundEffectsMenu implements Listener{
                         categoryMeta.setCustomModelData(626004);
                         break;
                     default:
+                        categoryMeta.setCustomModelData(625000);
                         break;
                 }
                 categoryItem.setItemMeta(categoryMeta);
@@ -131,7 +132,7 @@ public class SoundEffectsMenu implements Listener{
             String lethearString = "";
             int image = 0;
             if (stats.getlethear() == 0) {lethearString = ChatColor.GREEN + "Yes"; image = 625002;}
-                else if (stats.getlethear() == 1) {lethearString = ChatColor.YELLOW + "Only My Caregivers"; image = 626002;}
+                else if (stats.getlethear() == 1) {lethearString = ChatColor.YELLOW + "Only My Caregivers"; image = 625006;}
                 else if(stats.getlethear() == 2){lethearString = ChatColor.RED + "No"; image = 625003;}
             List<String> lore = Arrays.asList(
                 "Other Players can hear my sounds: " + lethearString,
@@ -150,7 +151,7 @@ public class SoundEffectsMenu implements Listener{
             String canhearString = "";
             int image = 0;
             if (stats.getcanhear() == 0) {canhearString = ChatColor.GREEN + "Yes"; image = 625004;}
-                else if (stats.getcanhear() == 1) {canhearString = ChatColor.YELLOW + "Only My Caregivers"; image = 626002;}
+                else if (stats.getcanhear() == 1) {canhearString = ChatColor.YELLOW + "Only My Caregivers"; image = 625006;}
                 else if(stats.getcanhear() == 2){canhearString = ChatColor.RED + "No"; image = 625005;}
             List<String> lore = Arrays.asList(
                 "I can hear other player's sounds: " + canhearString,
