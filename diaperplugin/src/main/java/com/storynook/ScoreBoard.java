@@ -207,7 +207,7 @@ public class ScoreBoard {
                 UnderwearStatusBar.setScore(3);
             }
 
-            if (stats.getshowfill()) {
+            if (stats.getshowfill()&& !stats.getHardcore()) {
                 Score fillsScore = objective.getScore(fill);
                 fillsScore.setScore(2);
             }

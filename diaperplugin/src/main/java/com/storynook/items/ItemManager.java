@@ -108,7 +108,7 @@ public class ItemManager {
         Laxitem.setItemMeta(Laxmeta);
         lax = Laxitem;
         List<Material> foodMaterials = Arrays.asList(
-            Material.SUSPICIOUS_STEW, Material.APPLE, Material.BAKED_POTATO,  Material.CAKE, Material.COOKED_BEEF, Material.COOKED_CHICKEN, 
+            Material.SUSPICIOUS_STEW, Material.APPLE, Material.BAKED_POTATO, Material.COOKED_BEEF, Material.COOKED_CHICKEN, 
             Material.COOKED_COD, Material.COOKED_MUTTON, Material.COOKED_PORKCHOP, Material.COOKED_RABBIT, Material.COOKED_SALMON,
             Material.GOLDEN_CARROT, Material.COOKIE, Material.GOLDEN_APPLE, Material.PUMPKIN_PIE,  Material.RABBIT_STEW,  Material.MUSHROOM_STEW,
             Material.BREAD, Material.BEETROOT_SOUP, Material.ENCHANTED_GOLDEN_APPLE

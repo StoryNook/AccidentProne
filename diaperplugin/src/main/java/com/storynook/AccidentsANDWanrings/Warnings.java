@@ -1,5 +1,6 @@
 package com.storynook.AccidentsANDWanrings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import com.storynook.Plugin;
 import com.storynook.PlaySounds;
@@ -19,18 +20,51 @@ public class Warnings {
     double bladderUrge = stats.getBladder() * stats.getBladderIncontinence();
     double bowelUrge = stats.getBowels() * stats.getBowelIncontinence();
     double urgeToGo = Math.max(bladderUrge, bowelUrge);
-    stats.setUrgeToGo((int)urgeToGo);
+    stats.setUrgeToGo((int)urgeToGo/10);
   }
   //Warning system, and accident triggers.
   public static void triggerWarnings(Player player, PlayerStats stats) {
     if (stats != null) {
       calculateUrgeToGo(stats);
+        
       boolean warning = UpdateStats.playerWarningsMap.getOrDefault(player.getUniqueId(), false);
-      boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence()) ? true : false;
-      double random = (Math.random() * 100) + (stats.getMinFill() - ((isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence()) * (stats.getMinFill()/10)));
-      if (Math.min((int)random, 100) <= ((int)stats.getUrgeToGo()) && warning == false) {
-        handleWarning(player, stats, isBladder);
+      // boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > 
+                        //  (stats.getBowels() * stats.getBowelIncontinence());
+      
+      // Calculate thresholds based on minFill and incontinence
+      double bladderThreshold = 100.0 / Math.max(stats.getBladderIncontinence(), 1); 
+      double bowelThreshold = 100.0 / Math.max(stats.getBowelIncontinence(), 1);
+      
+      // Apply minFill to thresholds (lower minFill means lower required levels)
+      bladderThreshold *= stats.getMinFill() / 100.0;
+      bowelThreshold *= stats.getMinFill() / 100.0;
+      
+      // Calculate chances based on how far above threshold we are
+      double bladderChance = Math.max(0, (stats.getBladder() - bladderThreshold) / bladderThreshold);
+      double bowelChance = Math.max(0, (stats.getBowels() - bowelThreshold) / bowelThreshold);
+      
+      // Randomize between 1-100 considering the chances
+      double randomValue = Math.random() * 100;
+      boolean triggerBladderWarning = randomValue <= bladderChance * 100 && !warning;
+      boolean triggerBowelWarning = randomValue <= bowelChance * 100 && !warning;
+      Bukkit.getLogger().info("Random is: " + (int)randomValue + " Bladder is: " + (int)(bladderChance* 100));
+      Bukkit.getLogger().info("Random is: " + (int)randomValue + " Bowel is: " + (int)(bowelChance* 100));
+
+      if (triggerBladderWarning) {
+          handleWarning(player, stats, triggerBladderWarning);
       }
+      if (triggerBowelWarning) {
+        handleWarning(player, stats, triggerBowelWarning);
+      }
+
+      // calculateUrgeToGo(stats);
+      // boolean warning = UpdateStats.playerWarningsMap.getOrDefault(player.getUniqueId(), false);
+      // boolean isBladder = (stats.getBladder() * stats.getBladderIncontinence()) > (stats.getBowels() * stats.getBowelIncontinence());
+      // double random = (Math.random() * 100) + (stats.getMinFill() - ((isBladder ? stats.getBladderIncontinence() : stats.getBowelIncontinence()) * (stats.getMinFill()/10)));
+      // Bukkit.getLogger().info("Random is: " + (int)random + " urge to go is: " + (int)stats.getUrgeToGo());
+      // if (Math.min((int)random, 100) <= ((int)stats.getUrgeToGo()) && warning == false) {
+      //   handleWarning(player, stats, isBladder);
+      // }
     }
   }
           

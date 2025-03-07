@@ -37,7 +37,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             Player player = (Player) sender;
             PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
             if (stats.getBladder() > 10) {
-                player.sendMessage("You just peeded yourself.");
+                player.sendMessage("You just peed yourself.");
                 HandleAccident.handleAccident(true, player, true, true);
             }
     
@@ -494,7 +494,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             // String[] args = command.getArgs();
             
             if (args.length == 0) {
-                sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
+                sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|Laxeffectduration|timeworn> <number> [playername]");
                 return true;
             }
 
