@@ -19,6 +19,7 @@ public class HandleAccident {
         }
         public static void handleAccident(boolean isBladder, Player player, Boolean PlaySound, Boolean MessageSent) {
         PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
+        stats.setUrgeToGo(0);
         if (isBladder) {
             double wetbyamount;
             switch (stats.getLayers()) {
@@ -41,7 +42,6 @@ public class HandleAccident {
             }
             stats.setBladder(0);
             if (!stats.getBladderLockIncon()) {stats.increaseBladderIncontinence(0.5);}
-            stats.setUrgeToGo(0);
         } else {
             if (stats.getUnderwearType() == 0) {stats.increaseDiaperFullness(100);}
             else if (stats.getUnderwearType() == 1) {stats.increaseDiaperFullness(stats.getBowels());}
@@ -49,7 +49,6 @@ public class HandleAccident {
             else if (stats.getUnderwearType() == 3) {stats.increaseDiaperFullness(stats.getBowels()/4);}
             stats.setBowels(0);
             if(!stats.getBowelLockIncon()){stats.increaseBowelIncontinence(0.5);}
-            stats.setUrgeToGo(0);
         }
         if (PlaySound) {
             PlaySounds.playsounds(player,(isBladder ? "pee" : "mess"), 5,1.0,0.2, false);
