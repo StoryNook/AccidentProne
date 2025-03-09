@@ -29,12 +29,14 @@ import org.bukkit.scoreboard.ScoreboardManager;
 import com.storynook.AccidentsANDWanrings.HandleAccident;
 import com.storynook.Event_Listeners.AccidentsRandom;
 import com.storynook.Event_Listeners.Changing;
+import com.storynook.Event_Listeners.CribPlacement;
 import com.storynook.Event_Listeners.Laxative;
 import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.Event_Listeners.Sit;
 import com.storynook.Event_Listeners.Toilet;
 import com.storynook.Event_Listeners.washer;
 import com.storynook.items.ItemManager;
+import com.storynook.items.cribs;
 import com.storynook.items.pants;
 import com.storynook.items.underwear;
 import com.storynook.menus.Caregivermenu;
@@ -102,6 +104,7 @@ public class Plugin extends JavaPlugin
     AccidentsRandom accident = new AccidentsRandom(this);
     Changing change = new Changing(this);
     washer washer = new washer(this);
+    cribs crib = new cribs(this);
     Laxative lax = new Laxative(this);
     //Create all the custom recipes and items related
     ItemManager itemManager = new ItemManager(this);
@@ -112,14 +115,16 @@ public class Plugin extends JavaPlugin
     underwear.createAllRecipes();
     pants.createCleanPantsRecipe();
     pants.WashedPants();
+    crib.createCribRecipe();
     itemManager.createWasherRecipe();
     // itemManager.createDiaperPailRecipe();
     // itemManager.createLaxRecipe();
     itemManager.createlaxedItem();
+    CribPlacement placement = new CribPlacement(this);
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change, placement};
 
     // Loop through and register each listener
     for (Object listener : listeners) {

@@ -18,7 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.md_5.bungee.api.ChatColor;
 
 public class ItemManager {
-    private static JavaPlugin plugin;
+    private JavaPlugin plugin;
     public static ItemStack diaperpail;
     public static ItemStack lax;
     // public static ItemStack dur;
@@ -131,7 +131,7 @@ public class ItemManager {
         Bukkit.addRecipe(recipe);
     }
     
-    public static ItemStack createLaxedItem(Material Food) {
+    public ItemStack createLaxedItem(Material Food) {
         ItemStack item = new ItemStack(Food, 1);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
