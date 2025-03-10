@@ -1,5 +1,6 @@
 package com.storynook.items;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,9 +33,34 @@ public class cribs {
     public static int getCribModelNumber (Material woodtype)
     {
         switch (woodtype) {
-            case DARK_OAK_SLAB:
+            case ACACIA_SLAB:
                 return 627000;
+            case BIRCH_SLAB:
+                return 627001;
+            case DARK_OAK_SLAB:
+                return 627002;
+            case JUNGLE_SLAB:
+                return 627003;
+            case MANGROVE_SLAB:
+                return 627004;
+            case OAK_SLAB:
+                return 627005;
+            case SPRUCE_SLAB:
+                return 627006;
+            case WARPED_SLAB:
+                return 627007;
+            case QUARTZ_SLAB:
+                return 627009;
             default:
+
+                try {
+                    // Check if the material exists and it's CHERRY_SLAB (1.20+)
+                    if (woodtype != null && woodtype.name().equals("CHERRY_SLAB")) {
+                        return 627008;
+                    }
+                } catch (NoSuchFieldError ignored) { 
+                    // Ignore if CHERRY_SLAB doesn't exist in this version
+                }
                 return 0;
         }
     }
@@ -42,10 +68,20 @@ public class cribs {
     public void createCribRecipe() {
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "Crib"), createCrib(Material.DARK_OAK_SLAB));
         recipe.shape("WWW", "SSS", "WWW");
-        List<Material> woodMaterials = Arrays.asList(
-            Material.BIRCH_SLAB, Material.SPRUCE_SLAB, Material.OAK_SLAB, Material.ACACIA_SLAB, Material.JUNGLE_SLAB, 
-            Material.QUARTZ_SLAB, Material.WARPED_SLAB, Material.DARK_OAK_SLAB, Material.MANGROVE_SLAB, Material.PETRIFIED_OAK_SLAB
-        );
+        List<Material> woodMaterials = new ArrayList<>(Arrays.asList(
+            Material.BIRCH_SLAB, Material.SPRUCE_SLAB, Material.OAK_SLAB, 
+            Material.ACACIA_SLAB, Material.JUNGLE_SLAB, Material.QUARTZ_SLAB,
+            Material.WARPED_SLAB, Material.DARK_OAK_SLAB, Material.MANGROVE_SLAB
+        ));
+
+        try {
+            Class<Material> materialClass = Material.class;
+            if (materialClass.getField("CHERRY_SLAB").get(null) != null) {
+                woodMaterials.add(Material.valueOf("CHERRY_SLAB"));
+            }
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+            // CHERRY_SLAB doesn't exist in this version
+        }
 
         recipe.setIngredient('W', new RecipeChoice.MaterialChoice(woodMaterials));
         recipe.setIngredient('S', Material.STICK);

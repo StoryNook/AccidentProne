@@ -91,9 +91,10 @@ public class Warnings {
         player.sendMessage(ChatColor.RED +"You couldn't hold it anymore.");
         HandleAccident.handleAccident(isBladder, player, true, true);
         return;
-      } 
+      }
+      return; 
     }
-    if ((fullness/10) >= ((Math.random() * 8) + 1)) {
+    else if ((fullness/10) >= ((Math.random() * 8) + 1)) {
       if (!isBladder) {
         PlaySounds.playsounds(player,"tummyrumble", 5,1.0,0.2, false);
       }
