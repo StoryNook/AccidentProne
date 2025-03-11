@@ -1,6 +1,6 @@
-name: diaperplugin
+name: Accident-Prone
 main: com.storynook.Plugin
-version: 1.0.1
+version: 1.2.2
 api-version: 1.19
 author: ["StoryNook"]
 description: "Bladder, bowels, diapers and more tracking, and usage"

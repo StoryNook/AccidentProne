@@ -6,8 +6,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.storynook</groupId>
-	<artifactId>diaperplugin</artifactId>
-	<version>0.0.1</version>
+	<artifactId>Accident-Prone</artifactId>
+	<version>1.2.2</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
