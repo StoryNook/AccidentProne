@@ -79,6 +79,7 @@ public class CribPlacement implements Listener{
                     armorStand.setVisible(false);
                     armorStand.setCanPickupItems(false);
                     armorStand.setGravity(false);
+                    armorStand.setCustomName("Crib");
                     
                     itemInHand.setAmount(itemInHand.getAmount() - 1);
 

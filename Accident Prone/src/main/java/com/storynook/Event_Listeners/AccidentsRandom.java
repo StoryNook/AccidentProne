@@ -57,10 +57,10 @@ public class AccidentsRandom implements Listener {
             double maxIncontinence = Math.max(stats.getBladderIncontinence(), stats.getBowelIncontinence());
             double chance = Math.min(4, Math.max(0, maxIncontinence / 2));// 1 in 4 chance of having an accident
             if (random.nextInt(4) < chance) {
-                boolean bladderAccident = stats.getBladderIncontinence() >= stats.getBowelIncontinence();
+                boolean bladderAccident = (stats.getBladderIncontinence() * stats.getBladder()) > (stats.getBowelIncontinence() * stats.getBowels());
                 if (bladderAccident ? stats.getBladder() > 10 : stats.getBowels() > 10) {
                     HandleAccident.handleAccident(bladderAccident, player, true, true);
-                    player.sendMessage("You got so scared by the lightening that you had an accident!");
+                    player.sendMessage("You got so scared by the lightning that you had an accident!");
                     
                     cooldown.put(player.getUniqueId(), true);
                     Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {

@@ -137,8 +137,8 @@ public class SettingsMenu implements Listener {
                 List<String> lore = Arrays.asList(
                     "Current Bladder incon: " + Math.round(stats.getBladderIncontinence()),
                     stats.getMessing() ? "Current Bowel Incon: " + Math.round(stats.getBowelIncontinence()) : "Locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No"),
-                    stats.getMessing() ? "Bladder locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No") : "",
-                    stats.getMessing() ? "Bowel locked? " + (stats.getBowelLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No") : ""
+                    stats.getHardcore() ? null : "Bladder locked? " + (stats.getBladderLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No"),
+                    stats.getHardcore() ? null : stats.getMessing() ? "Bowel locked? " + (stats.getBowelLockIncon() ? ChatColor.RED + "Yes" : ChatColor.GREEN + "No") : null
                 );
                 InconlMeta.setLore(lore);
                 InconlMeta.setDisplayName("Incontinence");
