@@ -724,14 +724,33 @@ public class Plugin extends JavaPlugin
         
         if (stats != null) {
             image = ScoreBoard.getUnderwearStatus((int)stats.getDiaperWetness(), (int)stats.getDiaperFullness(), (int)stats.getUnderwearType(), 2);
-            if ((int)stats.getDiaperWetness() > 1 && (int)stats.getDiaperFullness() > 1) {
-                // state = "Wet And Messy";
-            } else if ((int)stats.getDiaperWetness() > 1) {
-                // state = "Wet";
-            } else if ((int)stats.getDiaperFullness() > 1) {
-                // state = "Messy";
-            } else if ((int)stats.getDiaperFullness() == 0 && (int)stats.getDiaperWetness() == 0) {
-                // state = "Clean";
+            String wetState = "";
+            String fullnessState = "";
+            
+            int wetness = (int)stats.getDiaperWetness();
+            int fullness = (int)stats.getDiaperFullness();
+            
+            if (wetness >= 100) {
+                wetState = ChatColor.YELLOW + "Leaking";
+            } else if (wetness > 50) {
+                wetState = ChatColor.YELLOW + "Soaked";
+            } else if (wetness > 1) {
+                wetState = ChatColor.YELLOW + "Wet";
+            }
+            
+            if (fullness >= 100) {
+                fullnessState = ChatColor.GREEN + "Blowout";
+            } else if (fullness > 50) {
+                fullnessState = ChatColor.GREEN + "Full";
+            } else if (fullness > 1) {
+                fullnessState = ChatColor.GREEN + "Dirty";
+            }
+            
+            state = wetState.isEmpty() ? fullnessState : 
+                   fullnessState.isEmpty() ? wetState : 
+                   wetState + ChatColor.WHITE + " And " + fullnessState;
+            if (wetState.isEmpty() && fullnessState.isEmpty()) {
+              state = "Clean";
             }
             player.sendTitle(image, state, 10, 20, 10);
             if (player != target) {
