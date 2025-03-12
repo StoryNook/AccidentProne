@@ -51,7 +51,8 @@ public class PlayerEventListener implements Listener {
             "DiaperStuffer",
             "Washer",
             "LaxedItem",
-            "Crib"
+            "Crib",
+            "DiaperPail"
         };
         
         for (String recipe : recipes) {
@@ -190,55 +191,7 @@ public class PlayerEventListener implements Listener {
     //     }
     // }
 
-    // @EventHandler
-    // public void onInventoryClick(InventoryClickEvent event) {
-    //     Inventory clickedInventory = event.getClickedInventory();
-    //     ItemStack currentItem = event.getCurrentItem();
-
-    //     // Null check
-    //     if (clickedInventory == null || currentItem == null || currentItem.getType() == Material.AIR) {
-    //         return;
-    //     }
-
-    //     // Allow item removal from the player's inventory
-    //     if (clickedInventory.equals(event.getView().getBottomInventory())) {
-    //         return;
-    //     }
-
-    //     // Check if the item is one of your custom items
-    //     if (isUsed(currentItem)) {
-    //         boolean isAllowedInventory = isDiaperPailInventory(clickedInventory);
-
-    //         // If the inventory is not a diaper pail, cancel the event
-    //         if (!isAllowedInventory) {
-    //             event.setCancelled(true);
-    //         }
-    //     }
-    // }
-
-    // @EventHandler
-    // public void onInventoryDrag(InventoryDragEvent event) {
-    //     Inventory destinationInventory = event.getInventory();
-
-    //     // Ensure the player isn't interacting with their own inventory
-    //     if (!destinationInventory.equals(event.getView().getBottomInventory())) {
-    //         for (Integer slot : event.getRawSlots()) {
-    //             // Check if the slot belongs to the clicked inventory
-    //             if (slot < event.getView().getTopInventory().getSize()) {
-    //                 ItemStack item = event.getNewItems().get(slot);
-    //                 if (isUsed(item) && !isDiaperPailInventory(destinationInventory)) {
-    //                     event.setCancelled(true);
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
-    // // Ensure the inventory is recognized as a diaperpail
-    // private boolean isDiaperPailInventory(Inventory inventory, InventoryClickEvent event) {
-    //     return inventory != null && "Diaper Pail".equals(inventory.getName());
-    // }
+    
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();

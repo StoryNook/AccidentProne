@@ -45,23 +45,23 @@ public class ItemManager {
         // Register the recipe
         Bukkit.addRecipe(recipe);
     }
-    // public void createDiaperPailRecipe() {
-    //     // Define the custom item
-    //     ItemStack item = new ItemStack(Material.BARREL, 1);
-    //     ItemMeta meta = item.getItemMeta();
-    //     meta.setDisplayName("Diaper Pail");
-    //     item.setItemMeta(meta);
-    //     diaperpail = item;
+    public void createDiaperPailRecipe() {
+        // Define the custom item
+        ItemStack item = new ItemStack(Material.BARREL, 1);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName("Diaper Pail");
+        item.setItemMeta(meta);
+        diaperpail = item;
 
-    //     // Create the recipe
-    //     ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "DiaperPail"), diaperpail);
-    //     recipe.shape(" T ", " B ", "   "); // Crafting grid: T = Trapdoor, C = Cauldron
-    //     recipe.setIngredient('T', Material.IRON_TRAPDOOR); 
-    //     recipe.setIngredient('B', Material.BARREL);
+        // Create the recipe
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "DiaperPail"), diaperpail);
+        recipe.shape(" T ", " B ", "   "); // Crafting grid: T = Trapdoor, C = Cauldron
+        recipe.setIngredient('T', Material.IRON_TRAPDOOR); 
+        recipe.setIngredient('B', Material.BARREL);
 
-    //     // Register the recipe
-    //     Bukkit.addRecipe(recipe);
-    // }
+        // Register the recipe
+        Bukkit.addRecipe(recipe);
+    }
 
 
 

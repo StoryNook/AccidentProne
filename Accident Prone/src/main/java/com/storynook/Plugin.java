@@ -30,6 +30,7 @@ import com.storynook.AccidentsANDWanrings.HandleAccident;
 import com.storynook.Event_Listeners.AccidentsRandom;
 import com.storynook.Event_Listeners.Changing;
 import com.storynook.Event_Listeners.CribPlacement;
+import com.storynook.Event_Listeners.DiaperPail;
 import com.storynook.Event_Listeners.Laxative;
 import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.Event_Listeners.Sit;
@@ -104,6 +105,7 @@ public class Plugin extends JavaPlugin
     AccidentsRandom accident = new AccidentsRandom(this);
     Changing change = new Changing(this);
     washer washer = new washer(this);
+    DiaperPail pail = new DiaperPail();
     cribs crib = new cribs(this);
     Laxative lax = new Laxative(this);
     //Create all the custom recipes and items related
@@ -112,6 +114,7 @@ public class Plugin extends JavaPlugin
     pants pants = new pants(this);
 
     itemManager.createToiletRecipe();
+    itemManager.createDiaperPailRecipe();
     underwear.createAllRecipes();
     pants.createCleanPantsRecipe();
     pants.WashedPants();
@@ -124,7 +127,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change, placement};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change, placement, pail};
 
     // Loop through and register each listener
     for (Object listener : listeners) {
