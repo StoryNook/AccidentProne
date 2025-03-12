@@ -29,12 +29,6 @@ public class DiaperPail implements Listener {
                     isValid = false;
                     break;
                 }
-                
-                // Ensure the stack size is correct (e.g., up to 64)
-                if (item.getAmount() < 64) {
-                    isValid = false;
-                    break;
-                }
             }
             if (isValid){
                 for (int i = 0; i < inventory.getSize(); i++) {
