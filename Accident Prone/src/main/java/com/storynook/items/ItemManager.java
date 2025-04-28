@@ -47,9 +47,10 @@ public class ItemManager {
     }
     public void createDiaperPailRecipe() {
         // Define the custom item
-        ItemStack item = new ItemStack(Material.BARREL, 1);
+        ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("Diaper Pail");
+        meta.setCustomModelData(628000);
         item.setItemMeta(meta);
         diaperpail = item;
 

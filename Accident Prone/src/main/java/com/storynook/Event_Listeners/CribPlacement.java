@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -119,22 +120,27 @@ public class CribPlacement implements Listener{
             for (Entity entity : nearbyEntities) {
                 if (entity.getType() == EntityType.ARMOR_STAND) {
                     ArmorStand armorStand = (ArmorStand) entity;
+                    String name = armorStand.getCustomName();
+
                     if (!armorStand.isVisible()) {
                         ItemStack helmet = armorStand.getHelmet();
                         if (helmet != null && !helmet.getType().isAir()) {
-                            ItemStack cribItem = helmet.clone();
-                            ItemMeta meta = cribItem.getItemMeta();
-                            
-                            // Set the custom name
-                            if (meta != null) {
-                                meta.setDisplayName("Crib");
-                                cribItem.setItemMeta(meta);
+                            ItemMeta helmetmeta = helmet.getItemMeta();
+                            if ((name != null && name.equals("Crib")) || isCrib(helmetmeta)) {
+                                ItemStack cribItem = helmet.clone();
+                                ItemMeta meta = cribItem.getItemMeta();
+                                
+                                // Set the custom name
+                                if (meta != null) {
+                                    meta.setDisplayName("Crib");
+                                    cribItem.setItemMeta(meta);
+                                }
+                                Item droppedHelmet = armorStand.getWorld().dropItem(armorStand.getLocation(), cribItem);
+                                droppedHelmet.setVelocity(new Vector(0, 0.2, 0)); // Add slight upward velocity
+                                armorStand.remove();
+                                break;
                             }
-                            Item droppedHelmet = armorStand.getWorld().dropItem(armorStand.getLocation(), cribItem);
-                            droppedHelmet.setVelocity(new Vector(0, 0.2, 0)); // Add slight upward velocity
                         }
-                        armorStand.remove();
-                        break;
                     }
                 }
             }

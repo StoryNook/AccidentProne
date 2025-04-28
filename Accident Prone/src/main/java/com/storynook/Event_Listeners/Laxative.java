@@ -116,9 +116,9 @@ public class Laxative implements Listener{
                         PersistentDataType.BYTE,
                         (byte) 1
                     );
+                    meta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
+                    result.setItemMeta(meta);
                 }
-                meta.setLore(Collections.singletonList(ChatColor.RED + "Has Laxative"));
-                result.setItemMeta(meta);
                 inventory.setResult(result);
             } else {
                 return;
