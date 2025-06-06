@@ -47,7 +47,7 @@ public class DiaperPail implements Listener {
                             
                             // Create empty inventory if it doesn't exist
                             if (inventory == null) {
-                                inventory = Bukkit.createInventory(null, 53, "Diaper Pail");
+                                inventory = Bukkit.createInventory(null, 27, "Diaper Pail");
                                 pailInventories.put(pailId, inventory);
                             }
                             event.getPlayer().openInventory(inventory);
@@ -108,6 +108,7 @@ public class DiaperPail implements Listener {
         return false;
     }
     
+    @SuppressWarnings("deprecation")
     @EventHandler
     public void PlaceDiaperPail(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -128,6 +129,7 @@ public class DiaperPail implements Listener {
                     
                     // Create and place item frame
                     ArmorStand armorStand = (ArmorStand) blockLocation.getWorld().spawnEntity(armorStandLocation, EntityType.ARMOR_STAND);
+                    armorStand.setVisible(false);
                     
                     float yaw;
                     switch(playerDirection) {
@@ -150,11 +152,8 @@ public class DiaperPail implements Listener {
                     }
                     
                     armorStand.setRotation(yaw, 0);
-
-                    armorStand.setVisible(false);
                     armorStand.setCanPickupItems(false);
                     armorStand.setGravity(false);
-                    // armorStand.setCustomName("DiaperPail");
                     
                     // Place a barrier block at the same location as the armor stand
                     frameLocation.getBlock().setType(Material.BARRIER);
