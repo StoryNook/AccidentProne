@@ -40,12 +40,13 @@ public class UpdateStats {
             this.plugin = plugin;
             this.commandHandler = commandHandler;
         } 
+        // Near Running Water
         public static boolean isNearRunningWater(Player player) {
             Location playerLocation = player.getLocation();
             World world = player.getWorld();
     
             // Define the search radius around the player
-            int radius = 3;
+            int radius = 5;
     
             for (int x = -radius; x <= radius; x++) {
                 for (int y = -1; y <= 1; y++) { // Check one block above and below the player
