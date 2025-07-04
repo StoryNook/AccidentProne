@@ -119,12 +119,11 @@ public class DiaperPail implements Listener {
              if (itemInHand != null && itemInHand.getType() == Material.SLIME_BALL && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasCustomModelData()) {
                 Player player = event.getPlayer();
                 
-                //Placement Cooldown
-                CustomItemCoolDown cooldown = new CustomItemCoolDown();
-                if(cooldown.cooldown.contains(player.getUniqueId())){
+                // Check if the block clicked is a barrier block and cancel action if it is
+                if (clickedBlock.getType() == Material.BARRIER) {
+                    event.setCancelled(true);
                     return;
                 }
-                cooldown.Cooldown(player, 2);
                 
                 ItemMeta meta = itemInHand.getItemMeta();
                 if (meta.getCustomModelData() == 628000) {
@@ -190,7 +189,7 @@ public class DiaperPail implements Listener {
     @EventHandler
     public void PunchDiaperPail(PlayerInteractEvent event){
         if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BARRIER) {
-            Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 1.5, 1.5, 1.5);
+            Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 0.5, 0.5, 0.5);
             
             for (Entity entity : nearbyEntities) {
                 if (entity.getType() == EntityType.ARMOR_STAND) {
