@@ -26,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import com.storynook.items.underwear;
+import com.storynook.items.CustomItemCoolDown;
 
 public class DiaperPail implements Listener {
     private static Map<UUID, Inventory> pailInventories = new HashMap<>();
@@ -116,6 +117,15 @@ public class DiaperPail implements Listener {
             ItemStack itemInHand = event.getItem();
 
              if (itemInHand != null && itemInHand.getType() == Material.SLIME_BALL && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasCustomModelData()) {
+                Player player = event.getPlayer();
+                
+                //Placement Cooldown
+                CustomItemCoolDown cooldown = new CustomItemCoolDown();
+                if(cooldown.cooldown.contains(player.getUniqueId())){
+                    return;
+                }
+                cooldown.Cooldown(player, 2);
+                
                 ItemMeta meta = itemInHand.getItemMeta();
                 if (meta.getCustomModelData() == 628000) {
                     Location blockLocation = clickedBlock.getLocation();
@@ -124,7 +134,6 @@ public class DiaperPail implements Listener {
                     Location frameLocation = new Location(blockLocation.getWorld(), blockLocation.getX(), blockLocation.getY() + 1, blockLocation.getZ());
                     Location armorStandLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
 
-                    Player player = event.getPlayer();
                     BlockFace playerDirection = player.getFacing();
                     
                     // Create and place item frame

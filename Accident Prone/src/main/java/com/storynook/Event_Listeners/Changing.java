@@ -26,9 +26,10 @@ import com.storynook.PlayerStats;
 import com.storynook.Plugin;
 import com.storynook.items.CustomItems;
 import com.storynook.items.underwear;
+import com.storynook.items.CustomItemCoolDown;
 
 public class Changing implements Listener{
-    private Set<UUID> cooldown = new HashSet<>();
+    // private Set<UUID> cooldown = new HashSet<>();
     static HashMap<UUID, Boolean> Justchanged = new HashMap<>();
     HashMap<UUID, Double> distanceinBlocks = new HashMap<>();
     
@@ -112,6 +113,13 @@ public class Changing implements Listener{
                 if (customModelData == 626007) {
                     event.setCancelled(true); // Cancel the interaction
                     if (Stats.getOptin() && Stats.getLayers() < 4) {
+                        //Cooldown
+                        CustomItemCoolDown cooldown = new CustomItemCoolDown();
+                        if(cooldown.cooldown.contains(actor.getUniqueId())){
+                            return;
+                        }
+                        cooldown.Cooldown(actor, 5);
+
                         int maxLayers = 0;
                         switch(Stats.getUnderwearType()) {
                             case 0: maxLayers = 1; break;
@@ -136,10 +144,6 @@ public class Changing implements Listener{
                         } else {
                             actor.getInventory().setItemInMainHand(null);
                         }
-                    
-                        // Apply cooldown (5 seconds)
-                        cooldown.add(actor.getUniqueId());
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> cooldown.remove(actor.getUniqueId()), 20 * 5);
                     }
                     return; // Exit the method to prevent further execution
                 }

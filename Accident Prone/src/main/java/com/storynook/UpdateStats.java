@@ -34,6 +34,7 @@ public class UpdateStats {
     static HashMap<UUID, Double> activityMultiplier = new HashMap<>();
     static HashMap<UUID, Integer> HydrationSpike = new HashMap<>();
     static HashMap<UUID, Boolean> Growled = new HashMap<>();
+    static HashMap<UUID, Boolean> Dehydrated = new HashMap<>();
 
     private final Plugin plugin;
         public UpdateStats(Plugin plugin, CommandHandler commandHandler) {
@@ -223,9 +224,11 @@ public class UpdateStats {
               }
               if (stats.getHydration() < 10) {
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 50, 2), true);
+                Dehydrated.put(player.getUniqueId(), true);
               }
-              else if (stats.getHydration() >= 10) {
+              else if (stats.getHydration() >= 10 && Dehydrated.getOrDefault(player.getUniqueId(), false)) {
                 player.removePotionEffect(PotionEffectType.SLOW_DIGGING);
+                Dehydrated.put(player.getUniqueId(), false);
               }
               int cycles = playerCyclesMap.getOrDefault(player.getUniqueId(), 0);
               int secondsLeft = playerSecondsLeftMap.getOrDefault(player.getUniqueId(), 0);

@@ -28,6 +28,7 @@ import org.bukkit.util.Vector;
 
 import com.storynook.Plugin;
 import com.storynook.items.cribs;
+import com.storynook.items.CustomItemCoolDown;
 
 public class CribPlacement implements Listener{
     @SuppressWarnings("unused")
@@ -43,13 +44,22 @@ public class CribPlacement implements Listener{
             ItemStack itemInHand = event.getItem();
 
              if (itemInHand != null && itemInHand.getType() == Material.SLIME_BALL && itemInHand.hasItemMeta() && itemInHand.getItemMeta().hasCustomModelData()) {
+                Player player = event.getPlayer();
+
+                //Placement Cooldown
+                CustomItemCoolDown cooldown = new CustomItemCoolDown();
+                if(cooldown.cooldown.contains(player.getUniqueId())){
+                    return;
+                }
+                cooldown.Cooldown(player, 1);
+                
                 ItemMeta meta = itemInHand.getItemMeta();
                 if (isCrib(meta)) {
                     Location blockLocation = clickedBlock.getLocation();
                     BlockFace face = event.getBlockFace();
                     Location frameLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
 
-                    Player player = event.getPlayer();
+                    
                     BlockFace playerDirection = player.getFacing();
                     
                     // Create and place item frame
