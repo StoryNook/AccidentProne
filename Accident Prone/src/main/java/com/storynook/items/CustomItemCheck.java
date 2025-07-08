@@ -9,7 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class CustomItems {
+public class CustomItemCheck {
 
     public static boolean VailidUnderwear (ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
@@ -74,6 +74,7 @@ public class CustomItems {
         return false;
     }
 
+    //Used for Cleaning Pants
     public static boolean isValidSmeltingItem(ItemStack item) {
         if (item == null || !item.hasItemMeta()) {
             return false;
@@ -85,15 +86,40 @@ public class CustomItems {
         }
 
         int modelData = meta.getCustomModelData();
-
-        // Check if the item is a slimeball with model data between 626001 and 626005
+        //Checks the item ID to ensure it's the custom pants
         if (item.getType() == Material.SLIME_BALL && (modelData == 626019 || 
         modelData == 626020 || 
         modelData == 626021)) {
             return true;
         }
-
-        // Check if the item is leather leggings with any custom model data
+        
         return item.getType() == Material.LEATHER_LEGGINGS;
+    }
+
+    public static boolean isUsed (ItemStack item){
+        if (item.hasItemMeta()) {
+            ItemMeta meta = item.getItemMeta();
+            if (meta.hasCustomModelData()) {
+                return meta.getCustomModelData() == 626005 || 
+                meta.getCustomModelData() == 626004 ||
+                meta.getCustomModelData() == 626011 ||  
+                meta.getCustomModelData() == 626010;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isCrib (ItemMeta meta){
+        return meta.getCustomModelData() == 627000 || 
+        meta.getCustomModelData() == 627001 ||
+        meta.getCustomModelData() == 627002 ||
+        meta.getCustomModelData() == 627003 ||
+        meta.getCustomModelData() == 627004 ||
+        meta.getCustomModelData() == 627005 ||
+        meta.getCustomModelData() == 627006 ||
+        meta.getCustomModelData() == 627007 ||
+        meta.getCustomModelData() == 627008 ||
+        meta.getCustomModelData() == 627009 ||
+        meta.getCustomModelData() == 627010;
     }
 }

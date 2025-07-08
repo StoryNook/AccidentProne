@@ -31,6 +31,7 @@ import com.storynook.Event_Listeners.AccidentsRandom;
 import com.storynook.Event_Listeners.Changing;
 import com.storynook.Event_Listeners.CribPlacement;
 import com.storynook.Event_Listeners.DiaperPail;
+import com.storynook.Event_Listeners.CustomFurnitureRemoval;
 import com.storynook.Event_Listeners.Laxative;
 import com.storynook.Event_Listeners.PantsCrafting;
 import com.storynook.Event_Listeners.Sit;
@@ -87,6 +88,15 @@ public class Plugin extends JavaPlugin
         getLogger().warning("FIALED:Player data folder not created");
       }
     }
+    File DiaperPailInventoryFolder = new File(getDataFolder(), "DiaperPails");
+    if (!DiaperPailInventoryFolder.exists()) {
+      try{
+        DiaperPailInventoryFolder.mkdirs();
+        getLogger().info("DiaperPail Inventory folder created");
+      } catch (Exception e) {
+        getLogger().warning("FIALED:DiaperPail Inventory folder not created");
+      }
+    }
 
     mergeConfigFiles("config.yml");
     mergeConfigFiles("sounds.yml");
@@ -106,6 +116,7 @@ public class Plugin extends JavaPlugin
     Changing change = new Changing(this);
     washer washer = new washer(this);
     DiaperPail pail = new DiaperPail();
+    CustomFurnitureRemoval customFurnitureRemoval = new CustomFurnitureRemoval();
     cribs crib = new cribs(this);
     Laxative lax = new Laxative(this);
     //Create all the custom recipes and items related
@@ -127,7 +138,7 @@ public class Plugin extends JavaPlugin
   
    
     // Create an array of all your listener objects
-    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change, placement, pail};
+    Object[] listeners = new Object[]{playerEventListener, SettingsMenu, caregivermenu, incontinencemenu, hudmenu, soundmenu, pantsCrafting, washer, sit, toilet, accident, lax, change, placement, pail, customFurnitureRemoval};
 
     // Loop through and register each listener
     for (Object listener : listeners) {

@@ -1,6 +1,6 @@
 package com.storynook;
 
-import com.storynook.items.CustomItems;
+import com.storynook.items.CustomItemCheck;
 import com.storynook.items.pants;
 import com.storynook.menus.IncontinenceMenu;
 import com.storynook.menus.SettingsMenu;
@@ -167,7 +167,7 @@ public class PlayerEventListener implements Listener {
         for (ItemStack item : matrix) {
             if (item == null) continue;
 
-            if (CustomItems.isCustomItem(item)) {
+            if (CustomItemCheck.isCustomItem(item)) {
                 inventory.setResult(null); // Only block crafting if it's not intended
             }
         }

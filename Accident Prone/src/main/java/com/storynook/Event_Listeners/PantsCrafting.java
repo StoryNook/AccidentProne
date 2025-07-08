@@ -24,7 +24,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
-import com.storynook.items.CustomItems;
+import com.storynook.items.CustomItemCheck;
 
 import java.util.UUID;
 
@@ -85,7 +85,7 @@ public class PantsCrafting implements Listener{
         @EventHandler
         public void onPrepareEnchant(PrepareItemEnchantEvent event) {
             ItemStack item = event.getItem();
-            if (CustomItems.isCustomPants(item)) {
+            if (CustomItemCheck.isCustomPants(item)) {
                 event.setCancelled(true);
             }
         }
@@ -95,8 +95,8 @@ public class PantsCrafting implements Listener{
             ItemStack firstItem = event.getInventory().getItem(0);
             ItemStack secondItem = event.getInventory().getItem(1);
 
-            if ((firstItem != null && CustomItems.isCustomPants(firstItem)) || 
-                (secondItem != null && CustomItems.isCustomPants(secondItem))) {
+            if ((firstItem != null && CustomItemCheck.isCustomPants(firstItem)) || 
+                (secondItem != null && CustomItemCheck.isCustomPants(secondItem))) {
                 event.setResult(null); // Block the result output
             }
         }
@@ -129,11 +129,11 @@ public class PantsCrafting implements Listener{
         PlayerInventory inventory = target.getInventory();
         if (inventory.getLeggings() != null) {
             ItemStack leggings = target.getInventory().getLeggings();
-            if (CustomItems.isDiaper(leggings) && !stats.getvisableUnderwear()) {
+            if (CustomItemCheck.isDiaper(leggings) && !stats.getvisableUnderwear()) {
                     target.getInventory().setLeggings(null);
                     return;
             }
-            else if (CustomItems.isDiaper(leggings) && (changed || accident)) {
+            else if (CustomItemCheck.isDiaper(leggings) && (changed || accident)) {
                 target.getInventory().setLeggings(null);
             }
         }
@@ -234,7 +234,7 @@ public class PantsCrafting implements Listener{
             if (isLeggings(itemInHand)) { 
                 LeatherArmorMeta leggingsmeta = (LeatherArmorMeta) leggings.getItemMeta();
                 if(leggingsmeta != null && leggingsmeta.hasCustomModelData()){
-                    if (CustomItems.isDiaper(leggings)) {
+                    if (CustomItemCheck.isDiaper(leggings)) {
                         inventory.setLeggings(null);
                     }
                 }
@@ -265,9 +265,9 @@ public class PantsCrafting implements Listener{
         // 1. Handle normal clicks on the leggings slot
         if (slotType == InventoryType.SlotType.ARMOR && event.getSlot() == 36) {
             // If the player is wearing the diaper leggings
-            if (CustomItems.isDiaper(currentItem)) {
+            if (CustomItemCheck.isDiaper(currentItem)) {
                 // If they're trying to equip ANY other leggings
-                if (cursorItem != null && isLeggings(cursorItem) && !CustomItems.isDiaper(cursorItem)) {
+                if (cursorItem != null && isLeggings(cursorItem) && !CustomItemCheck.isDiaper(cursorItem)) {
                     player.getInventory().setLeggings(null);  // Remove the diaper
                 }
             }
@@ -277,11 +277,11 @@ public class PantsCrafting implements Listener{
         if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
             ItemStack shiftItem = event.getCurrentItem();
 
-            if (shiftItem != null && isLeggings(shiftItem) && !CustomItems.isDiaper(shiftItem)) {
+            if (shiftItem != null && isLeggings(shiftItem) && !CustomItemCheck.isDiaper(shiftItem)) {
                 ItemStack equippedLeggings = player.getInventory().getLeggings();
 
                 // If the player is wearing diaper leggings, remove them
-                if (CustomItems.isDiaper(equippedLeggings)) {
+                if (CustomItemCheck.isDiaper(equippedLeggings)) {
                     player.getInventory().setLeggings(null);
                 }
             }
@@ -292,10 +292,10 @@ public class PantsCrafting implements Listener{
             int hotbarButton = event.getHotbarButton();
             ItemStack hotbarItem = player.getInventory().getItem(hotbarButton);
 
-            if (hotbarItem != null && isLeggings(hotbarItem) && !CustomItems.isDiaper(hotbarItem)) {
+            if (hotbarItem != null && isLeggings(hotbarItem) && !CustomItemCheck.isDiaper(hotbarItem)) {
                 ItemStack equippedLeggings = player.getInventory().getLeggings();
 
-                if (CustomItems.isDiaper(equippedLeggings)) {
+                if (CustomItemCheck.isDiaper(equippedLeggings)) {
                     player.getInventory().setLeggings(null);
                 }
             }

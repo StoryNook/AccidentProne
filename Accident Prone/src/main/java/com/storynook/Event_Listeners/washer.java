@@ -29,7 +29,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.storynook.items.CustomItems;
+import com.storynook.items.CustomItemCheck;
 
 public class washer implements Listener{
     private JavaPlugin plugin;
@@ -198,13 +198,13 @@ public class washer implements Listener{
             if(data.has(key, PersistentDataType.INTEGER)){
                 int customModelData = data.get(key, PersistentDataType.INTEGER);
                 if (customModelData == 626014) {
-                    if (!CustomItems.isValidSmeltingItem(smeltingItem)) {
+                    if (!CustomItemCheck.isValidSmeltingItem(smeltingItem)) {
                         event.setCancelled(true);
                     }
                 }
             }
             else {
-                if (CustomItems.isValidSmeltingItem(smeltingItem)) {
+                if (CustomItemCheck.isValidSmeltingItem(smeltingItem)) {
                     event.setCancelled(true);
                 }
             }
@@ -222,7 +222,7 @@ public class washer implements Listener{
             int customModelData = data.get(key, PersistentDataType.INTEGER);
 
             if (customModelData == 626014) {
-                if (CustomItems.isValidSmeltingItem(smeltingItem)) {
+                if (CustomItemCheck.isValidSmeltingItem(smeltingItem)) {
                     ItemStack result = smeltingItem.clone();
                     ItemMeta meta = result.getItemMeta();
                     
@@ -250,7 +250,7 @@ public class washer implements Listener{
             }
         }
         else {
-            if (CustomItems.isValidSmeltingItem(smeltingItem)) {
+            if (CustomItemCheck.isValidSmeltingItem(smeltingItem)) {
                 event.setCancelled(true);
             }
         }

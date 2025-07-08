@@ -29,6 +29,7 @@ import org.bukkit.util.Vector;
 import com.storynook.Plugin;
 import com.storynook.items.cribs;
 import com.storynook.items.CustomItemCoolDown;
+import com.storynook.items.CustomItemCheck;
 
 public class CribPlacement implements Listener{
     @SuppressWarnings("unused")
@@ -54,11 +55,10 @@ public class CribPlacement implements Listener{
                 cooldown.Cooldown(player, 1);
                 
                 ItemMeta meta = itemInHand.getItemMeta();
-                if (isCrib(meta)) {
+                if (CustomItemCheck.isCrib(meta)) {
                     Location blockLocation = clickedBlock.getLocation();
                     BlockFace face = event.getBlockFace();
                     Location frameLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
-
                     
                     BlockFace playerDirection = player.getFacing();
                     
@@ -104,58 +104,45 @@ public class CribPlacement implements Listener{
             }
         }
     }
-    private boolean isCrib (ItemMeta meta){
-        return meta.getCustomModelData() == 627000 || 
-        meta.getCustomModelData() == 627001 ||
-        meta.getCustomModelData() == 627002 ||
-        meta.getCustomModelData() == 627003 ||
-        meta.getCustomModelData() == 627004 ||
-        meta.getCustomModelData() == 627005 ||
-        meta.getCustomModelData() == 627006 ||
-        meta.getCustomModelData() == 627007 ||
-        meta.getCustomModelData() == 627008 ||
-        meta.getCustomModelData() == 627009 ||
-        meta.getCustomModelData() == 627010;
-    }
 
-    @EventHandler
-    public void PunchCrib (PlayerInteractEvent event){
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-            Block clickedBlock = event.getClickedBlock();
-            Location blockLocation = clickedBlock.getLocation();
+    // @EventHandler
+    // public void PunchCrib (PlayerInteractEvent event){
+    //     if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
+    //         Block clickedBlock = event.getClickedBlock();
+    //         Location blockLocation = clickedBlock.getLocation();
 
-            Collection<Entity> nearbyEntities = clickedBlock.getWorld().getNearbyEntities(blockLocation, 1.5, 1.5, 1.5);
+    //         Collection<Entity> nearbyEntities = clickedBlock.getWorld().getNearbyEntities(blockLocation, 0.27, 0.27, 0.5);
         
-            // Loop through each entity to find an invisible armor stand
-            for (Entity entity : nearbyEntities) {
-                if (entity.getType() == EntityType.ARMOR_STAND) {
-                    ArmorStand armorStand = (ArmorStand) entity;
-                    String name = armorStand.getCustomName();
+    //         // Loop through each entity to find an invisible armor stand
+    //         for (Entity entity : nearbyEntities) {
+    //             if (entity.getType() == EntityType.ARMOR_STAND) {
+    //                 ArmorStand armorStand = (ArmorStand) entity;
+    //                 String name = armorStand.getCustomName();
 
-                    if (!armorStand.isVisible()) {
-                        ItemStack helmet = armorStand.getHelmet();
-                        if (helmet != null && !helmet.getType().isAir()) {
-                            ItemMeta helmetmeta = helmet.getItemMeta();
-                            if ((name != null && name.equals("Crib")) || isCrib(helmetmeta)) {
-                                ItemStack cribItem = helmet.clone();
-                                ItemMeta meta = cribItem.getItemMeta();
+    //                 if (!armorStand.isVisible()) {
+    //                     ItemStack helmet = armorStand.getHelmet();
+    //                     if (helmet != null && !helmet.getType().isAir()) {
+    //                         ItemMeta helmetmeta = helmet.getItemMeta();
+    //                         if ((name != null && name.equals("Crib")) || CustomItemCheck.isCrib(helmetmeta)) {
+    //                             ItemStack cribItem = helmet.clone();
+    //                             ItemMeta meta = cribItem.getItemMeta();
                                 
-                                // Set the custom name
-                                if (meta != null) {
-                                    meta.setDisplayName("Crib");
-                                    cribItem.setItemMeta(meta);
-                                }
-                                Item droppedHelmet = armorStand.getWorld().dropItem(armorStand.getLocation(), cribItem);
-                                droppedHelmet.setVelocity(new Vector(0, 0.2, 0)); // Add slight upward velocity
-                                armorStand.remove();
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    //                             // Set the custom name
+    //                             if (meta != null) {
+    //                                 meta.setDisplayName("Crib");
+    //                                 cribItem.setItemMeta(meta);
+    //                             }
+    //                             Item droppedHelmet = armorStand.getWorld().dropItem(armorStand.getLocation(), cribItem);
+    //                             droppedHelmet.setVelocity(new Vector(0, 0.2, 0)); // Add slight upward velocity
+    //                             armorStand.remove();
+    //                             break;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
@@ -166,7 +153,7 @@ public class CribPlacement implements Listener{
         ItemStack result = event.getRecipe().getResult();
         ItemMeta resultmeta = result.getItemMeta();
 
-        if (resultmeta.hasCustomModelData() && isCrib(resultmeta)) {
+        if (resultmeta.hasCustomModelData() && CustomItemCheck.isCrib(resultmeta)) {
             Material woodType = null;
             boolean mismatched = false;
 

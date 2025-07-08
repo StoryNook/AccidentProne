@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -24,17 +27,26 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.storynook.items.underwear;
+import com.storynook.items.CustomItemCheck;
 import com.storynook.items.CustomItemCoolDown;
 
 public class DiaperPail implements Listener {
-    private static Map<UUID, Inventory> pailInventories = new HashMap<>();
+    public static Map<UUID, Inventory> pailInventories = new HashMap<>();
+    private static Map<UUID, UUID> AccessedInventory = new HashMap<>();
 
+    //Opening of the Diaper Pail, creates inventory file on open if it doesn't exist yet
     @EventHandler
     public void OpenDiaperPail(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BARRIER) {
-            Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 1.5, 1.5, 1.5);
+            CustomItemCoolDown cooldown = new CustomItemCoolDown();
+            if(cooldown.cooldown.contains(event.getPlayer().getUniqueId())){
+                return;
+            }
+            Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 0.5, 0.5, 0.5);
             
             for (Entity entity : nearbyEntities) {
                 if (entity.getType() == EntityType.ARMOR_STAND) {
@@ -48,10 +60,19 @@ public class DiaperPail implements Listener {
                             
                             // Create empty inventory if it doesn't exist
                             if (inventory == null) {
-                                inventory = Bukkit.createInventory(null, 27, "Diaper Pail");
-                                pailInventories.put(pailId, inventory);
+                                File inventoryFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Accident-Prone").getDataFolder(), "DiaperPails/" + pailId + ".yml");
+                                if (!inventoryFile.exists()) {
+                                    inventory = Bukkit.createInventory(null, 27, "Diaper Pail");
+                                    saveInventory(inventory, inventoryFile);
+                                    pailInventories.put(pailId, inventory);
+                                } else {
+                                    // Load existing inventory from file
+                                    inventory = loadInventory(inventoryFile);
+                                    pailInventories.put(pailId, inventory);
+                                }
                             }
                             event.getPlayer().openInventory(inventory);
+                            AccessedInventory.put(event.getPlayer().getUniqueId(), pailId);
                             break;
                         } catch (IllegalArgumentException e) {
                             continue;
@@ -61,6 +82,87 @@ public class DiaperPail implements Listener {
             }
         }
     }
+
+    private static void saveInventory(Inventory inventory, File file) {
+        YamlConfiguration config = new YamlConfiguration();
+        
+        for (int i = 0; i < inventory.getSize(); i++) {
+            ItemStack item = inventory.getItem(i);
+            
+            if (item != null && !item.getType().isAir()) {
+                String path = "items." + i;
+                
+                // Save basic item info
+                config.set(path + ".type", item.getType().name());
+                config.set(path + ".amount", item.getAmount());
+                
+                // Save item meta data
+                ItemMeta meta = item.getItemMeta();
+                if (meta != null) {
+                    //Save Name
+                    if (meta.hasDisplayName()) {
+                        config.set(path + ".name", meta.getDisplayName());
+                    }
+                    // Serialize lore (convert to list of strings)
+                    if (meta.hasLore()) {
+                        config.set(path + ".lore", meta.getLore());
+                    }
+                    
+                    // Save custom model data
+                    if (meta.hasCustomModelData()) {
+                        config.set(path + ".custom_model_data", meta.getCustomModelData());
+                    }
+                }
+            }
+        }
+
+        try {
+            config.save(file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Inventory loadInventory(File file) {
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        Inventory inventory = Bukkit.createInventory(null, 27, "Diaper Pail");
+
+        for (int i = 0; i < inventory.getSize(); i++) {
+            String path = "items." + i;
+            
+            if (config.contains(path)) {
+                // Create a new item stack
+                ItemStack item = new ItemStack(
+                    Material.valueOf(config.getString(path + ".type")),
+                    config.getInt(path + ".amount")
+                );
+
+                ItemMeta meta = item.getItemMeta();
+
+                // Load name
+                if (config.isString(path + ".name")) {
+                    meta.setDisplayName(config.getString(path + ".name"));
+                }
+                
+                // Load lore
+                if (config.isList(path + ".lore")) {
+                    meta.setLore((List<String>) config.getList(path + ".lore"));
+                }
+                
+                // Load custom model data
+                if (config.contains(path + ".custom_model_data")) {
+                    meta.setCustomModelData(config.getInt(path + ".custom_model_data"));
+                }
+
+                item.setItemMeta(meta);
+                inventory.setItem(i, item);
+            }
+        }
+
+        return inventory;
+    }
+
+    //When the Diaper Pail is closed, checks to see if it is full and replaces inventory with new diapers
     @EventHandler
     public void CloseDiaperPail(InventoryCloseEvent event){
         if (event.getView().getTitle().equals("Diaper Pail")) {
@@ -72,11 +174,14 @@ public class DiaperPail implements Listener {
             System.arraycopy(inventory.getContents(), 0, originalContents, 0, originalContents.length);
 
             for (ItemStack item : inventory.getContents()) {
-                if (item == null || !isUsed(item)) {
+                if (item == null || !CustomItemCheck.isUsed(item)) {
                     isValid = false;
                     break;
                 }
             }
+
+            UUID playerUuid = event.getPlayer().getUniqueId();
+            UUID pailId = AccessedInventory.get(playerUuid);
 
             if (isValid){
                 for (int i = 0; i < inventory.getSize(); i++) {
@@ -92,21 +197,13 @@ public class DiaperPail implements Listener {
             } else {
                 // Revert to original contents
                 System.arraycopy(originalContents, 0, inventory.getContents(), 0, originalContents.length);
+                if (pailId != null) {
+                    File inventoryFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Accident-Prone").getDataFolder(), "DiaperPails/" + pailId + ".yml");
+                    saveInventory(inventory, inventoryFile);
+                }
             }
+            AccessedInventory.remove(playerUuid);
         }
-    }
-
-    private boolean isUsed (ItemStack item){
-        if (item.hasItemMeta()) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta.hasCustomModelData()) {
-                return meta.getCustomModelData() == 626005 || 
-                meta.getCustomModelData() == 626004 ||
-                meta.getCustomModelData() == 626011 ||  
-                meta.getCustomModelData() == 626010;
-            }
-        }
-        return false;
     }
     
     @SuppressWarnings("deprecation")
@@ -124,6 +221,8 @@ public class DiaperPail implements Listener {
                     event.setCancelled(true);
                     return;
                 }
+                CustomItemCoolDown cooldown = new CustomItemCoolDown();
+                cooldown.Cooldown(player, 1);
                 
                 ItemMeta meta = itemInHand.getItemMeta();
                 if (meta.getCustomModelData() == 628000) {
@@ -176,60 +275,85 @@ public class DiaperPail implements Listener {
                     armorStand.setHelmet(diaperpail);
 
                     UUID pailId = UUID.randomUUID(); // Generate unique ID for this pail
-                    // Inventory inventory = Bukkit.createInventory(null, 9, "Diaper Pail");
-                    // pailInventories.put(pailId, inventory); 
-
                     armorStand.setCustomName("Pail_" + pailId.toString()); // Store ID in custom name
-                    
                 }
             }
         }
     }
 
-    @EventHandler
-    public void PunchDiaperPail(PlayerInteractEvent event){
-        if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BARRIER) {
-            Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 0.5, 0.5, 0.5);
+    // @EventHandler
+    // public void PunchDiaperPail(PlayerInteractEvent event){
+    //     if (event.getAction() == Action.LEFT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BARRIER) {
+    //         Location clickLocation = event.getClickedBlock().getLocation();
+    //         Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(clickLocation, 0.5, 0.5, 0.5);
             
-            for (Entity entity : nearbyEntities) {
-                if (entity.getType() == EntityType.ARMOR_STAND) {
-                    ArmorStand armorStand = (ArmorStand) entity;
-                    String name = armorStand.getCustomName();
+    //         double minDistance = Double.MAX_VALUE;
+    //         Entity targetEntity = null;
+
+    //         for (Entity entity : nearbyEntities) {
+    //             if (entity.getType() == EntityType.ARMOR_STAND) {
+    //                 ArmorStand armorStand = (ArmorStand) entity;
+    //                 String name = armorStand.getCustomName();
                     
-                    if (!armorStand.isVisible() && name != null && name.startsWith("Pail_")) {
-                        try {
-                            UUID pailId = UUID.fromString(name.substring(6));
-                            Inventory inventory = pailInventories.remove(pailId);
-                            
-                            // Drop all items
-                            Location dropLocation = armorStand.getLocation().add(0.5, 1, 0.5);
-                            if (inventory != null) {
-                                for (ItemStack stack : inventory.getContents()) {
-                                    if (stack != null && !stack.getType().isAir()) {
-                                        Item itemEntity = armorStand.getWorld().dropItem(dropLocation, stack.clone());
-                                        itemEntity.setVelocity(new Vector(0, 0.2, 0));
-                                    }
-                                }
-                            }
+    //                 double distance = clickLocation.distanceSquared(armorStand.getLocation());
+    //                 if (!armorStand.isVisible() && name != null && name.startsWith("Pail_")) {
+    //                     if(distance < 0.5){
+    //                         targetEntity = armorStand;
+    //                         break;
+    //                     }
+    //                     else if (distance < minDistance){
+    //                         minDistance = distance;
+    //                         targetEntity = armorStand;
+    //                     }
+    //                 }
+                    
+    //             }
+    //         }
 
-                            // Drop the pail itself
-                            ItemStack pailItem = new ItemStack(Material.SLIME_BALL);
-                            ItemMeta meta = pailItem.getItemMeta();
-                            meta.setCustomModelData(628000);
-                            meta.setDisplayName("Diaper Pail");
-                            pailItem.setItemMeta(meta);
+    //         if (targetEntity != null){
+    //             ArmorStand armorStand = (ArmorStand) targetEntity;
+    //             String name = armorStand.getCustomName();
+    //             try {
+    //                 UUID pailId = UUID.fromString(name.substring(6));
+    //                 File inventoryFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Accident-Prone").getDataFolder(), "DiaperPails/" + pailId + ".yml");
+    //                 Inventory inventory = pailInventories.remove(pailId);
+    //                 if(inventory == null){
+    //                     if(inventoryFile.exists()){
+    //                         loadInventory(inventoryFile);
+    //                     }
+    //                 }
+                    
+    //                 // Drop all items
+    //                 Location dropLocation = armorStand.getLocation().add(0.5, 1, 0.5);
+    //                 if (inventory != null) {
+    //                     for (ItemStack stack : inventory.getContents()) {
+    //                         if (stack != null && !stack.getType().isAir()) {
+    //                             Item itemEntity = armorStand.getWorld().dropItem(dropLocation, stack.clone());
+    //                             itemEntity.setVelocity(new Vector(0, 0.2, 0));
+    //                         }
+    //                     }
+    //                 }
 
-                            Item droppedPail = armorStand.getWorld().dropItem(dropLocation, pailItem);
-                            droppedPail.setVelocity(new Vector(0, 0.2, 0));
+    //                 if (inventoryFile.exists()) {
+    //                     inventoryFile.delete();
+    //                 }
 
-                            armorStand.remove();
-                            event.getClickedBlock().setType(Material.AIR);
-                        } catch (IllegalArgumentException e) {
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
-    }
+    //                 // Drop the pail itself
+    //                 ItemStack pailItem = new ItemStack(Material.SLIME_BALL);
+    //                 ItemMeta meta = pailItem.getItemMeta();
+    //                 meta.setCustomModelData(628000);
+    //                 meta.setDisplayName("Diaper Pail");
+    //                 pailItem.setItemMeta(meta);
+
+    //                 Item droppedPail = armorStand.getWorld().dropItem(dropLocation, pailItem);
+    //                 droppedPail.setVelocity(new Vector(0, 0.2, 0));
+
+    //                 armorStand.remove();
+    //                 event.getClickedBlock().setType(Material.AIR);
+    //             } catch (IllegalArgumentException e) {
+    //                 return;
+    //             }
+    //         }
+    //     }
+    // }
 }

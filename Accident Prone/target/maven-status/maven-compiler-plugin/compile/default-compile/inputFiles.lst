@@ -3,7 +3,6 @@
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/Event_Listeners/Toilet.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/menus/SettingsMenu.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/cribs.java
-/home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/CustomItems.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/AccidentsANDWanrings/HandleAccident.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/Event_Listeners/PantsCrafting.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/CustomItemCoolDown.java
@@ -11,10 +10,12 @@
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/Event_Listeners/Changing.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/ItemManager.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/menus/Caregivermenu.java
+/home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/Event_Listeners/CustomFurnitureRemoval.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/menus/HUDMenu.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/pants.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/PlaySounds.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/ParticleEffect.java
+/home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/CustomItemCheck.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/AccidentsANDWanrings/Warnings.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/Plugin.java
 /home/coder/AccidentProne/Accident Prone/src/main/java/com/storynook/items/underwear.java

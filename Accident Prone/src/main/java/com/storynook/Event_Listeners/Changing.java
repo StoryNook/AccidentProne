@@ -24,7 +24,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import com.storynook.PlaySounds;
 import com.storynook.PlayerStats;
 import com.storynook.Plugin;
-import com.storynook.items.CustomItems;
+import com.storynook.items.CustomItemCheck;
 import com.storynook.items.underwear;
 import com.storynook.items.CustomItemCoolDown;
 
@@ -58,7 +58,7 @@ public class Changing implements Listener{
                                 if (item == null || !item.hasItemMeta() || !item.getItemMeta().hasCustomModelData()) {
                                     return;
                                 }
-                                if (!CustomItems.VailidUnderwear(item)) {
+                                if (!CustomItemCheck.VailidUnderwear(item)) {
                                     return;
                                 }
                                 rightclicktimes++;
@@ -147,7 +147,7 @@ public class Changing implements Listener{
                     }
                     return; // Exit the method to prevent further execution
                 }
-                else if(CustomItems.VailidUnderwear(itemInHand)){
+                else if(CustomItemCheck.VailidUnderwear(itemInHand)){
                     if (event.getAction().name().contains("RIGHT_CLICK")) {
                         if (itemInHand == null || !itemInHand.hasItemMeta() || !itemInHand.getItemMeta().hasCustomModelData()) {
                             plugin.rightclickCount.put(actor.getUniqueId(), 0);
@@ -222,7 +222,7 @@ public class Changing implements Listener{
                         this.cancel();
                     } else {
                         ItemStack item = actor.getInventory().getItemInMainHand();
-                        if (item == null || !item.hasItemMeta() || !CustomItems.VailidUnderwear(item) || (isCaregiverInteraction && distanceinBlocks.get(actor.getUniqueId()) > 3)) {
+                        if (item == null || !item.hasItemMeta() || !CustomItemCheck.VailidUnderwear(item) || (isCaregiverInteraction && distanceinBlocks.get(actor.getUniqueId()) > 3)) {
                             plugin.rightclickCount.put(actor.getUniqueId(), 0);
                             bossBar.removePlayer(actor);
                             stopAudio(actor,totype, fromtype);
@@ -257,7 +257,7 @@ public class Changing implements Listener{
         PlayerStats stats = plugin.getPlayerStats(target.getUniqueId());
         ItemStack item = actor.getInventory().getItemInMainHand();
 
-        if (CustomItems.VailidUnderwear(item)) {
+        if (CustomItemCheck.VailidUnderwear(item)) {
             int customModelData = item.getItemMeta().getCustomModelData();
             
             // Remove or decrement the item the actor is holding

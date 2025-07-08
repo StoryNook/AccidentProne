@@ -197,7 +197,6 @@ public class underwear {
             );
         meta.setLore(lore);
         item.setItemMeta(meta);
-        // stinkydiaper = item;
         return item;
     }
     public static ItemStack createWetDiaper(Player owner, int wetness, int fullness, int timeworn){
@@ -213,7 +212,6 @@ public class underwear {
                 );
         meta.setLore(lore);
         item.setItemMeta(meta);
-        // wetdiaper = item;
         return item;
     }
     public static ItemStack createWetPullup(Player owner, int wetness, int fullness, int timeworn){
@@ -229,7 +227,6 @@ public class underwear {
                 );
         meta.setLore(lore);
         item.setItemMeta(meta);
-        // wetpullup = item;
         return item;
     }
     public static ItemStack createWetThickDiaper(Player owner, int wetness, int fullness, int timeworn){
@@ -240,12 +237,11 @@ public class underwear {
         meta.setCustomModelData(626011);
         List<String> lore = Arrays.asList(
                     "Owner: " + ChatColor.AQUA + owner.getDisplayName(),
-                    "Useage: " + ChatColor.GREEN + Math.max(fullness, wetness),
+                    "Usage: " + ChatColor.GREEN + Math.max(fullness, wetness),
                     "Time Worn: " + ChatColor.YELLOW + Cleantime(timeworn)
                 );
         meta.setLore(lore);
         item.setItemMeta(meta);
-        // wetthickdiaper = item;
         return item;
     }
     public static ItemStack createWetUndies(Player owner, int wetness, int fullness, int timeworn){
