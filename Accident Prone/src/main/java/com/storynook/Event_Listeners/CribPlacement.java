@@ -105,44 +105,6 @@ public class CribPlacement implements Listener{
         }
     }
 
-    // @EventHandler
-    // public void PunchCrib (PlayerInteractEvent event){
-    //     if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-    //         Block clickedBlock = event.getClickedBlock();
-    //         Location blockLocation = clickedBlock.getLocation();
-
-    //         Collection<Entity> nearbyEntities = clickedBlock.getWorld().getNearbyEntities(blockLocation, 0.27, 0.27, 0.5);
-        
-    //         // Loop through each entity to find an invisible armor stand
-    //         for (Entity entity : nearbyEntities) {
-    //             if (entity.getType() == EntityType.ARMOR_STAND) {
-    //                 ArmorStand armorStand = (ArmorStand) entity;
-    //                 String name = armorStand.getCustomName();
-
-    //                 if (!armorStand.isVisible()) {
-    //                     ItemStack helmet = armorStand.getHelmet();
-    //                     if (helmet != null && !helmet.getType().isAir()) {
-    //                         ItemMeta helmetmeta = helmet.getItemMeta();
-    //                         if ((name != null && name.equals("Crib")) || CustomItemCheck.isCrib(helmetmeta)) {
-    //                             ItemStack cribItem = helmet.clone();
-    //                             ItemMeta meta = cribItem.getItemMeta();
-                                
-    //                             // Set the custom name
-    //                             if (meta != null) {
-    //                                 meta.setDisplayName("Crib");
-    //                                 cribItem.setItemMeta(meta);
-    //                             }
-    //                             Item droppedHelmet = armorStand.getWorld().dropItem(armorStand.getLocation(), cribItem);
-    //                             droppedHelmet.setVelocity(new Vector(0, 0.2, 0)); // Add slight upward velocity
-    //                             armorStand.remove();
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
     @EventHandler
     public void onPrepareCraft(PrepareItemCraftEvent event) {
         CraftingInventory inventory = event.getInventory();
