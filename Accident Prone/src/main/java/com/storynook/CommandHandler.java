@@ -382,98 +382,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
     
             return true;
         }
-        // if (command.getName().equalsIgnoreCase("debug") && sender instanceof Player) {
-            
-        //     Player player = (Player) sender;
-        //     if (!player.hasPermission("diaperplugin.debug") && !player.isOp()) {
-        //         player.sendMessage("You do not have permission to use this command.");
-        //         return true;
-        //     }
-
-        //     PlayerStats stats = plugin.getPlayerStats(player.getUniqueId());
-
-        //     if (stats == null) {
-        //         player.sendMessage("Player Stats not available");
-        //         return true;
-        //     }
-
-        //     if (args.length == 0) {
-        //         player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
-        //         return true;
-        //     }
-
-        //     String type = args[0].toLowerCase();
-
-        //     if (args.length < 2) {
-        //         player.sendMessage("Usage: /debug " + type + " <number> [playername]");
-        //         return true;
-        //     }
-            
-        //     double value;
-        //     try {
-        //         value = Double.parseDouble(args[1]);
-        //     } catch (NumberFormatException e) {
-        //         player.sendMessage("Invalid number format.");
-        //         return true;
-        //     }
-
-        //     Player target;
-        //     if (args.length > 2) {
-        //         target = plugin.getServer().getPlayer(args[2]);
-        //         if (target == null) {
-        //             player.sendMessage("Player not found.");
-        //             return true;
-        //         }
-        //     } else {
-        //         target = player; // Default to the sender if no target is specified
-        //     }
-
-        //     PlayerStats targetStats = plugin.getPlayerStats(target.getUniqueId());
-        //     if (targetStats == null) {
-        //         player.sendMessage("Target player stats not available.");
-        //         return true;
-        //     }
-
-        //     switch (type) {
-        //         case "bladder":
-        //             targetStats.setBladder(value);
-        //             player.sendMessage("Set bladder to: " + value);
-        //             break;
-        //         case "bowel":
-        //             targetStats.setBowels(value);
-        //             player.sendMessage("Set bowels to: " + value);
-        //             break;
-        //         case "both":
-        //             targetStats.setBladder(value);
-        //             targetStats.setBowels(value);
-        //             player.sendMessage("Set both bladder and bowel to: " + value);
-        //             break;
-        //         case "type":
-        //             targetStats.setUnderwearType((int)value);
-        //             break;
-        //         case "wetness":
-        //             targetStats.setDiaperWetness(value);
-        //             player.sendMessage("Set diaper wetness to: " + value);
-        //             break;
-        //         case "fullness":
-        //             targetStats.setDiaperFullness(value);
-        //             player.sendMessage("Set diaper fullness to: " + value);
-        //             break;
-        //         case "effectduration":
-        //             targetStats.setEffectDuration((int)value);;
-        //             player.sendMessage("Set duration to: " + value);
-        //             break;
-        //         case "timeworn":
-        //             targetStats.setTimeWorn((int)value);
-        //             player.sendMessage("Set timeworn to: " + value);
-        //             break;
-        //         default:
-        //             player.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|effectduration|timeworn> <number> [playername]");
-        //     }
-        //     return true;
-        // }
-
-
 
         if (command.getName().equalsIgnoreCase("debug")) {
             if (!(sender instanceof Player) && !(sender instanceof ConsoleCommandSender)) {
@@ -489,9 +397,6 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     return true;
                 }
             }
-
-            // Handle command logic
-            // String[] args = command.getArgs();
             
             if (args.length == 0) {
                 sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|Laxeffectduration|timeworn> <number> [playername]");
@@ -592,18 +497,75 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 completions.add("fullness");
                 completions.add("Laxeffectduration");
                 completions.add("timeworn");
+                completions.add("give");
                 // completions.add("showfill");
-                return completions; // Filter based on arguments (optional)
-            } else if (args.length == 2 && args[0].equalsIgnoreCase("type")) {
-                completions.add("0");
-                completions.add("1");
-                completions.add("2");
-                completions.add("3");
-            } else if (args.length == 3) {
-                // Add online player names to completions
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    completions.add(player.getName());
+            } 
+            else if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("give")) {
+                    // Add online player names to completions
+                    for (Player player : Bukkit.getOnlinePlayers()) {
+                        completions.add(player.getName());
+                    }
                 }
+            }
+            else if (args.length == 3) {
+                if (args[0].equalsIgnoreCase("give")){
+                    completions.add("Underwear");
+                    completions.add("Pullup");
+                    completions.add("Diaper");
+                    completions.add("Thick_Diaper");
+                    completions.add("Laxative");
+                    completions.add("Diaper_Pail");
+                    completions.add("Washer");
+                    completions.add("Toilet");
+                    completions.add("Crib");
+                    completions.add("Pants");
+                }
+            }
+            else if (args.length == 4) {
+                String previousArg = args[2];
+                if(previousArg.equalsIgnoreCase("Crib")) {
+                    completions.add("ACACIA");
+                    completions.add("BIRCH");
+                    completions.add("DARK_OAK");
+                    completions.add("JUNGLE");
+                    completions.add("MANGROVE");
+                    completions.add("OAK");
+                    completions.add("SPRUCE");
+                    completions.add("WARPED");
+                    completions.add("QUARTZ");
+                    completions.add("CHERRY");
+                }
+                else if (previousArg.equalsIgnoreCase("Pants")){
+                    completions.add("WHITE");
+                    completions.add("LIGHT_GRAY");
+                    completions.add("GRAY");
+                    completions.add("BLACK");
+                    completions.add("RED");
+                    completions.add("ORANGE");
+                    completions.add("YELLOW");
+                    completions.add("LIME");
+                    completions.add("GREEN");
+                    completions.add("LIGHT_BLUE");
+                    completions.add("CYAN");
+                    completions.add("BLUE");
+                    completions.add("PURPLE");
+                    completions.add("MAGENTA");
+                    completions.add("PINK");
+                    completions.add("BROWN");
+                } 
+            }
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("type")) {
+            completions.add("0");
+            completions.add("1");
+            completions.add("2");
+            completions.add("3");
+        } 
+        else if (args.length == 3) {
+            // Add online player names to completions
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                completions.add(player.getName());
             }
         }
         else if (command.getName().equalsIgnoreCase("caregiver")) {
@@ -612,7 +574,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 completions.add("remove");
                 completions.add("list");
                 return completions; // Filter based on arguments (optional)
-            }else if (args.length == 2) {
+            }
+            else if (args.length == 2) {
                 // Add online player names to completions
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     completions.add(player.getName());
@@ -666,6 +629,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 }
             }
         }
+        
         return completions; // Always return the list, potentially empty.
     }
 }
