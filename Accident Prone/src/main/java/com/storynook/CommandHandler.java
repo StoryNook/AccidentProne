@@ -562,7 +562,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             completions.add("2");
             completions.add("3");
         } 
-        else if (args.length == 3) {
+        else if (args.length == 3 && !args[0].equalsIgnoreCase("give")) {
             // Add online player names to completions
             for (Player player : Bukkit.getOnlinePlayers()) {
                 completions.add(player.getName());
