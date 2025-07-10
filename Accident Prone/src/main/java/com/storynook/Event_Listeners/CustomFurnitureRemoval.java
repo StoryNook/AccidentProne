@@ -33,7 +33,7 @@ import com.storynook.Event_Listeners.DiaperPail;
 
 public class CustomFurnitureRemoval implements Listener{
     @EventHandler
-    public void PunchDiaperPail(PlayerInteractEvent event){
+    public void PunchFurniture(PlayerInteractEvent event){
         if (event.getAction() == Action.LEFT_CLICK_BLOCK ) {
             CustomItemCoolDown cooldown = new CustomItemCoolDown();
             if(cooldown.cooldown.contains(event.getPlayer().getUniqueId())){
@@ -41,6 +41,10 @@ public class CustomFurnitureRemoval implements Listener{
             }
             cooldown.Cooldown(event.getPlayer(), 1);
             Location clickLocation = event.getClickedBlock().getLocation();
+            
+            clickLocation.setX(clickLocation.getX() + 0.5);
+            clickLocation.setY(clickLocation.getY() + 0.5);
+            clickLocation.setZ(clickLocation.getZ() + 0.5);
             Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(clickLocation, 1.5, 1.5, 1.5);
             
             double minDistance = Double.MAX_VALUE;

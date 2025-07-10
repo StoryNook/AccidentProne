@@ -46,6 +46,11 @@ public class DiaperPail implements Listener {
             if(cooldown.cooldown.contains(event.getPlayer().getUniqueId())){
                 return;
             }
+
+            Location clickLocation = event.getClickedBlock().getLocation();
+            clickLocation.setX(clickLocation.getX() + 0.5);
+            clickLocation.setY(clickLocation.getY() + 0.5);
+            clickLocation.setZ(clickLocation.getZ() + 0.5);
             Collection<Entity> nearbyEntities = event.getClickedBlock().getWorld().getNearbyEntities(event.getClickedBlock().getLocation(), 0.5, 0.5, 0.5);
             
             for (Entity entity : nearbyEntities) {

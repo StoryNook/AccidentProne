@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.storynook.Plugin;
+import com.storynook.items.CustomItemCoolDown;
 
 public class Sit implements Listener{
 
@@ -46,7 +47,10 @@ public class Sit implements Listener{
             ItemStack itemInHand = player.getInventory().getItemInMainHand();
             // Check if the block being clicked is a stair or slab
             if (event.getClickedBlock() != null && isStairOrSlab(event.getClickedBlock()) && (itemInHand == null || itemInHand.getType() == Material.AIR)){
-                
+                CustomItemCoolDown cooldown = new CustomItemCoolDown();
+                if(cooldown.cooldown.contains(event.getPlayer().getUniqueId())){
+                    return;
+                }
                 // Create an ArmorStand to sit on
                 Location blockLoc = event.getClickedBlock().getLocation();
                 Location sitLocation = new Location(blockLoc.getWorld(), 
