@@ -2,6 +2,7 @@ com/storynook/Event_Listeners/DiaperPail$1.class
 com/storynook/PlayerStats.class
 com/storynook/items/cribs$1.class
 com/storynook/items/CustomItemCoolDown.class
+com/storynook/Commands/Give.class
 com/storynook/items/CustomItemCoolDown$1.class
 com/storynook/Event_Listeners/PantsCrafting$1.class
 com/storynook/Event_Listeners/CustomFurnitureRemoval.class

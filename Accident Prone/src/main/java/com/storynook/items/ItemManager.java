@@ -19,25 +19,41 @@ import net.md_5.bungee.api.ChatColor;
 
 public class ItemManager {
     private JavaPlugin plugin;
-    public static ItemStack diaperpail;
+    // public static ItemStack diaperpail;
     public static ItemStack lax;
     // public static ItemStack dur;
-    public static ItemStack toilet;
-    public static ItemStack Washer;
+    
     public ItemManager(JavaPlugin plugin){this.plugin = plugin;}
 
     //Recipes for crafting custom items
-    public void createToiletRecipe() {
-        // Define the custom item
-        ItemStack item = new ItemStack(Material.CAULDRON);
-        ItemMeta meta = item.getItemMeta();
+
+    public static ItemStack Washer(){
+        ItemStack Washer = new ItemStack(Material.FURNACE);
+        ItemMeta meta = Washer.getItemMeta();
+        meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
+        meta.setCustomModelData(626014);// Custom Model Data for texture
+        Washer.setItemMeta(meta);
+        return Washer;
+    }
+    public static ItemStack Diaperpail(){
+        ItemStack diaperPail = new ItemStack(Material.SLIME_BALL);
+        ItemMeta meta = diaperPail.getItemMeta();
+        meta.setDisplayName("Diaper Pail");
+        meta.setCustomModelData(628000); // Custom Model Data for texture
+        diaperPail.setItemMeta(meta);
+        return diaperPail;
+    }
+    public static ItemStack Toilet(){
+        ItemStack toilet = new ItemStack(Material.CAULDRON);
+        ItemMeta meta = toilet.getItemMeta();
         meta.setDisplayName("Toilet");
         meta.setCustomModelData(626006); // Custom Model Data for texture
-        item.setItemMeta(meta);
-        toilet = item;
-
+        toilet.setItemMeta(meta);
+        return toilet;
+    }
+    public void createToiletRecipe() {       
         // Create the recipe
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "Toilet"), toilet);
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "Toilet"), Toilet());
         recipe.shape(" T ", " C ", "   "); // Crafting grid: T = Trapdoor, C = Cauldron
         recipe.setIngredient('T', Material.IRON_TRAPDOOR); 
         recipe.setIngredient('C', Material.CAULDRON);
@@ -46,16 +62,8 @@ public class ItemManager {
         Bukkit.addRecipe(recipe);
     }
     public void createDiaperPailRecipe() {
-        // Define the custom item
-        ItemStack item = new ItemStack(Material.SLIME_BALL, 1);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("Diaper Pail");
-        meta.setCustomModelData(628000);
-        item.setItemMeta(meta);
-        diaperpail = item;
-
         // Create the recipe
-        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "DiaperPail"), diaperpail);
+        ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(plugin, "DiaperPail"), Diaperpail());
         recipe.shape(" T ", " B ", "   "); // Crafting grid: T = Trapdoor, C = Cauldron
         recipe.setIngredient('T', Material.IRON_TRAPDOOR); 
         recipe.setIngredient('B', Material.BARREL);
@@ -67,16 +75,8 @@ public class ItemManager {
 
 
     public void createWasherRecipe() {
-        // Define the custom item
-        ItemStack item = new ItemStack(Material.FURNACE);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(ChatColor.WHITE + "Washing Machine");
-        meta.setCustomModelData(626014);// Custom Model Data for texture
-        item.setItemMeta(meta);
-        Washer = item;
-
             // Create the recipe
-        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Washer"), Washer);
+        ShapelessRecipe recipe = new ShapelessRecipe(new NamespacedKey(plugin, "Washer"), Washer());
         recipe.addIngredient(Material.FURNACE);
         recipe.addIngredient(Material.WATER_BUCKET);
 
@@ -100,6 +100,15 @@ public class ItemManager {
     //     // Register the recipe
     //     Bukkit.addRecipe(recipe);
     // }
+
+    public static ItemStack Laxative(){
+        ItemStack Laxitem = new ItemStack(Material.GLOWSTONE_DUST);
+        ItemMeta Laxmeta = Laxitem.getItemMeta();
+        Laxmeta.setDisplayName("Laxative");
+        Laxmeta.setCustomModelData(626012);// Custom Model Data for texture
+        Laxitem.setItemMeta(Laxmeta);
+        return Laxitem;
+    }
     
     public void createlaxedItem(){
         ItemStack Laxitem = new ItemStack(Material.GLOWSTONE_DUST);

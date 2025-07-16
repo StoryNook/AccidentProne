@@ -15,6 +15,7 @@ import org.bukkit.entity.Player;
 
 import com.storynook.AccidentsANDWanrings.HandleAccident;
 import com.storynook.menus.SettingsMenu;
+import com.storynook.Commands.Give;
 
 import net.md_5.bungee.api.ChatColor;
 
@@ -411,7 +412,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
             }
             
             double value;
-            try { 
+            try {
                 value = Double.parseDouble(args[1]);
             } catch (NumberFormatException e) {
                 sender.sendMessage("Invalid number format.");
@@ -474,8 +475,47 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     targetStats.setTimeWorn((int)value);
                     sender.sendMessage("Set timeworn to: " + value);
                     break;
+                case "give":
+                     if (args.length < 3 || args.length > 5) {
+                        sender.sendMessage("Usage: /debug give <quantity> <player> <item> [<variation>]");
+                        return true;
+                    }
+
+                    String playerName = args[2];
+                    String item = args[3];
+                    String variation = "";
+                    int quanity = 0;
+
+                    if (args.length >=4) {
+                        // Check if variation is required for this item
+                        if (item.equalsIgnoreCase("crib") || item.equalsIgnoreCase("pants")) {
+                            variation = args[4];
+                            try {
+                                quanity = Integer.parseInt(args[1]);
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage("Invalid number format. Please provide a valid number for quantity.");
+                                return true;
+                            }
+
+                        } else {
+                            try {
+                                quanity = Integer.parseInt(args[1]);
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage("Invalid number format. Please provide a valid number for quantity.");
+                                return true;
+                            }
+                        }
+                    }
+
+                    Player targetPlayer = plugin.getServer().getPlayer(playerName);
+                    if (targetPlayer == null) {
+                        sender.sendMessage("Player not found.");
+                        return true;
+                    }
+                    Give.GiveItem(targetPlayer, item, variation, quanity);
+                    break;
                 default:
-                    sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|Laxeffectduration|timeworn> <number> [playername]");
+                    sender.sendMessage("Usage: /debug <bladder|bowel|both|type|wetness|fullness|Laxeffectduration|timeworn|give> <number> [playername]");
             }
             return true;
         }
@@ -500,7 +540,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                 completions.add("give");
                 // completions.add("showfill");
             } 
-            else if (args.length == 2) {
+            else if (args.length == 3) {
                 if (args[0].equalsIgnoreCase("give")) {
                     // Add online player names to completions
                     for (Player player : Bukkit.getOnlinePlayers()) {
@@ -508,22 +548,22 @@ public class CommandHandler implements CommandExecutor, TabCompleter{
                     }
                 }
             }
-            else if (args.length == 3) {
+            else if (args.length == 4) {
                 if (args[0].equalsIgnoreCase("give")){
                     completions.add("Underwear");
                     completions.add("Pullup");
                     completions.add("Diaper");
                     completions.add("Thick_Diaper");
                     completions.add("Laxative");
-                    completions.add("Diaper_Pail");
+                    completions.add("Diaper_pail");
                     completions.add("Washer");
                     completions.add("Toilet");
                     completions.add("Crib");
                     completions.add("Pants");
                 }
             }
-            else if (args.length == 4) {
-                String previousArg = args[2];
+            else if (args.length == 5) {
+                String previousArg = args[3];
                 if(previousArg.equalsIgnoreCase("Crib")) {
                     completions.add("ACACIA");
                     completions.add("BIRCH");

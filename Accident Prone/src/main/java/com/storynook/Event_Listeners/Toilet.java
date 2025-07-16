@@ -176,7 +176,7 @@ public class Toilet implements Listener{
                 loc.add(0, 1, 0).getBlock().setType(Material.AIR);
 
                 // Drop the custom item
-                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item
+                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.Toilet())); // Assuming you have a way to create the custom item
             }
         }
         if (block != null && block.getType() == Material.IRON_TRAPDOOR) {
@@ -189,7 +189,7 @@ public class Toilet implements Listener{
                 loc.add(0, -1, 0).getBlock().setType(Material.AIR);
 
                 // Drop the custom item
-                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.toilet)); // Assuming you have a way to create the custom item
+                block.getWorld().dropItemNaturally(loc, new ItemStack(ItemManager.Toilet())); // Assuming you have a way to create the custom item
             }
         }
     }

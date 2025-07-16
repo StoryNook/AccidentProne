@@ -194,7 +194,7 @@ public class DiaperPail implements Listener {
                 }
                 // Add 9 new diaper items
                 for (int i = 0; i < 9; i++) {
-                    ItemStack diaper = underwear.ThickDiaper();
+                    ItemStack diaper = underwear.Diaper();
                     if (diaper != null) {
                         inventory.setItem(i, diaper);
                     }
@@ -233,54 +233,56 @@ public class DiaperPail implements Listener {
                 if (meta.getCustomModelData() == 628000) {
                     Location blockLocation = clickedBlock.getLocation();
                     BlockFace face = event.getBlockFace();
-                    // Move the barrier location up by one y
-                    Location frameLocation = new Location(blockLocation.getWorld(), blockLocation.getX(), blockLocation.getY() + 1, blockLocation.getZ());
-                    Location armorStandLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
+                    if(face == BlockFace.UP){
+                        // Move the barrier location up by one y
+                        Location frameLocation = new Location(blockLocation.getWorld(), blockLocation.getX(), blockLocation.getY() + 1, blockLocation.getZ());
+                        Location armorStandLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
 
-                    BlockFace playerDirection = player.getFacing();
-                    
-                    // Create and place item frame
-                    ArmorStand armorStand = (ArmorStand) blockLocation.getWorld().spawnEntity(armorStandLocation, EntityType.ARMOR_STAND);
-                    armorStand.setVisible(false);
-                    
-                    float yaw;
-                    switch(playerDirection) {
-                        case NORTH:
-                            yaw = 0;
-                            break;
-                        case EAST:
-                            yaw = 90;
-                            break;
-                        case SOUTH:
-                            yaw = 180;
-                            break;
-                        case WEST:
-                            yaw = 270;
-                            break;
-                        default:
-                            // Handle any other cases if necessary
-                            yaw = 0;
-                            break;
+                        BlockFace playerDirection = player.getFacing();
+                        
+                        // Create and place item frame
+                        ArmorStand armorStand = (ArmorStand) blockLocation.getWorld().spawnEntity(armorStandLocation, EntityType.ARMOR_STAND);
+                        armorStand.setVisible(false);
+                        
+                        float yaw;
+                        switch(playerDirection) {
+                            case NORTH:
+                                yaw = 0;
+                                break;
+                            case EAST:
+                                yaw = 90;
+                                break;
+                            case SOUTH:
+                                yaw = 180;
+                                break;
+                            case WEST:
+                                yaw = 270;
+                                break;
+                            default:
+                                // Handle any other cases if necessary
+                                yaw = 0;
+                                break;
+                        }
+                        
+                        armorStand.setRotation(yaw, 0);
+                        armorStand.setCanPickupItems(false);
+                        armorStand.setGravity(false);
+                        
+                        // Place a barrier block at the same location as the armor stand
+                        frameLocation.getBlock().setType(Material.BARRIER);
+
+                        itemInHand.setAmount(itemInHand.getAmount() - 1);
+
+                        ItemStack diaperpail = new ItemStack(Material.SLIME_BALL);
+                        ItemMeta diaperpailmeta = diaperpail.getItemMeta();
+                        diaperpailmeta.setCustomModelData(meta.getCustomModelData());
+                        diaperpailmeta.setDisplayName("");
+                        diaperpail.setItemMeta(diaperpailmeta);
+                        armorStand.setHelmet(diaperpail);
+
+                        UUID pailId = UUID.randomUUID(); // Generate unique ID for this pail
+                        armorStand.setCustomName("Pail_" + pailId.toString()); // Store ID in custom name
                     }
-                    
-                    armorStand.setRotation(yaw, 0);
-                    armorStand.setCanPickupItems(false);
-                    armorStand.setGravity(false);
-                    
-                    // Place a barrier block at the same location as the armor stand
-                    frameLocation.getBlock().setType(Material.BARRIER);
-
-                    itemInHand.setAmount(itemInHand.getAmount() - 1);
-
-                    ItemStack diaperpail = new ItemStack(Material.SLIME_BALL);
-                    ItemMeta diaperpailmeta = diaperpail.getItemMeta();
-                    diaperpailmeta.setCustomModelData(meta.getCustomModelData());
-                    diaperpailmeta.setDisplayName("");
-                    diaperpail.setItemMeta(diaperpailmeta);
-                    armorStand.setHelmet(diaperpail);
-
-                    UUID pailId = UUID.randomUUID(); // Generate unique ID for this pail
-                    armorStand.setCustomName("Pail_" + pailId.toString()); // Store ID in custom name
                 }
             }
         }

@@ -58,48 +58,50 @@ public class CribPlacement implements Listener{
                 if (CustomItemCheck.isCrib(meta)) {
                     Location blockLocation = clickedBlock.getLocation();
                     BlockFace face = event.getBlockFace();
-                    Location frameLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
-                    
-                    BlockFace playerDirection = player.getFacing();
-                    
-                    // Create and place item frame
-                    ArmorStand armorStand = (ArmorStand) blockLocation.getWorld().spawnEntity(frameLocation, EntityType.ARMOR_STAND);
-                    
-                    float yaw;
-                    switch(playerDirection) {
-                        case NORTH:
-                            yaw = 0;
-                            break;
-                        case EAST:
-                            yaw = 90;
-                            break;
-                        case SOUTH:
-                            yaw = 180;
-                            break;
-                        case WEST:
-                            yaw = 270;
-                            break;
-                        default:
-                            // Handle any other cases if necessary
-                            yaw = 0;
-                            break;
+                    if (face == BlockFace.UP){
+                        Location frameLocation = clickedBlock.getRelative(face).getLocation().add(0.5, 0, 0.5);
+                        
+                        BlockFace playerDirection = player.getFacing();
+                        
+                        // Create and place item frame
+                        ArmorStand armorStand = (ArmorStand) blockLocation.getWorld().spawnEntity(frameLocation, EntityType.ARMOR_STAND);
+                        
+                        float yaw;
+                        switch(playerDirection) {
+                            case NORTH:
+                                yaw = 0;
+                                break;
+                            case EAST:
+                                yaw = 90;
+                                break;
+                            case SOUTH:
+                                yaw = 180;
+                                break;
+                            case WEST:
+                                yaw = 270;
+                                break;
+                            default:
+                                // Handle any other cases if necessary
+                                yaw = 0;
+                                break;
+                        }
+                        
+                        armorStand.setRotation(yaw, 0);
+
+                        armorStand.setVisible(false);
+                        armorStand.setCanPickupItems(false);
+                        armorStand.setGravity(false);
+                        armorStand.setCustomName("Crib");
+                        
+                        itemInHand.setAmount(itemInHand.getAmount() - 1);
+
+                        ItemStack crib = new ItemStack(Material.SLIME_BALL);
+                        ItemMeta cribmeta = crib.getItemMeta();
+                        cribmeta.setCustomModelData(meta.getCustomModelData());
+                        cribmeta.setDisplayName("");
+                        crib.setItemMeta(cribmeta);
+                        armorStand.setHelmet(crib);
                     }
-                    
-                    armorStand.setRotation(yaw, 0);
-
-                    armorStand.setVisible(false);
-                    armorStand.setCanPickupItems(false);
-                    armorStand.setGravity(false);
-                    armorStand.setCustomName("Crib");
-                    
-                    itemInHand.setAmount(itemInHand.getAmount() - 1);
-
-                    ItemStack crib = new ItemStack(Material.SLIME_BALL);
-                    ItemMeta cribmeta = crib.getItemMeta();
-                    cribmeta.setCustomModelData(meta.getCustomModelData());
-                    cribmeta.setDisplayName("");
-                    crib.setItemMeta(cribmeta);
-                    armorStand.setHelmet(crib);
                 }
             }
         }
